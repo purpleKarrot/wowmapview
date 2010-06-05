@@ -169,7 +169,7 @@ int main(int argc, char *argv[])
 	
 	int langID = 0;
 
-	char *locales[] = {"enUS", "enGB", "deDE", "frFR", "zhTW", "ruRU", "esES", "koKR", "zhCN"};
+	const char *locales[] = {"enUS", "enGB", "deDE", "frFR", "zhTW", "ruRU", "esES", "koKR", "zhCN"};
 
 	char path[512];
 	for (size_t i=0; i<9; i++) {

@@ -121,7 +121,7 @@ public:
 	unsigned int areaID;
 
 	std::vector<GLuint> wTextures;
-	void initTextures(char *basename, int first, int last);
+	void initTextures(const char *basename, int first, int last);
 
 	bool haswater;
 	std::vector< SWaterLayer > waterLayer;
