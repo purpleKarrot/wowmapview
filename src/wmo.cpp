@@ -28,8 +28,7 @@ visibility information
 more data
 */
 WMO::WMO(std::string name): ManagedItem(name), groups(0), nTextures(0), nGroups(0),
-	nP(0), nLights(0), nModels(0), nDoodads(0), nDoodadSets(0), nX(0), mat(0), LiquidType(0),
-	skybox(0)
+	nP(0), nLights(0), nModels(0), nDoodads(0), nDoodadSets(0), nX(0), mat(0), LiquidType(0)
 {
 	MPQFile f(name.c_str());
 	ok = !f.isEof();
@@ -183,12 +182,10 @@ Skybox. Always 00 00 00 00. Skyboxes are now defined in DBCs (Light.dbc etc.). C
 				if (path.length()) {
 					gLog("SKYBOX:\n");
 
-					sbid = gWorld->modelmanager.add(path);
-					skybox = (Model*)gWorld->modelmanager.items[sbid];
+					skybox = wow::Model(path);
 
-					if (!skybox->ok) {
-						gWorld->modelmanager.del(sbid);
-						skybox = 0;
+					if (!skybox.get().ok) {
+						skybox = wow::Model();
 					}
 				}
 			}
@@ -345,7 +342,6 @@ A block of zero-padded, zero-terminated strings. There are nModels file names in
 					p+=strlen(p)+1;
 					while ((p<end) && (*p==0)) p++;
 
-					gWorld->modelmanager.add(path);
 					models.push_back(path);
 				}
 				f.seekRelative((int)size);
@@ -380,7 +376,7 @@ struct SMODoodadDef // 03-29-2005 By ObscuR
 				f.read(&ofs,4);
 				if (!ddnames) // Alfred, Error
 					continue;
-				Model *m = (Model*)gWorld->modelmanager.items[gWorld->modelmanager.get(ddnames + ofs)];
+				wow::Model m(ddnames + ofs);
 				ModelInstance mi;
 				mi.init2(m,f);
 				modelis.push_back(mi);
@@ -431,16 +427,8 @@ WMO::~WMO()
 	if (groups)
 		delete[] groups;
 
-	for (vector<string>::iterator it = models.begin(); it != models.end(); ++it)
-		gWorld->modelmanager.delbyname(*it);
-
 	if (mat)
 		delete[] mat;
-
-	if (skybox) {
-		//delete skybox;
-		gWorld->modelmanager.del(sbid);
-	}
 }
 
 void WMO::draw(int doodadset, const Vec3D &ofs, const float rot)
@@ -551,7 +539,7 @@ void WMO::draw(int doodadset, const Vec3D &ofs, const float rot)
 
 void WMO::drawSkybox()
 {
-	if (skybox) {
+	if (skybox!=wow::Model()) {
 		// TODO: only draw sky if we are "inside" the WMO... ?
 
 		// We need to clear the depth buffer, because the skybox model can (will?)
@@ -569,7 +557,7 @@ void WMO::drawSkybox()
 		glTranslatef(o.x, o.y, o.z);
 		const float sc = 2.0f;
 		glScalef(sc,sc,sc);
-        skybox->draw();
+        skybox.get().draw();
 		glPopMatrix();
 		gWorld->hadSky = true;
 		glEnable(GL_DEPTH_TEST);

@@ -346,7 +346,6 @@ MapTile::MapTile(int x0, int z0, char* filename, bool bigAlpha): x(x0), z(z0), t
 				p+=strlen(p)+1;
 				fixname(path);
 
-				gWorld->modelmanager.add(path);
 				models.push_back(path);
 			}
 			delete[] buf;
@@ -426,7 +425,7 @@ MapTile::MapTile(int x0, int z0, char* filename, bool bigAlpha): x(x0), z(z0), t
 			for (int i=0; i<nMDX; i++) {
 				int id;
 				f.read(&id, 4);
-				Model *model = (Model*)gWorld->modelmanager.items[gWorld->modelmanager.get(models[id])];
+				wow::Model model = wow::Model(models[id]);
 				ModelInstance inst(model, f);
 				modelis.push_back(inst);
 			}
@@ -670,10 +669,6 @@ MapTile::~MapTile()
 	for (vector<string>::iterator it = wmos.begin(); it != wmos.end(); ++it) {
 		gWorld->wmomanager.delbyname(*it);
 	}
-
-	for (vector<string>::iterator it = models.begin(); it != models.end(); ++it) {
-		gWorld->modelmanager.delbyname(*it);
-	}
 }
 
 void MapTile::draw()
@@ -689,7 +684,22 @@ void MapTile::draw()
 	}
 
 	topnode.draw();
+}
 
+void MapTile::resetAnim()
+{
+	for (std::size_t i = 0; i < modelis.size(); ++i)
+	{
+		modelis[i].resetAnim();
+	}
+}
+
+void MapTile::updateEmitters(float dt)
+{
+	for (std::size_t i = 0; i < modelis.size(); ++i)
+	{
+		modelis[i].updateEmitters(dt);
+	}
 }
 
 void MapTile::drawWater()

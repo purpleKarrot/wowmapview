@@ -96,7 +96,7 @@ struct ModelRenderPass {
 	// colours
 	Vec4D ocol, ecol;
 
-	bool init(Model *m);
+	bool init(Model const& m);
 	void deinit();
 
 	bool operator< (const ModelRenderPass &m) const
@@ -132,7 +132,7 @@ struct ModelLight {
 	void setup(int time, GLuint l);
 };
 
-class Model: public ManagedItem {
+class Model {
 
 	GLuint dlist;
 	GLuint vbuf, nbuf, tbuf;
@@ -155,23 +155,23 @@ class Model: public ManagedItem {
 	ParticleSystem *particleSystems;
 	RibbonEmitter *ribbons;
 
-	void drawModel();
+	void drawModel()const;
 	void initCommon(MPQFile &f);
 	bool isAnimated(MPQFile &f);
 	void initAnimated(MPQFile &f);
 	void initStatic(MPQFile &f);
 
 	ModelVertex *origVertices;
-	Vec3D *vertices, *normals;
+	mutable Vec3D *vertices, *normals;
 	uint16 *indices;
 	size_t nIndices;
-	std::vector<ModelRenderPass> passes;
+	mutable std::vector<ModelRenderPass> passes;
 
-	void animate(int anim);
-	void calcBones(int anim, int time);
+	void animate(int anim)const;
+	void calcBones(int anim, int time)const;
 
-	void lightsOn(GLuint lbase);
-	void lightsOff(GLuint lbase);
+	void lightsOn(GLuint lbase)const;
+	void lightsOff(GLuint lbase)const;
 
 public:
 	ModelCamera cam;
@@ -195,35 +195,33 @@ public:
 
 	float rad;
 	float trans;
-	bool animcalc;
-	int anim, animtime;
+	mutable bool animcalc;
+	mutable	int anim, animtime;
 	std::string fullname;
 
 	Model(std::string name, bool forceAnim=false);
 	~Model();
-	void draw();
-	void updateEmitters(float dt);
+	void draw() const;
+	void updateEmitters(float dt)const;
 
 	friend struct ModelRenderPass;
 };
 
-class ModelManager: public SimpleManager {
+namespace wow
+{
+
+typedef boost::flyweights::flyweight< //
+	boost::flyweights::key_value<std::string, Model> > Model;
+
+} // namespace wow
+
+class ModelInstance {
 public:
-	int add(std::string name);
-
-	ModelManager() : v(0) {}
-
-	int v;
 
 	void resetAnim();
 	void updateEmitters(float dt);
 
-};
-
-
-class ModelInstance {
-public:
-	Model *model;
+	wow::Model model;
 
 	int id;
 
@@ -237,8 +235,8 @@ public:
 	Vec4D lcol;
 
 	ModelInstance() {}
-	ModelInstance(Model *m, MPQFile &f);
-    void init2(Model *m, MPQFile &f);
+	ModelInstance(const wow::Model& m, MPQFile &f);
+    void init2(const wow::Model& m, MPQFile &f);
 	void draw();
 	void draw2(const Vec3D& ofs, const float rot);
 

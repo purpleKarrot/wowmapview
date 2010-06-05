@@ -61,7 +61,6 @@ public:
 	bool oob;
 
 	WMOManager wmomanager;
-	ModelManager modelmanager;
 
 	OutdoorLighting *ol;
 	OutdoorLightStats outdoorLightStats;
@@ -80,6 +79,8 @@ public:
 	MapTile *loadTile(int x, int z);
 	void tick(float dt);
 	void draw();
+
+void	updateEmitters(float dt);
 
 	void outdoorLighting();
 	void outdoorLights(bool on);

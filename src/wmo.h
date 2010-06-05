@@ -157,8 +157,7 @@ public:
 
 	std::vector<WMODoodadSet> doodadsets;
 
-	Model *skybox;
-	int sbid;
+	wow::Model skybox;
 
 	WMO(std::string name);
 	~WMO();

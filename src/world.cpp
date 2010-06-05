@@ -911,7 +911,15 @@ void World::setupFog()
 void World::draw()
 {
 	WMOInstance::reset();
-	modelmanager.resetAnim();
+
+	for (int j = 0; j < 3; j++)
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			if (current[j][i] != 0)
+				current[j][i]->resetAnim();
+		}
+	}
 
 	glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 
@@ -1185,10 +1193,22 @@ void World::tick(float dt)
 		loading = false;
 	}
 	while (dt > 0.1f) {
-		modelmanager.updateEmitters(0.1f);
+		updateEmitters(0.1f);
 		dt -= 0.1f;
 	}
-	modelmanager.updateEmitters(dt);
+	updateEmitters(dt);
+}
+
+void World::updateEmitters(float dt)
+{
+	for (int j = 0; j < 3; j++)
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			if (current[j][i] != 0)
+				current[j][i]->updateEmitters(dt);
+		}
+	}
 }
 
 unsigned int World::getAreaID()

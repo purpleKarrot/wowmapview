@@ -8,6 +8,7 @@
 
 using namespace std;
 
+static int gV = 0;
 
 #define XSENS 4.0f
 #define YSENS 8.0f
@@ -66,7 +67,7 @@ void Test::tick(float t, float dt)
 	if (updown != 0) world->camera += Vec3D(0, dt * movespd * updown, 0);
 	world->lookat = world->camera + dir;
 
-	world->time += (world->modelmanager.v * /*360.0f*/ 90.0f * dt);
+	world->time += (gV * /*360.0f*/ 90.0f * dt);
 	world->animtime += dt * 1000.0f;
 	globalTime = (int)world->animtime;
 
@@ -234,11 +235,11 @@ void Test::keypressed(SDL_KeyboardEvent *e)
 
 		// testing
 		if (e->keysym.sym == SDLK_n) {
-			world->modelmanager.v++;
+			gV++;
 		}
 		if (e->keysym.sym == SDLK_b) {
-			world->modelmanager.v--;
-			if (world->modelmanager.v<0) world->modelmanager.v = 0;
+			gV--;
+			if (gV<0) gV = 0;
 		}
 
 		// toggles

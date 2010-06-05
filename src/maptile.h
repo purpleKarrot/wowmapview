@@ -170,6 +170,10 @@ public:
 
 class MapTile {
 public:
+
+	void resetAnim();
+	void updateEmitters(float dt);
+
 	std::vector<std::string> textures;
 	std::vector<std::string> wmos;
 	std::vector<std::string> models;

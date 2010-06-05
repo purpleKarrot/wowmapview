@@ -5,7 +5,7 @@
 
 int globalTime = 0;
 
-Model::Model(std::string name, bool forceAnim) : ManagedItem(name), forceAnim(forceAnim)
+Model::Model(std::string name, bool forceAnim) : forceAnim(forceAnim)
 {
 	// replace .MDX with .M2
 	char tempname[256];
@@ -508,7 +508,7 @@ void Model::initAnimated(MPQFile &f)
 }
 
 
-void Model::calcBones(int anim, int time)
+void Model::calcBones(int anim, int time)const
 {
 	for (size_t i=0; i<header.nBones; i++) {
 		bones[i].calc = false;
@@ -519,7 +519,7 @@ void Model::calcBones(int anim, int time)
 	}
 }
 
-void Model::animate(int anim)
+void Model::animate(int anim)const
 {
 	ModelAnimation &a = anims[anim];
 	int t = globalTime; //(int)(gWorld->animtime /* / a.playSpeed*/);
@@ -589,24 +589,24 @@ void Model::animate(int anim)
 }
 
 
-bool ModelRenderPass::init(Model *m)
+bool ModelRenderPass::init(Model const& m)
 {
 	// May aswell check that we're going to render the geoset before doing all this crap.
-	if (m->showGeosets[geoset]) {
+	if (m.showGeosets[geoset]) {
 
 		// COLOUR
 		// Get the colour and transparency and check that we should even render
-		ocol = Vec4D(1.0f, 1.0f, 1.0f, m->trans);
+		ocol = Vec4D(1.0f, 1.0f, 1.0f, m.trans);
 		ecol = Vec4D(0.0f, 0.0f, 0.0f, 0.0f);
 
 		//if (m->trans == 1.0f)
 		//	return false;
 
 		// emissive colors
-		if (color!=-1 && m->colors[color].color.uses(0)) {
-			Vec3D c = m->colors[color].color.getValue(0,m->animtime);
-			if (m->colors[color].opacity.uses(m->anim)) {
-				float o = m->colors[color].opacity.getValue(m->anim,m->animtime);
+		if (color!=-1 && m.colors[color].color.uses(0)) {
+			Vec3D c = m.colors[color].color.getValue(0,m.animtime);
+			if (m.colors[color].opacity.uses(m.anim)) {
+				float o = m.colors[color].opacity.getValue(m.anim,m.animtime);
 				ocol.w = o;
 			}
 
@@ -622,8 +622,8 @@ bool ModelRenderPass::init(Model *m)
 
 		// opacity
 		if (opacity!=-1) {
-			if (m->transparency[opacity].trans.uses(0))
-				ocol.w *= m->transparency[opacity].trans.getValue(0, m->animtime);
+			if (m.transparency[opacity].trans.uses(0))
+				ocol.w *= m.transparency[opacity].trans.getValue(0, m.animtime);
 		}
 
 		// exit and return false before affecting the opengl render state
@@ -633,10 +633,10 @@ bool ModelRenderPass::init(Model *m)
 		// TEXTURE
 		// bind to our texture
 		//GLuint bindtex = 0;
-		if (m->specialTextures[tex]==-1) 
-			m->textures[tex].get().bind();
+		if (m.specialTextures[tex]==-1)
+			m.textures[tex].get().bind();
 		else 
-			m->replaceTextures[m->specialTextures[tex]].get().bind();
+			m.replaceTextures[m.specialTextures[tex]].get().bind();
 		
 		// --
 		
@@ -716,7 +716,7 @@ bool ModelRenderPass::init(Model *m)
 			glMatrixMode(GL_TEXTURE);
 			glPushMatrix();
 		
-			m->texAnims[texanim].setup(texanim);
+			m.texAnims[texanim].setup(texanim);
 		}
 
 		// color
@@ -771,7 +771,7 @@ void ModelRenderPass::deinit()
 	//glColor4f(1,1,1,1); //???
 }
 
-void Model::drawModel()
+void Model::drawModel()const
 {
 	// assume these client states are enabled: GL_VERTEX_ARRAY, GL_NORMAL_ARRAY, GL_TEXTURE_COORD_ARRAY
 
@@ -803,7 +803,7 @@ void Model::drawModel()
 	for (size_t i=0; i<passes.size(); i++) {
 		ModelRenderPass &p = passes[i];
 
-		if (p.init(this)) {
+		if (p.init(*this)) {
 			// we don't want to render completely transparent parts
 		
 			// render
@@ -1039,7 +1039,7 @@ void Bone::calcMatrix(Bone *allbones, int anim, int time)
 }
 
 
-void Model::draw()
+void Model::draw()const
 {
 	if (!ok) return;
 
@@ -1074,18 +1074,18 @@ void Model::draw()
 	}
 }
 
-void Model::lightsOn(GLuint lbase)
+void Model::lightsOn(GLuint lbase)const
 {
 	// setup lights
 	for (unsigned int i=0, l=lbase; i<header.nLights; i++) lights[i].setup(animtime, l++);
 }
 
-void Model::lightsOff(GLuint lbase)
+void Model::lightsOff(GLuint lbase)const
 {
 	for (unsigned int i=0, l=lbase; i<header.nLights; i++) glDisable(l++);
 }
 
-void Model::updateEmitters(float dt)
+void Model::updateEmitters(float dt)const
 {
 	if (!ok) return;
 	for (size_t i=0; i<header.nParticleEmitters; i++) {
@@ -1093,36 +1093,21 @@ void Model::updateEmitters(float dt)
 	}
 }
 
-int ModelManager::add(std::string name)
-{
-	int id;
-	if (names.find(name) != names.end()) {
-		id = names[name];
-		items[id]->addref();
-		return id;
-	}
-	// load new
-	Model *model = new Model(name);
-	id = nextID();
-    do_add(name, id, model);
-    return id;
-}
+//void ModelManager::resetAnim()
+//{
+//	for (std::map<int, ManagedItem*>::iterator it = items.begin(); it != items.end(); ++it) {
+//		((Model*)it->second)->animcalc = false;
+//	}
+//}
+//
+//void ModelManager::updateEmitters(float dt)
+//{
+//	for (std::map<int, ManagedItem*>::iterator it = items.begin(); it != items.end(); ++it) {
+//		((Model*)it->second)->updateEmitters(dt);
+//	}
+//}
 
-void ModelManager::resetAnim()
-{
-	for (std::map<int, ManagedItem*>::iterator it = items.begin(); it != items.end(); ++it) {
-		((Model*)it->second)->animcalc = false;
-	}
-}
-
-void ModelManager::updateEmitters(float dt)
-{
-	for (std::map<int, ManagedItem*>::iterator it = items.begin(); it != items.end(); ++it) {
-		((Model*)it->second)->updateEmitters(dt);
-	}
-}
-
-ModelInstance::ModelInstance(Model *m, MPQFile &f) : model (m)
+ModelInstance::ModelInstance(const wow::Model& m, MPQFile &f) : model (m)
 {
 	float ff[3];
 	unsigned int d1;
@@ -1136,7 +1121,7 @@ ModelInstance::ModelInstance(Model *m, MPQFile &f) : model (m)
 	sc = scale / 1024.0f;
 }
 
-void ModelInstance::init2(Model *m, MPQFile &f)
+void ModelInstance::init2(const wow::Model& m, MPQFile &f)
 {
 	// MODD
 	model = m;
@@ -1158,9 +1143,9 @@ void ModelInstance::init2(Model *m, MPQFile &f)
 void ModelInstance::draw()
 {
 	//if ((pos - gWorld->camera).lengthSquared() > (gWorld->modeldrawdistance2+(model->rad*model->rad*sc))) return;
-	float dist = (pos - gWorld->camera).length() - model->rad;
+	float dist = (pos - gWorld->camera).length() - model.get().rad;
 	if (dist > gWorld->modeldrawdistance) return;
-	if (!gWorld->frustum.intersectsSphere(pos, model->rad*sc)) return;
+	if (!gWorld->frustum.intersectsSphere(pos, model.get().rad*sc)) return;
 
 	glPushMatrix();
 	glTranslatef(pos.x, pos.y, pos.z);
@@ -1171,7 +1156,7 @@ void ModelInstance::draw()
 
 	glScalef(sc,sc,sc);
 
-	model->draw();
+	model.get().draw();
 	glPopMatrix();
 }
 
@@ -1187,8 +1172,8 @@ void ModelInstance::draw2(const Vec3D& ofs, const float rot)
 {
 	Vec3D tpos(ofs + pos);
 	rotate(ofs.x,ofs.z,&tpos.x,&tpos.z,rot*PI/180.0f);
-	if ( (tpos - gWorld->camera).lengthSquared() > (gWorld->doodaddrawdistance2*model->rad*sc) ) return;
-	if (!gWorld->frustum.intersectsSphere(tpos, model->rad*sc)) return;
+	if ( (tpos - gWorld->camera).lengthSquared() > (gWorld->doodaddrawdistance2*model.get().rad*sc) ) return;
+	if (!gWorld->frustum.intersectsSphere(tpos, model.get().rad*sc)) return;
 
 	glPushMatrix();
 
@@ -1197,7 +1182,16 @@ void ModelInstance::draw2(const Vec3D& ofs, const float rot)
 	glQuaternionRotate(vdir,w);
 	glScalef(sc,-sc,-sc);
 
-	model->draw();
+	model.get().draw();
 	glPopMatrix();
 }
 
+void ModelInstance::resetAnim()
+{
+	model.get().animcalc = false;
+}
+
+void ModelInstance::updateEmitters(float dt)
+{
+	model.get().updateEmitters(dt);
+}
