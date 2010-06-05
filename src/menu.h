@@ -44,7 +44,6 @@ class Menu :public AppState
 	World *world;
 
 	std::vector<MapEntry> maps;
-	std::vector<Bookmark> bookmarks;
 
 	bool setpos;
 	float ah,av;
@@ -65,8 +64,6 @@ public:
 	void keypressed(SDL_KeyboardEvent *e);
 	void mousemove(SDL_MouseMotionEvent *e);
 	void mouseclick(SDL_MouseButtonEvent *e);
-
-	void refreshBookmarks();
 
 	void randBackground();
 

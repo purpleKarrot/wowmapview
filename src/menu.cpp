@@ -65,8 +65,6 @@ Menu::Menu()
 
 	mt = 0;
 
-	refreshBookmarks();
-
 	setpos = true;
 	ah = -90.0f;
 	av = -30.0f;
@@ -171,12 +169,11 @@ void Menu::tick(float t, float dt)
 	else if (cmd == CMD_BACK_TO_MENU) {
 		/*if (fullscreen)*/ SDL_ShowCursor(SDL_ENABLE);
 		cmd = CMD_SELECT;
-		refreshBookmarks();
 		setpos = true;
 		gWorld = 0;
 
 		// reentry
-        //randBackground();
+        randBackground();
 	}
 }
 
@@ -326,13 +323,6 @@ void Menu::display(float t, float dt)
 #else
 			f16->shprint(160*3, video.yres - 60, "World of Warcraft map viewer\nhttp://code.google.com/p/wowmapviewer/\nWorld of Warcraft is (C) Blizzard Entertainment");
 #endif
-			/*
-			f24->shprint(360, 74, "Bookmarks");
-			for (unsigned int i=0; i<bookmarks.size(); i++) {
-				f16->shdrawtext(bookmarks[i].x0, bookmarks[i].y0, bookmarks[i].label.c_str());
-			}
-			*/
-
 		}
 
 		for (unsigned int i=0; i<maps.size(); i++) {
@@ -399,27 +389,6 @@ void Menu::mouseclick(SDL_MouseButtonEvent *e)
 				cmd = CMD_LOAD_WORLD;
 			}
 			
-			if (sel==-1) {
-				// bookmarks
-				for (unsigned int i=0; i<bookmarks.size(); i++) {
-					if (bookmarks[i].hit(e->x, e->y)) {
-						cmd = CMD_LOAD_WORLD;
-						setpos = false;
-						// setup camera, ah, av
-						ah = bookmarks[i].ah;
-						av = bookmarks[i].av;
-
-						world = new World(bookmarks[i].basename.c_str(), bookmarks[i].mapid);
-						world->camera = bookmarks[i].pos;
-
-						cx = (int) (bookmarks[i].pos.x / TILESIZE);
-						cz = (int) (bookmarks[i].pos.z / TILESIZE);
-
-						break;
-					}
-				}
-			}
-			
 		} else*/ {
 			bool found = false;
 
@@ -453,60 +422,3 @@ void Menu::mouseclick(SDL_MouseButtonEvent *e)
 		}
 	}
 }
-
-
-void Menu::refreshBookmarks()
-{
-	return;
-
-	bookmarks.clear();
-    std::ifstream f("bookmarks.txt");
-	if(!f.is_open())
-		// No bookmarks file
-		return;
-
-	int y = 110;
-	const int x = 400;
-
-	while (!f.eof()) {
-		Bookmark b;
-		f >> b.basename >> b.mapid >> b.pos.x >> b.pos.y >> b.pos.z >> b.ah >> b.av;
-		if (f.eof()) break;
-
-		char c;
-		do {
-            f >> c;
-		} while (c == ' ');
-		b.name = "";
-		char cc[2];
-		cc[0] = c;
-		cc[1] = 0;
-		b.name.append(cc); // oh shit there must be a nicer way to do this
-		char buf[256];
-		f.getline(buf, 256);
-        b.name.append(buf);
-
-		// check for the basename
-		bool mapfound = false;
-		for (unsigned int i=0; i<maps.size(); i++) {
-			if (maps[i].name == b.basename) {
-				mapfound = true;
-				break;
-			}
-		}
-		if (!mapfound) continue;
-
-		sprintf(buf,"(%s) %s", b.basename.c_str(), b.name.c_str());
-		b.label = buf;
-
-		b.x0 = x;
-		b.x1 = x + f16->textwidth(b.label.c_str());
-		b.y0 = y;
-		b.y1 = y+16;
-		y += 16;
-
-		bookmarks.push_back(b);
-	}
-	f.close();
-}
-

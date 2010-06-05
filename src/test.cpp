@@ -286,58 +286,6 @@ void Test::keypressed(SDL_KeyboardEvent *e)
 			mapmode = !mapmode;
 		}
 
-		/*
-		// lighting
-		if (e->keysym.sym == SDLK_1) {
-			world->l_const -= 0.1f;
-			if (world->l_const <= 0) world->l_const = 0.0f;
-		}
-		if (e->keysym.sym == SDLK_2) {
-			world->l_const += 0.1f;
-		}
-		if (e->keysym.sym == SDLK_3) {
-			world->l_linear -= 0.01f;
-			if (world->l_linear <= 0) world->l_linear = 0.0f;
-		}
-		if (e->keysym.sym == SDLK_4) {
-			world->l_linear += 0.01f;
-		}
-		if (e->keysym.sym == SDLK_5) {
-			world->l_quadratic -= 0.001f;
-			if (world->l_quadratic <= 0) world->l_quadratic = 0.0f;
-		}
-		if (e->keysym.sym == SDLK_6) {
-			world->l_quadratic += 0.001f;
-		}
-		*/
-
-		if (e->keysym.sym == SDLK_F5) {
-			FILE *bf = fopen("bookmarks.txt","a");
-			// copied from above: retreive area name for bookmarks, too
-			unsigned int areaID = world->getAreaID();
-			unsigned int regionID = 0;
-			std::string areaName = "";
-			try {
-				areaName = gAreaDB.getAreaName(areaID);
-				//regionID = rec.getUInt(AreaDB::Region);
-			} catch(AreaDB::NotFound)
-			{
-				if (world->gnWMO==0) areaName = "Unknown location";
-			}
-			if (regionID != 0) {
-				/// Look up region
-				try {
-					areaName = gAreaDB.getAreaName(regionID);
-				} catch(AreaDB::NotFound)
-				{
-					// do nothing
-				}
-			}
-
-			fprintf(bf, "%s %d %f %f %f  %f %f  %s\n", world->basename.c_str(), world->mapid, world->camera.x, world->camera.y, world->camera.z, ah, av, areaName.c_str());
-			fclose(bf);
-		}
-
 	} else {
 		// key UP
 
