@@ -60,8 +60,6 @@ public:
 	int cx,cz;
 	bool oob;
 
-	WMOManager wmomanager;
-
 	OutdoorLighting *ol;
 	OutdoorLightStats outdoorLightStats;
 

@@ -371,7 +371,6 @@ MapTile::MapTile(int x0, int z0, char* filename, bool bigAlpha): x(x0), z(z0), t
 				p+=strlen(p)+1;
 				fixname(path);
 
-				gWorld->wmomanager.add(path);
 				wmos.push_back(path);
 			}
 			delete[] buf;
@@ -475,9 +474,7 @@ MapTile::MapTile(int x0, int z0, char* filename, bool bigAlpha): x(x0), z(z0), t
 			for (int i=0; i<nWMO; i++) {
 				int id;
 				f.read(&id, 4);
-				WMO *wmo = (WMO*)gWorld->wmomanager.items[gWorld->wmomanager.get(wmos[id])];
-				WMOInstance inst(wmo, f);
-				wmois.push_back(inst);
+				wmois.push_back(WMOInstance(wow::WMO(wmos[id]), f));
 			}
 		}
 		else if (strncmp(fourcc,"MH2O",4)==0) {
@@ -665,10 +662,6 @@ MapTile::~MapTile()
 			chunks[j][i].destroy();
 		}
 	}
-
-	for (vector<string>::iterator it = wmos.begin(); it != wmos.end(); ++it) {
-		gWorld->wmomanager.delbyname(*it);
-	}
 }
 
 void MapTile::draw()
@@ -728,7 +721,7 @@ void MapTile::drawSky()
 	if (!ok) return;
 
 	for (int i=0; i<nWMO; i++) {
-		wmois[i].wmo->drawSkybox();
+		wmois[i].wmo.get().drawSkybox();
 		if (gWorld->hadSky) break;
 	}
 }

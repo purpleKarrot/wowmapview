@@ -8,7 +8,6 @@ class Model;
 class Bone;
 Vec3D fixCoordSystem(Vec3D v);
 
-#include "manager.h"
 #include "mpq.h"
 #include "video.h"
 

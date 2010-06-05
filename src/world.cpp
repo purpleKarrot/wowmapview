@@ -67,9 +67,6 @@ World::~World()
 			delete maptilecache[i];
 	}
 
-	for (vector<string>::iterator it = gwmos.begin(); it != gwmos.end(); ++it)
-		wmomanager.delbyname(*it);
-
 	if (minimap)
 		glDeleteTextures(1, &minimap);
 
@@ -677,7 +674,6 @@ Blizzard was just too lazy to compress the files here. A simple bool array and a
 					string path(p);
 					p+=strlen(p)+1;
 					
-					wmomanager.add(path);
 					gwmos.push_back(path);
 				}
 				delete[] buf;
@@ -702,9 +698,7 @@ Offset 	Type 		Description
 			for (int i=0; i<gnWMO; i++) {
 				int id;
 				f.read(&id, 4);
-				WMO *wmo = (WMO*)wmomanager.items[wmomanager.get(gwmos[id])];
-				WMOInstance inst(wmo, f);
-				gwmois.push_back(inst);
+				gwmois.push_back(WMOInstance(wow::WMO(gwmos[id]), f));
 			}
 		}
 		else {
@@ -951,11 +945,6 @@ void World::draw()
 	glDisable(GL_LIGHTING);
 	glColor4f(1,1,1,1);
 
-    //int tt = 1440;
-	//if (modelmanager.v>0) {
-	//	tt = (modelmanager.v *180 + 1440) % 2880;
-	//}
-
 	hadSky = false;
 	for (int j=0; j<3; j++) {
 		for (int i=0; i<3; i++) {
@@ -966,7 +955,7 @@ void World::draw()
 	}
 	if (gnWMO && !hadSky) {
 		for (int i=0; i<gnWMO; i++) {
-			gwmois[i].wmo->drawSkybox();
+			gwmois[i].wmo.get().drawSkybox();
 			if (hadSky) break;
 		}
 	}

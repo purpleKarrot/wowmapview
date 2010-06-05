@@ -27,7 +27,7 @@ groups
 visibility information
 more data
 */
-WMO::WMO(std::string name): ManagedItem(name), groups(0), nTextures(0), nGroups(0),
+WMO::WMO(std::string name): name(name), groups(0), nTextures(0), nGroups(0),
 	nP(0), nLights(0), nModels(0), nDoodads(0), nDoodadSets(0), nX(0), mat(0), LiquidType(0)
 {
 	MPQFile f(name.c_str());
@@ -431,7 +431,7 @@ WMO::~WMO()
 		delete[] mat;
 }
 
-void WMO::draw(int doodadset, const Vec3D &ofs, const float rot)
+void WMO::draw(int doodadset, const Vec3D &ofs, const float rot)const
 {
 	if (!ok) return;
 	
@@ -537,7 +537,7 @@ void WMO::draw(int doodadset, const Vec3D &ofs, const float rot)
 	*/
 }
 
-void WMO::drawSkybox()
+void WMO::drawSkybox()const
 {
 	if (skybox!=wow::Model()) {
 		// TODO: only draw sky if we are "inside" the WMO... ?
@@ -1350,26 +1350,7 @@ void WMOFog::setup()
 	}
 }
 
-int WMOManager::add(std::string name)
-{
-	int id;
-	if (names.find(name) != names.end()) {
-		id = names[name];
-		items[id]->addref();
-		//gLog("Loading WMO %s [already loaded]\n",name.c_str());
-		return id;
-	}
-
-	// load new
-	WMO *wmo = new WMO(name);
-	id = nextID();
-    do_add(name, id, wmo);
-    return id;
-}
-
-
-
-WMOInstance::WMOInstance(WMO *wmo, MPQFile &f) : wmo (wmo)
+WMOInstance::WMOInstance(wow::WMO const& wmo, MPQFile &f) : wmo (wmo)
 {
 
 	float ff[3];
@@ -1406,7 +1387,7 @@ void WMOInstance::draw()
 	glRotatef(-dir.x, 0, 0, 1);
 	glRotatef(dir.z, 1, 0, 0);
 
-	wmo->draw(doodadset,pos,-rot);
+	wmo.get().draw(doodadset,pos,-rot);
 
 	glPopMatrix();
 }

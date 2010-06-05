@@ -1,7 +1,6 @@
 #ifndef WMO_H
 #define WMO_H
 
-#include "manager.h"
 #include "vec3d.h"
 #include "mpq.h"
 #include "model.h"
@@ -13,7 +12,6 @@
 class WMO;
 class WMOGroup;
 class WMOInstance;
-class WMOManager;
 class Liquid;
 
 
@@ -137,7 +135,7 @@ struct WMOFog {
 	void setup();
 };
 
-class WMO: public ManagedItem {
+class WMO {
 public:
 	WMOGroup *groups;
 	int nTextures, nGroups, nP, nLights, nModels, nDoodads, nDoodadSets, nX;
@@ -158,19 +156,22 @@ public:
 	std::vector<WMODoodadSet> doodadsets;
 
 	wow::Model skybox;
+	std::string name;
 
 	WMO(std::string name);
 	~WMO();
-	void draw(int doodadset, const Vec3D& ofs, const float rot);
+	void draw(int doodadset, const Vec3D& ofs, const float rot)const;
 	//void drawPortals();
-	void drawSkybox();
+	void drawSkybox()const;
 };
 
+namespace wow
+{
 
-class WMOManager: public SimpleManager {
-public:
-	int add(std::string name);
-};
+typedef boost::flyweights::flyweight< //
+	boost::flyweights::key_value<std::string, WMO> > WMO;
+
+} // namespace wow
 
 struct SMMapObjDef {
 	uint32 nameId;
@@ -187,7 +188,7 @@ struct SMMapObjDef {
 class WMOInstance {
 	static std::set<int> ids;
 public:
-	WMO *wmo;
+	wow::WMO wmo;
 
 	uint32 id;
 	Vec3D pos;
@@ -198,7 +199,7 @@ public:
 	uint16 nameset;
 	uint16 unk;
 
-	WMOInstance(WMO *wmo, MPQFile &f);
+	WMOInstance(wow::WMO const& wmo, MPQFile &f);
 	void draw();
 	//void drawPortals();
 

@@ -154,8 +154,6 @@ void Test::display(float t, float dt)
 				}
 			}
 
-			//f16->print(5,60,"%d", world->modelmanager.v);
-
 			int time = ((int)world->time)%2880;
 			int hh,mm;
 

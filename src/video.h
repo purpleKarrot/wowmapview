@@ -11,7 +11,6 @@
 
 #include "vec3d.h"
 
-#include "manager.h"
 #include "font.h"
 
 #define PI 3.14159265358f
