@@ -6,8 +6,6 @@
 #include <cmath>
 #include <string>
 
-using namespace std;
-
 static int gV = 0;
 
 #define XSENS 4.0f

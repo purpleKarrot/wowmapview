@@ -5,8 +5,6 @@
 
 #include <fstream>
 
-using namespace std;
-
 enum MAPID {
 	MAP_AZEROTH=0,
 	MAP_KALIMDOR=1,
@@ -462,7 +460,7 @@ void Menu::refreshBookmarks()
 	return;
 
 	bookmarks.clear();
-    ifstream f("bookmarks.txt");
+    std::ifstream f("bookmarks.txt");
 	if(!f.is_open())
 		// No bookmarks file
 		return;

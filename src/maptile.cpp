@@ -4,7 +4,6 @@
 #include "shaders.h"
 #include <cassert>
 #include <algorithm>
-using namespace std;
 
 struct WaterTile
 {
@@ -314,12 +313,12 @@ MapTile::MapTile(int x0, int z0, char* filename, bool bigAlpha): x(x0), z(z0), t
 			char *p=buf;
 			int t=0;
 			while (p<buf+size) {
-				string texpath(p);
+				std::string texpath(p);
 				p+=strlen(p)+1;
 				fixname(texpath);
 
 				if (supportShaders) {
-					string texshader = texpath;
+					std::string texshader = texpath;
 					// load the specular texture instead
 					texshader.insert(texshader.length()-4,"_s");
 					if (MPQFile::exists(texshader.c_str()))
@@ -342,7 +341,7 @@ MapTile::MapTile(int x0, int z0, char* filename, bool bigAlpha): x(x0), z(z0), t
 			char *p=buf;
 			int t=0;
 			while (p<buf+size) {
-				string path(p);
+				std::string path(p);
 				p+=strlen(p)+1;
 				fixname(path);
 
@@ -367,7 +366,7 @@ MapTile::MapTile(int x0, int z0, char* filename, bool bigAlpha): x(x0), z(z0), t
 			buf[size] = 0;
 			char *p=buf;
 			while (p<buf+size) {
-				string path(p);
+				std::string path(p);
 				p+=strlen(p)+1;
 				fixname(path);
 

@@ -4,11 +4,9 @@
 #include <fstream>
 #include "wowmapview.h"
 
-using namespace std;
-
 Font::Font(unsigned int tex, int tw, int th, int size, const char* infofile): tex(tex), size(size), tw(tw), th(th)
 {
-	ifstream in(infofile);
+	std::ifstream in(infofile);
 	if (!in.is_open()) {
 		gLog("error opening font %s\n", infofile);
 		exit(1);

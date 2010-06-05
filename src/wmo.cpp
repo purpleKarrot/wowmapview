@@ -3,8 +3,6 @@
 #include "liquid.h"
 #include "shaders.h"
 
-using namespace std;
-
 /*
 http://www.madx.dk/wowdev/wiki/index.php?title=WMO
 
@@ -114,7 +112,7 @@ flag2 		Meaning
 				WMOMaterial *m = &mat[i];
 				f.read(m, 0x40); // read 64 bytes, struct WMOMaterial is 68 bytes
 
-				string texpath(texbuf+m->nameStart);
+				std::string texpath(texbuf+m->nameStart);
 				fixname(texpath);
 
 				m->tex = wow::Texture(texpath.c_str());
@@ -177,7 +175,7 @@ Flag		Meaning
 Skybox. Always 00 00 00 00. Skyboxes are now defined in DBCs (Light.dbc etc.). Contained a M2 filename that was used as skybox.
 */
 			if (size>4) {
-				string path = (char*)f.getPointer();
+				std::string path = (char*)f.getPointer();
 				fixname(path);
 				if (path.length()) {
 					gLog("SKYBOX:\n");
@@ -338,7 +336,7 @@ A block of zero-padded, zero-terminated strings. There are nModels file names in
 				char *p=ddnames,*end=p+size;
 				int t=0;
 				while (p<end) {
-					string path(p);
+					std::string path(p);
 					p+=strlen(p)+1;
 					while ((p<end) && (*p==0)) p++;
 
@@ -657,7 +655,7 @@ void WMOGroup::init(WMO *wmo, MPQFile &f, int num, char *names)
 
 	// TODO: get proper name from group header and/or dbc?
 	if (nameOfs > 0) {
-       	name = string(names + nameOfs);
+       	name = std::string(names + nameOfs);
 	} else 
 		name = "(no name)";
 
@@ -1060,7 +1058,7 @@ The material ID often refers to what seems to be a "special" material in the roo
 		bool overbright = ((mat->flags & 0x10) && !hascv);
 		bool spec_shader = (mat->specular && !hascv && !overbright);
 
-		pair<GLuint, int> currentList;
+		std::pair<GLuint, int> currentList;
 		currentList.first = list;
 		currentList.second = spec_shader ? 1 : 0;
 

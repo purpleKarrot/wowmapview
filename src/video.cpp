@@ -2,7 +2,6 @@
 #include "shaders.h"
 #include "mpq.h"
 #include "wowmapview.h"
-using namespace std;
 
 /////// EXTENSIONS
 
@@ -93,8 +92,8 @@ bool isExtensionSupported(const char *search)
 {
 	char *exts = (char*)glGetString(GL_EXTENSIONS);
 	if (exts) {
-		string str(exts);
-		return (str.find(search) != string::npos);
+		std::string str(exts);
+		return (str.find(search) != std::string::npos);
 	}
 	return false;
 }

@@ -3,10 +3,6 @@
 
 #include <cassert>
 
-using namespace std;
-
-
-
 World *gWorld=0;
 
 
@@ -671,7 +667,7 @@ Blizzard was just too lazy to compress the files here. A simple bool array and a
 				f.read(buf, size);
 				char *p=buf;
 				while (p<buf+size) {
-					string path(p);
+					std::string path(p);
 					p+=strlen(p)+1;
 					
 					gwmos.push_back(path);
