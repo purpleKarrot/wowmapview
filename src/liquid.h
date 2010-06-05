@@ -34,13 +34,16 @@ class Liquid {
 
 public:
 
-	std::vector<GLuint> textures;
+	std::vector<wow::Texture> textures;
 
 	Liquid(int x, int y, Vec3D base, float tilesize = LQ_DEFAULT_TILESIZE):
 		xtiles(x), ytiles(y), pos(base), tilesize(tilesize), shader(-1), ydir(1.0f)
 	{
 	}
-	~Liquid();
+
+	~Liquid()
+	{
+	}
 
 	//void init(MPQFile &f);
 	void initFromTerrain(MPQFile &f, int flags);

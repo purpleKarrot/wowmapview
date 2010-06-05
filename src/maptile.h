@@ -15,6 +15,7 @@
 #include "liquid.h"
 #include <vector>
 #include <string>
+#include "lib/texture.hpp"
 
 class MapTile;
 class MapChunk;
@@ -120,7 +121,7 @@ public:
 
 	unsigned int areaID;
 
-	std::vector<GLuint> wTextures;
+	std::vector<wow::Texture> wTextures;
 	void initTextures(const char *basename, int first, int last);
 
 	bool haswater;
@@ -129,7 +130,7 @@ public:
 	bool hasholes;
 	float waterlevel[2];
 
-	TextureID textures[4];
+	wow::Texture textures[4];
 	TextureID alphamaps[3];
 	TextureID shadow, blend;
 
@@ -149,7 +150,7 @@ public:
 		waterlevel[0] = 0;
 		waterlevel[1] = 0;
 		for(int i=0; i<4; i++) {
-			textures[i] = 0;
+			textures[i] = wow::Texture();
 		}
 		for(int i=0; i<3; i++) {
 			alphamaps[i] = 0;

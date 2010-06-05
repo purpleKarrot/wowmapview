@@ -326,7 +326,6 @@ MapTile::MapTile(int x0, int z0, char* filename, bool bigAlpha): x(x0), z(z0), t
 						texpath = texshader;
 				}
 
-				video.textures.add(texpath);
 				textures.push_back(texpath);
 			}
 			delete[] buf;
@@ -668,10 +667,6 @@ MapTile::~MapTile()
 		}
 	}
 
-	for (vector<string>::iterator it = textures.begin(); it != textures.end(); ++it) {
-		video.textures.delbyname(*it);
-	}
-
 	for (vector<string>::iterator it = wmos.begin(); it != wmos.end(); ++it) {
 		gWorld->wmomanager.delbyname(*it);
 	}
@@ -818,7 +813,7 @@ void MapChunk::initTextures(const char *basename, int first, int last)
 	char buf[256];
 	for (int i=first; i<=last; i++) {
 		sprintf(buf, "%s.%d.blp", basename, i);
-		wTextures.push_back(video.textures.add(buf));
+		wTextures.push_back(wow::Texture(buf));
 	}
 }
 
@@ -1091,7 +1086,7 @@ void MapChunk::init(MapTile* mt, MPQFile &f, bool bigAlpha)
 					animated[i] = 0;
 				}
 
-				textures[i] = video.textures.get(mt->textures[mcly[i].textureId]);
+				textures[i] = wow::Texture(mt->textures[mcly[i].textureId].c_str());
 			}
 		}
 		else if (strncmp(fcc, "MCRF", 4) == 0) {
@@ -1589,7 +1584,7 @@ void MapChunk::draw()
 		*/
 		// base layer
 		glActiveTextureARB(GL_TEXTURE0_ARB);
-		glBindTexture(GL_TEXTURE_2D, textures[0]);
+		textures[0].get().bind();
 		// shadow map
 		// TODO: handle case when there is no shadowmap?
 		glActiveTextureARB(GL_TEXTURE1_ARB);
@@ -1598,7 +1593,7 @@ void MapChunk::draw()
 		for (int i=1; i<nTextures; i++) {
 			int tex = GL_TEXTURE2_ARB + i - 1;
 			glActiveTextureARB(tex);
-			glBindTexture(GL_TEXTURE_2D, textures[i]);
+			textures[i].get().bind();
 		}
 		glActiveTextureARB( GL_TEXTURE0_ARB );
 
@@ -1616,7 +1611,7 @@ void MapChunk::draw()
 		// first pass: base texture
 		glActiveTextureARB(GL_TEXTURE0_ARB);
 		glEnable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D, textures[0]);
+		textures[0].get().bind();
 
 		glActiveTextureARB(GL_TEXTURE1_ARB);
 		glDisable(GL_TEXTURE_2D);
@@ -1634,7 +1629,7 @@ void MapChunk::draw()
 		for (int i=0; i<nTextures-1; i++) {
 			glActiveTextureARB(GL_TEXTURE0_ARB);
 			glEnable(GL_TEXTURE_2D);
-			glBindTexture(GL_TEXTURE_2D, textures[i+1]);
+			textures[i+1].get().bind();
 			// this time, use blending:
 			glActiveTextureARB(GL_TEXTURE1_ARB);
 			glEnable(GL_TEXTURE_2D);
@@ -1748,7 +1743,7 @@ void MapChunk::drawWater()
 	glDisable(GL_TEXTURE_2D);
 
 	size_t texidx = (size_t)(gWorld->animtime / 60.0f) % wTextures.size();
-	glBindTexture(GL_TEXTURE_2D, wTextures[texidx]);
+	wTextures[texidx].get().bind();
 	//glBindTexture(GL_TEXTURE_2D, gWorld->water);
 
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);

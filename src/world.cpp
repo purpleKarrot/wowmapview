@@ -32,7 +32,6 @@ World::World(const char* name, int id):basename(name),mapid(id)
 	}
 
 	minimap = 0;
-	water = 0;
 	skies = 0;
 	ol = 0;
 	mapstrip = 0;
@@ -73,10 +72,6 @@ World::~World()
 
 	if (minimap)
 		glDeleteTextures(1, &minimap);
-
-	// temp code until I figure out water properly
-	if (water)
-		video.textures.del(water);
 
 	if (skies)
 		delete skies;
@@ -552,7 +547,7 @@ void initGlobalVBOs()
 void World::initDisplay()
 {
 	// temp code until I figure out water properly
-	water = video.textures.add("XTextures\\river\\lake_c.10.blp");
+	water = wow::Texture("XTextures\\river\\lake_c.10.blp");
 
 	// default strip indices
 	short *defstrip = new short[stripsize];

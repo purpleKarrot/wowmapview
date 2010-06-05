@@ -15,7 +15,8 @@
 extern std::vector<AppState*> gStates;
 extern bool gPop;
 
-void gLog(const char *str, ...);
+#define gLog printf
+
 extern Font *f16, *f24, *f32;
 
 extern float gFPS;

@@ -44,7 +44,7 @@ Model::Model(std::string name, bool forceAnim) : ManagedItem(name), forceAnim(fo
 
 	for (int i=0; i<TEXTURE_MAX; i++) {
 		specialTextures[i] = -1;
-		replaceTextures[i] = 0;
+		replaceTextures[i] = wow::Texture();
 		useReplaceTextures[i] = false;
 	}
 
@@ -76,16 +76,6 @@ Model::~Model()
 {
 	if (ok) {
 		//gLog("Unloading model %s\n", name.c_str());
-
-		if (header.nTextures) {
-			for (size_t i=0; i<header.nTextures; i++) {
-				if (textures[i]!=0) {
-					//Texture *tex = (Texture*)video.textures.items[textures[i]];
-					video.textures.del(textures[i]);
-				}
-			}
-			delete[] textures;
-		}
 
 		delete[] globalSequences;
 		delete[] showGeosets;
@@ -247,7 +237,7 @@ void Model::initCommon(MPQFile &f)
 	// textures
 	ModelTextureDef *texdef = (ModelTextureDef*)(f.getBuffer() + header.ofsTextures);
 	if (header.nTextures) {
-		textures = new TextureID[header.nTextures];
+		textures.resize(header.nTextures);
 		char texname[256];
 		for (size_t i=0; i<header.nTextures; i++) {
 			// Error check
@@ -259,10 +249,10 @@ void Model::initCommon(MPQFile &f)
 			if (texdef[i].type == 0) {
 				strncpy(texname, (const char*)(f.getBuffer() + texdef[i].nameOfs), texdef[i].nameLen);
 				texname[texdef[i].nameLen] = 0;
-				textures[i] = video.textures.add(texname);
+				textures[i] = wow::Texture(texname);
 			} else {
 				// special texture - only on characters and such...
-                textures[i] = 0;
+                textures[i] = wow::Texture();
 				specialTextures[i] = texdef[i].type;
 
 				if (texdef[i].type < TEXTURE_MAX)
@@ -270,7 +260,7 @@ void Model::initCommon(MPQFile &f)
 
 				if (texdef[i].type == 3) {
 					// a fix for weapons with type-3 textures.
-					replaceTextures[texdef[i].type] = video.textures.add("Item\\ObjectComponents\\Weapon\\ArmorReflect4.BLP");
+					replaceTextures[texdef[i].type] = wow::Texture("Item\\ObjectComponents\\Weapon\\ArmorReflect4.BLP");
 				}
 			}
 		}
@@ -642,13 +632,12 @@ bool ModelRenderPass::init(Model *m)
 
 		// TEXTURE
 		// bind to our texture
-		GLuint bindtex = 0;
+		//GLuint bindtex = 0;
 		if (m->specialTextures[tex]==-1) 
-			bindtex = m->textures[tex];
+			m->textures[tex].get().bind();
 		else 
-			bindtex = m->replaceTextures[m->specialTextures[tex]];
+			m->replaceTextures[m->specialTextures[tex]].get().bind();
 		
-		glBindTexture(GL_TEXTURE_2D, bindtex);
 		// --
 		
 		// TODO: Add proper support for multi-texturing.

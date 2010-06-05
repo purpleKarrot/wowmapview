@@ -75,7 +75,7 @@ Menu::Menu()
 
 	bg = 0;
 	lastbg = -1;
-	//randBackground();
+	randBackground();
 
 }
 

@@ -51,27 +51,6 @@ extern bool supportVBO;
 extern bool supportDrawRangeElements;
 
 
-////////// TEXTURE MANAGER
-
-class Texture : public ManagedItem {
-public:
-	int w,h;
-	GLuint id;
-
-	Texture(std::string name):ManagedItem(name), w(0), h(0) {}
-
-};
-
-class TextureManager : public Manager<GLuint> {
-	
-	void LoadBLP(GLuint id, Texture *tex);
-
-public:
-	virtual GLuint add(std::string name);
-	void doDelete(GLuint id);
-
-};
-
 ////////// VIDEO CLASS
 
 class Video
@@ -95,16 +74,12 @@ public:
 	void set3D();
 	void set2D();
 
-	TextureManager textures;
-    
 	int xres, yres;
-
 };
 
 extern Video video;
 
 GLuint loadTGA(const char *filename, bool mipmaps);
-void decompressDXTC(GLint format, int w, int h, size_t size, unsigned char *src, unsigned char *dest);
 bool isExtensionSupported(const char *search);
 
 

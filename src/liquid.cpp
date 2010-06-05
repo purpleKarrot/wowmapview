@@ -250,7 +250,7 @@ void Liquid::draw()
 	glDisable(GL_CULL_FACE);
 	glDepthFunc(GL_LESS);
 	size_t texidx = (size_t)(gWorld->animtime / 60.0f) % textures.size();
-	glBindTexture(GL_TEXTURE_2D, textures[texidx]);
+	textures[texidx].get().bind();
 
 	const float tcol = trans ? 0.9f : 1.0f;
 	if (trans) {
@@ -304,15 +304,6 @@ void Liquid::initTextures(const char *basename, int first, int last)
 	char buf[256];
 	for (int i=first; i<=last; i++) {
 		sprintf(buf, "%s.%d.blp", basename, i);
-		textures.push_back(video.textures.add(buf));
+		textures.push_back(wow::Texture(buf));
 	}
 }
-
-
-Liquid::~Liquid()
-{
-	for (size_t i=0; i<textures.size(); i++) {
-		video.textures.del(textures[i]);
-	}
-}
-

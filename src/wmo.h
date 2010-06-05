@@ -8,6 +8,7 @@
 #include <vector>
 #include <set>
 #include "video.h"
+#include "lib/texture.hpp"
 
 class WMO;
 class WMOGroup;
@@ -67,7 +68,7 @@ struct WMOMaterial {
 	int texture1; // this is the first texture object. of course only in RAM. leave this alone. :D
 	int texture2; // this is the second texture object.
 	// read up to here -_-
-	TextureID tex;
+	wow::Texture tex;
 };
 
 enum LightType 

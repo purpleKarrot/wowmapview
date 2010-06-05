@@ -271,7 +271,7 @@ void ParticleSystem::draw()
 	//glDisable(GL_CULL_FACE);
 	//glDepthMask(GL_FALSE);
 
-	glBindTexture(GL_TEXTURE_2D, texture);
+	texture.get().bind();
 
 	/*
 	if (supportPointSprites && rows==1 && cols==1) {
@@ -791,7 +791,7 @@ void RibbonEmitter::draw()
 	glEnable(GL_LIGHTING);
 	*/
 
-	glBindTexture(GL_TEXTURE_2D, texture);
+	texture.get().bind();
 	glEnable(GL_BLEND);
 	glDisable(GL_LIGHTING);
 	glDisable(GL_ALPHA_TEST);

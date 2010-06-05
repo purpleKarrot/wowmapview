@@ -118,7 +118,7 @@ flag2 		Meaning
 				string texpath(texbuf+m->nameStart);
 				fixname(texpath);
 
-				m->tex = video.textures.add(texpath);
+				m->tex = wow::Texture(texpath.c_str());
 				textures.push_back(texpath);
 
 				/*
@@ -430,9 +430,6 @@ WMO::~WMO()
 	gLog("Unloading WMO %s\n", name.c_str());
 	if (groups)
 		delete[] groups;
-
-	for (vector<string>::iterator it = textures.begin(); it != textures.end(); ++it)
-            video.textures.delbyname(*it);
 
 	for (vector<string>::iterator it = models.begin(); it != models.end(); ++it)
 		gWorld->modelmanager.delbyname(*it);
@@ -1082,7 +1079,7 @@ The material ID often refers to what seems to be a "special" material in the roo
 		glNewList(list, GL_COMPILE);
 
         // setup texture
-		glBindTexture(GL_TEXTURE_2D, mat->tex);
+		mat->tex.get().bind();
 
 		bool atest = (mat->transparent) != 0;
 

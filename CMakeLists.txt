@@ -16,6 +16,7 @@ file(COPY src/shaders src/arial.info src/arial.tga
   )
 
 add_executable(wowmapview
+  src/lib/texture.cpp
   src/areadb.cpp
   src/dbcfile.cpp
   src/font.cpp

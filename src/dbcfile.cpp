@@ -10,6 +10,8 @@ DBCFile::DBCFile(const std::string &filename):
 void DBCFile::open()
 {
 	MPQFile f(filename.c_str());
+	assert(!f.isEof());
+
 	char header[4];
 	unsigned int na,nb,es,ss;
 

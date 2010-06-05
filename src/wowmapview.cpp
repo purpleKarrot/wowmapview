@@ -55,31 +55,6 @@ void deleteFonts()
 }
 
 
-
-FILE *flog;
-bool glogfirst = true;
-
-
-void gLog(const char *str, ...)
-{
-	if (glogfirst) {
-		flog = fopen("log.txt","w");
-		fclose(flog);
-		glogfirst = false;
-	}
-
-	flog = fopen("log.txt","a");
-
-	va_list ap;
-
-	va_start (ap, str);
-	vfprintf (flog, str, ap);
-	va_end (ap);
-
-	fclose(flog);
-}
-
-
 void getGamePath()
 {
 #ifdef _WIN32
@@ -99,7 +74,14 @@ void getGamePath()
 		strcat(gamepath,"Data\\");
 	}
 #else
-	strcpy(gamepath,"data/");
+	strcpy(gamepath, "data/");
+
+	const char* wow_path = getenv("WOW_PATH");
+	if (wow_path)
+	{
+		strcpy(gamepath, wow_path);
+		strcat(gamepath,"Data/");
+	}
 #endif
 }
 
@@ -171,7 +153,7 @@ int main(int argc, char *argv[])
 
 	char path[512];
 	for (size_t i=0; i<9; i++) {
-		sprintf(path, "%s%s\\base-%s.MPQ", gamepath, locales[i], locales[i]);
+		sprintf(path, "%s%s/base-%s.MPQ", gamepath, locales[i], locales[i]);
 		if (file_exists(path)) {
 			langID = i;
 			break;
@@ -190,10 +172,10 @@ int main(int argc, char *argv[])
 		sprintf(path, "%s%s", gamepath, "patch.MPQ");
 		FS().add(path);
 
-		sprintf(path, "%s%s\\Patch-%s-2.MPQ", gamepath, locales[langID], locales[langID]);
+		sprintf(path, "%s%s/Patch-%s-2.MPQ", gamepath, locales[langID], locales[langID]);
 		FS().add(path);
 
-		sprintf(path, "%s%s\\Patch-%s.MPQ", gamepath, locales[langID], locales[langID]);
+		sprintf(path, "%s%s/Patch-%s.MPQ", gamepath, locales[langID], locales[langID]);
 		FS().add(path);
 	}
 
@@ -203,19 +185,19 @@ int main(int argc, char *argv[])
 		FS().add(path);
 	}
 
-	sprintf(path, "%s%s\\expansion3-locale-%s.MPQ", gamepath, locales[langID], locales[langID]);
+	sprintf(path, "%s%s/expansion3-locale-%s.MPQ", gamepath, locales[langID], locales[langID]);
 	FS().add(path);
 
-	sprintf(path, "%s%s\\expansion2-locale-%s.MPQ", gamepath, locales[langID], locales[langID]);
+	sprintf(path, "%s%s/expansion2-locale-%s.MPQ", gamepath, locales[langID], locales[langID]);
 	FS().add(path);
 
-	sprintf(path, "%s%s\\lichking-locale-%s.MPQ", gamepath, locales[langID], locales[langID]);
+	sprintf(path, "%s%s/lichking-locale-%s.MPQ", gamepath, locales[langID], locales[langID]);
 	FS().add(path);
 
-	sprintf(path, "%s%s\\expansion-locale-%s.MPQ", gamepath, locales[langID], locales[langID]);
+	sprintf(path, "%s%s/expansion-locale-%s.MPQ", gamepath, locales[langID], locales[langID]);
 	FS().add(path);
 
-	sprintf(path, "%s%s\\locale-%s.MPQ", gamepath, locales[langID], locales[langID]);
+	sprintf(path, "%s%s/locale-%s.MPQ", gamepath, locales[langID], locales[langID]);
 	FS().add(path);
 
 	OpenDBs();

@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <iostream>
 
 typedef std::vector<HANDLE> ArchiveSet;
 
@@ -161,6 +162,8 @@ void Filesystem::add(const char* filename)
 
 	if (!SFileOpenArchive(filename, 0, 0, &handle))
 		return;
+
+	std::cout << "Added " << filename << " to file system." << std::endl;
 
 	archives.push_back(handle);
 }

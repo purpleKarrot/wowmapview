@@ -54,7 +54,7 @@ class ParticleSystem {
 	float sizes[3];
 	float mid, slowdown, rotation;
 	Vec3D pos;
-	GLuint texture;
+	wow::Texture texture;
 	ParticleEmitter *emitter;
 	ParticleList particles;
 	int blend, order, type;
@@ -89,7 +89,6 @@ public:
 
 		model = 0;
 		parent = 0;
-		texture = 0;
 
 		slowdown = 0;
 		rotation = 0;
@@ -131,7 +130,7 @@ class RibbonEmitter {
 	Vec4D tcolor;
 	float tabove, tbelow;
 
-	GLuint texture;
+	wow::Texture texture;
 
 	std::list<RibbonSegment> segs;
 
