@@ -60,7 +60,7 @@ FILE *flog;
 bool glogfirst = true;
 
 
-void gLog(char *str, ...)
+void gLog(const char *str, ...)
 {
 	if (glogfirst) {
 		flog = fopen("log.txt","w");

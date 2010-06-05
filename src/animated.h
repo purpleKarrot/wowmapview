@@ -64,7 +64,7 @@ public:
 // In WoW 2.0+ Blizzard are now storing rotation data in 16bit values instead of 32bit.
 // I don't really understand why as its only a very minor saving in model sizes and adds extra overhead in
 // processing the models.  Need this structure to read the data into.
-struct PACK_QUATERNION {__int16 x,y,z,w;  }; 
+struct PACK_QUATERNION {int16_t x,y,z,w;  };
 
 class Quat16ToQuat32 {
 public:
