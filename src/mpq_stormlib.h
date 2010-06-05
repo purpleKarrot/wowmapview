@@ -1,53 +1,26 @@
 #ifndef MPQ_H
 #define MPQ_H
 
-#include "stormlib/src/StormLib.h"
+#include <StormLib/StormLib.h>
 
 // C++ files
 #include <string>
 #include <set>
 #include <vector>
-
-struct FileTreeItem {
-	std::string fn;
-	int col;
-
-	/// Comparison
-	bool operator<(const FileTreeItem &i) const {
-		return fn < i.fn;
-	}
-
-	bool operator>(const FileTreeItem &i) const {
-		return fn < i.fn;
-	}
-};
-
-
-class MPQArchive
-{
-	//MPQHANDLE handle;
-	HANDLE mpq_a;
-public:
-	MPQArchive(const char* filename);
-	~MPQArchive();
-
-	void close();
-};
-
+#include <algorithm>
 
 class MPQFile
 {
-	//MPQHANDLE handle;
 	bool eof;
-	unsigned char *buffer;
-	size_t pointer, size;
+	std::vector<unsigned char> buffer;
+	std::size_t pointer;
 
 	// disable copying
-	MPQFile(const MPQFile &f) {}
-	void operator=(const MPQFile &f) {}
+	MPQFile(const MPQFile &f);
+	void operator=(const MPQFile &f);
 
 public:
-	MPQFile():eof(false),size(0),buffer(0),pointer(0) {}
+	MPQFile():eof(false),pointer(0) {}
 	MPQFile(const char* filename);	// filenames are not case sensitive
 	void openFile(const char* filename);
 	~MPQFile();
@@ -77,7 +50,25 @@ inline void flipcc(char *fcc)
 	fcc[2]=t;
 }
 
-inline bool defaultFilterFunc(std::string) { return true; }
+class Filesystem
+{
+public:
+	Filesystem()
+	{
+	}
+
+	~Filesystem()
+	{
+		std::for_each(archives.begin(), archives.end(), SFileCloseArchive);
+	}
+
+	void add(const char* filename);
+
+private:
+	friend class MPQFile;
+	std::vector<HANDLE> archives;
+};
+
+Filesystem& FS();
 
 #endif
-

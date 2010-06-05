@@ -165,8 +165,6 @@ int main(int argc, char *argv[])
 
 	gLog(APP_TITLE " " APP_VERSION "\nGame path: %s\n", gamepath);
 
-	std::vector<MPQArchive*> archives;
-	
 	int langID = 0;
 
 	const char *locales[] = {"enUS", "enGB", "deDE", "frFR", "zhTW", "ruRU", "esES", "koKR", "zhCN"};
@@ -184,41 +182,41 @@ int main(int argc, char *argv[])
 	if (usePatch) {
 		// patch goes first -> fake priority handling
 		sprintf(path, "%s%s", gamepath, "patch-3.MPQ");
-		archives.push_back(new MPQArchive(path));
+		FS().add(path);
 
 		sprintf(path, "%s%s", gamepath, "patch-2.MPQ");
-		archives.push_back(new MPQArchive(path));
+		FS().add(path);
 
 		sprintf(path, "%s%s", gamepath, "patch.MPQ");
-		archives.push_back(new MPQArchive(path));
+		FS().add(path);
 
 		sprintf(path, "%s%s\\Patch-%s-2.MPQ", gamepath, locales[langID], locales[langID]);
-		archives.push_back(new MPQArchive(path));
+		FS().add(path);
 
 		sprintf(path, "%s%s\\Patch-%s.MPQ", gamepath, locales[langID], locales[langID]);
-		archives.push_back(new MPQArchive(path));
+		FS().add(path);
 	}
 
 	const char* archiveNames[] = {"expansion3.MPQ", "expansion2.MPQ", "lichking.MPQ", "expansion.MPQ", "common-3.MPQ", "common-2.MPQ", "common.MPQ"};
 	for (size_t i=0; i<7; i++) {
 		sprintf(path, "%s%s", gamepath, archiveNames[i]);
-		archives.push_back(new MPQArchive(path));
+		FS().add(path);
 	}
 
 	sprintf(path, "%s%s\\expansion3-locale-%s.MPQ", gamepath, locales[langID], locales[langID]);
-	archives.push_back(new MPQArchive(path));
+	FS().add(path);
 
 	sprintf(path, "%s%s\\expansion2-locale-%s.MPQ", gamepath, locales[langID], locales[langID]);
-	archives.push_back(new MPQArchive(path));
+	FS().add(path);
 
 	sprintf(path, "%s%s\\lichking-locale-%s.MPQ", gamepath, locales[langID], locales[langID]);
-	archives.push_back(new MPQArchive(path));
+	FS().add(path);
 
 	sprintf(path, "%s%s\\expansion-locale-%s.MPQ", gamepath, locales[langID], locales[langID]);
-	archives.push_back(new MPQArchive(path));
+	FS().add(path);
 
 	sprintf(path, "%s%s\\locale-%s.MPQ", gamepath, locales[langID], locales[langID]);
-	archives.push_back(new MPQArchive(path));
+	FS().add(path);
 
 	OpenDBs();
 
@@ -309,11 +307,6 @@ int main(int argc, char *argv[])
 	deleteFonts();
 	
 	video.close();
-
-	for (std::vector<MPQArchive*>::iterator it = archives.begin(); it != archives.end(); ++it) {
-        (*it)->close();
-	}
-	archives.clear();
 
 	gLog("\nExiting.\n");
 

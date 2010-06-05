@@ -4,62 +4,18 @@
 #include <vector>
 #include <string>
 
-using namespace std;
-
-typedef vector< pair< string, HANDLE* > > ArchiveSet;
-ArchiveSet gOpenArchives;
-
-MPQArchive::MPQArchive(const char* filename)
-{
-	bool result = !!SFileOpenArchive( filename, 0, 0, &mpq_a );
-
-	if(!result) {
-		//gLog("Error opening archive %s\n", filename);
-		return;
-	}
-	gLog("Opening archive %s\n", filename);
-	gOpenArchives.push_back( make_pair( filename, &mpq_a ) );
-}
-
-MPQArchive::~MPQArchive()
-{
-	/*
-	for(ArchiveSet::iterator i=gOpenArchives.begin(); i!=gOpenArchives.end();++i)
-	{
-		mpq_archive &mpq_a = **i;
-		
-		free(mpq_a.header);
-	}
-	*/
-	//gOpenArchives.erase(gOpenArchives.begin(), gOpenArchives.end());
-}
-
-void MPQArchive::close()
-{
-	SFileCloseArchive(mpq_a);
-	for(ArchiveSet::iterator it=gOpenArchives.begin(); it!=gOpenArchives.end();++it)
-	{
-		HANDLE &mpq_b = *it->second;
-		if (&mpq_b == &mpq_a) {
-			gOpenArchives.erase(it);
-			//delete (*it);
-			return;
-		}
-	}
-	
-}
+typedef std::vector<HANDLE> ArchiveSet;
 
 void
 MPQFile::openFile(const char* filename)
 {
 	eof = false;
-	buffer = 0;
 	pointer = 0;
-	size = 0;
 
+	ArchiveSet& gOpenArchives = FS().archives;
 	for(ArchiveSet::iterator i=gOpenArchives.begin(); i!=gOpenArchives.end(); ++i)
 	{
-		HANDLE &mpq_a = *i->second;
+		HANDLE mpq_a = *i;
 
 		HANDLE fh;
 
@@ -68,31 +24,24 @@ MPQFile::openFile(const char* filename)
 
 		// Found!
 		DWORD filesize = SFileGetFileSize( fh );
-		size = filesize;
 
 		// HACK: in patch.mpq some files don't want to open and give 1 for filesize
-		if (size<=1) {
-			eof = true;
-			buffer = 0;
+		if (filesize<=1)
 			return;
-		}
 
-		buffer = new unsigned char[size];
-		SFileReadFile( fh, buffer, size );
+		buffer.resize(filesize);
+		SFileReadFile( fh, &buffer[0], buffer.size() );
 		SFileCloseFile( fh );
 
 		return;
 	}
 
 	eof = true;
-	buffer = 0;
 }
 
 MPQFile::MPQFile(const char* filename):
 	eof(false),
-	buffer(0),
-	pointer(0),
-	size(0)
+	pointer(0)
 {
 	openFile(filename);
 }
@@ -104,9 +53,10 @@ MPQFile::~MPQFile()
 
 bool MPQFile::exists(const char* filename)
 {
+	ArchiveSet& gOpenArchives = FS().archives;
 	for(ArchiveSet::iterator i=gOpenArchives.begin(); i!=gOpenArchives.end();++i)
 	{
-		HANDLE &mpq_a = *i->second;
+		HANDLE mpq_a = *i;
 
 		if( SFileHasFile( mpq_a, filename ) )
 			return true;
@@ -127,12 +77,12 @@ void MPQFile::save(const char* filename)
 
 size_t MPQFile::read(void* dest, size_t bytes)
 {
-	if (eof) 
+	if (eof)
 		return 0;
 
 	size_t rpos = pointer + bytes;
-	if (rpos > size) {
-		bytes = size - pointer;
+	if (rpos > buffer.size()) {
+		bytes = buffer.size() - pointer;
 		eof = true;
 	}
 
@@ -151,32 +101,32 @@ bool MPQFile::isEof()
 void MPQFile::seek(int offset)
 {
 	pointer = offset;
-	eof = (pointer >= size);
+	eof = (pointer >= buffer.size());
 }
 
 void MPQFile::seekRelative(int offset)
 {
 	pointer += offset;
-	eof = (pointer >= size);
+	eof = (pointer >= buffer.size());
 }
 
 void MPQFile::close()
 {
-	if (buffer) delete[] buffer;
-	buffer = 0;
+	buffer.clear();
 	eof = true;
 }
 
 size_t MPQFile::getSize()
 {
-	return size;
+	return buffer.size();
 }
 
 int MPQFile::getSize(const char* filename)
 {
+	ArchiveSet& gOpenArchives = FS().archives;
 	for(ArchiveSet::iterator i=gOpenArchives.begin(); i!=gOpenArchives.end();++i)
 	{
-		HANDLE &mpq_a = *i->second;
+		HANDLE mpq_a = *i;
 		HANDLE fh;
 		
 		if( !SFileOpenFileEx( mpq_a, filename, 0, &fh ) )
@@ -197,10 +147,26 @@ size_t MPQFile::getPos()
 
 unsigned char* MPQFile::getBuffer()
 {
-	return buffer;
+	return &buffer[0];
 }
 
 unsigned char* MPQFile::getPointer()
 {
-	return buffer + pointer;
+	return &buffer[pointer];
+}
+
+void Filesystem::add(const char* filename)
+{
+	HANDLE handle;
+
+	if (!SFileOpenArchive(filename, 0, 0, &handle))
+		return;
+
+	archives.push_back(handle);
+}
+
+Filesystem& FS()
+{
+	static Filesystem fs;
+	return fs;
 }
