@@ -32,7 +32,7 @@ public:
 
 private:
 	void paintGL();
-	//	void resizeGL(int width, int height);
+	void resizeGL(int width, int height);
 	void initializeGL();
 
 	bool event(QEvent* e);
@@ -180,6 +180,13 @@ void View::initializeGL()
 	video.init(width(), height(), fullscreen != 0);
 	gStates.push_back(new Menu());
 	gPop = false;
+}
+
+void View::resizeGL(int width, int height)
+{
+	glViewport(0, 0, (GLint)width, (GLint)height);
+	video.xres = width;
+	video.yres = height;
 }
 
 void View::paintGL()
