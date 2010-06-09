@@ -258,7 +258,7 @@ void Liquid::draw()
 		glDepthMask(GL_FALSE);
 	}
 
-	if (supportShaders && gWorld->useshaders && (shader>=0)) {
+	if (gWorld->useshaders && (shader>=0)) {
 		// SHADER-BASED
 		Vec3D col2;
 		waterShaders[shader]->bind();

@@ -1,7 +1,7 @@
 #ifndef WOW_TEXTURE_HPP
 #define WOW_TEXTURE_HPP
 
-#include <SDL_opengl.h>
+#include <GL/gl.h>
 #include <boost/flyweight.hpp>
 #include <boost/flyweight/key_value.hpp>
 

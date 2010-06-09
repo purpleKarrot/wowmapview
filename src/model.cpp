@@ -2,6 +2,7 @@
 #include "world.h"
 #include <cassert>
 #include <algorithm>
+#include <GL/glu.h>
 
 int globalTime = 0;
 
@@ -811,20 +812,20 @@ void Model::drawModel()const
 				//glDrawElements(GL_TRIANGLES, p.indexCount, GL_UNSIGNED_SHORT, indices + p.indexStart);
 				// a GDC OpenGL Performace Tuning paper recommended glDrawRangeElements over glDrawElements
 				// I can't notice a difference but I guess it can't hurt
-				if ( supportVBO &&  supportDrawRangeElements) {
+				//if ( supportVBO &&  supportDrawRangeElements) {
 					glDrawRangeElements(GL_TRIANGLES, p.vertexStart, p.vertexEnd, p.indexCount, GL_UNSIGNED_SHORT, indices + p.indexStart);
 				//} else if (!supportVBO) {
 				//	glDrawElements(GL_TRIANGLES, p.indexCount, GL_UNSIGNED_SHORT, indices + p.indexStart); 
-				} else {
-					glBegin(GL_TRIANGLES);
-					for (size_t k=0, b=p.indexStart; k<p.indexCount; k++,b++) {
-						uint16 a = indices[b];
-						glNormal3fv(normals[a]);
-						glTexCoord2fv(origVertices[a].texcoords);
-						glVertex3fv(vertices[a]);
-					}
-					glEnd();
-				}
+//				} else {
+//					glBegin(GL_TRIANGLES);
+//					for (size_t k=0, b=p.indexStart; k<p.indexCount; k++,b++) {
+//						uint16 a = indices[b];
+//						glNormal3fv(normals[a]);
+//						glTexCoord2fv(origVertices[a].texcoords);
+//						glVertex3fv(vertices[a]);
+//					}
+//					glEnd();
+//				}
 			} else {
 				glBegin(GL_TRIANGLES);
 				for (size_t k = 0, b=p.indexStart; k<p.indexCount; k++,b++) {

@@ -673,7 +673,7 @@ void WMOGroup::draw(const Vec3D& ofs, const float rot)
 	glDisable(GL_BLEND);
 	glColor4f(1,1,1,1);
 	for (unsigned int i=0; i<nBatches; i++) {
-		bool useshader = (supportShaders && gWorld->useshaders && lists[i].second);
+		bool useshader = (gWorld->useshaders && lists[i].second);
 		if (useshader) wmoShader->bind();
 		glCallList(lists[i].first);
 		if (useshader) wmoShader->unbind();

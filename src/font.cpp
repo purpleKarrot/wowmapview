@@ -2,6 +2,9 @@
 #include "video.h"
 #include <iostream>
 #include <fstream>
+#include <cstdlib>
+#include <cstring>
+#include <cstdarg>
 #include "wowmapview.h"
 
 Font::Font(unsigned int tex, int tw, int th, int size, const char* infofile): tex(tex), size(size), tw(tw), th(th)

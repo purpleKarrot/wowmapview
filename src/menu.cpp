@@ -3,6 +3,7 @@
 #include "test.h"
 #include "dbcfile.h"
 
+#include <Qt>
 #include <fstream>
 
 enum MAPID {
@@ -114,8 +115,6 @@ void Menu::tick(float t, float dt)
 
 	if (cmd==CMD_DO_LOAD_WORLD) {
 
-		if (fullscreen) SDL_ShowCursor(SDL_DISABLE);
-
 		gWorld = world;
 
 		world->initDisplay();
@@ -167,7 +166,6 @@ void Menu::tick(float t, float dt)
 		bg = 0;
 	}
 	else if (cmd == CMD_BACK_TO_MENU) {
-		/*if (fullscreen)*/ SDL_ShowCursor(SDL_ENABLE);
 		cmd = CMD_SELECT;
 		setpos = true;
 		gWorld = 0;
@@ -181,7 +179,7 @@ void Menu::display(float t, float dt)
 {
 	video.clearScreen();
 	glDisable(GL_FOG);
-	//video.set3D();
+
 	if (bg) {
 		Vec4D la(0.1f,0.1f,0.1f,1);
 		glLightModelfv(GL_LIGHT_MODEL_AMBIENT, la);
@@ -336,7 +334,7 @@ void Menu::display(float t, float dt)
 
 void Menu::keypressed(int key, bool down)
 {
-	if (down && key == SDLK_ESCAPE)
+	if (down && key == Qt::Key_Escape)
 		gPop = true;
 }
 

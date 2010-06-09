@@ -1,3 +1,5 @@
+
+#include <GL/gl.h>
 #include "maptile.h"
 #include "world.h"
 #include "vec3d.h"
@@ -316,13 +318,11 @@ MapTile::MapTile(int x0, int z0, char* filename, bool bigAlpha): x(x0), z(z0), t
 				std::string texpath(p);
 				p+=strlen(p)+1;
 
-				if (supportShaders) {
 					std::string texshader = texpath;
 					// load the specular texture instead
 					texshader.insert(texshader.length()-4,"_s");
 					if (MPQFile::exists(texshader.c_str()))
 						texpath = texshader;
-				}
 
 				textures.push_back(wow::Texture(texpath.c_str()));
 			}
@@ -910,10 +910,8 @@ void MapChunk::init(MapTile* mt, MPQFile &f, bool bigAlpha)
 	vmax = Vec3D(-9999999.0f,-9999999.0f,-9999999.0f);
 
 	//unsigned char *blendbuf;
-	if (supportShaders) {
 		//blendbuf = new unsigned char[64*64*4];
 		memset(blendbuf, 0, 64*64*4);
-	}
 
 	while (f.getPos() < lastpos) {
 		memset(fcc, 0, 4);
@@ -1240,11 +1238,9 @@ void MapChunk::init(MapTile* mt, MPQFile &f, bool bigAlpha)
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-					if (supportShaders) {
 						for (int p=0; p<64*64; p++) {
 							blendbuf[p*4+i-1] = amap[p];
 						}
-					}
 				}
 
 			}
@@ -1275,10 +1271,8 @@ void MapChunk::init(MapTile* mt, MPQFile &f, bool bigAlpha)
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-			if (supportShaders) {
 				for (int p=0; p<64*64; p++) {
 					blendbuf[p*4+3] = sbuf[p];
-				}
 			}
 		}
 		else if (strncmp(fcc,"MCLQ", 4) == 0) {
@@ -1358,8 +1352,8 @@ void MapChunk::init(MapTile* mt, MPQFile &f, bool bigAlpha)
 	}
 
 	// create vertex buffers
-	glGenBuffersARB(1,&vertices);
-	glGenBuffersARB(1,&normals);
+	glGenBuffers(1,&vertices);
+	glGenBuffers(1,&normals);
 
 	glBindBufferARB(GL_ARRAY_BUFFER_ARB, vertices);
 	glBufferDataARB(GL_ARRAY_BUFFER_ARB, mapbufsize*3*sizeof(float), tv, GL_STATIC_DRAW_ARB);
@@ -1379,7 +1373,6 @@ void MapChunk::init(MapTile* mt, MPQFile &f, bool bigAlpha)
 
 	vcenter = (vmin + vmax) * 0.5f;
 
-	if (supportShaders) {
 		glGenTextures(1, &blend);
 		glBindTexture(GL_TEXTURE_2D, blend);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 64, 64, 0, GL_RGBA, GL_UNSIGNED_BYTE, blendbuf);
@@ -1388,7 +1381,6 @@ void MapChunk::init(MapTile* mt, MPQFile &f, bool bigAlpha)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		//delete[] blendbuf;
-	}
 
 #if 0
 	deleted=false;
@@ -1567,7 +1559,7 @@ void MapChunk::draw()
 	glNormalPointer(GL_FLOAT, 0, 0);
 	// ASSUME: texture coordinates set up already
 
-	if (supportShaders && gWorld->useshaders) {
+	if (gWorld->useshaders) {
 		// SHADER-BASED
 
 		// TODO: figure out texture animation for shaders
@@ -1636,10 +1628,10 @@ void MapChunk::draw()
 
 			// if we loaded a texture with specular maps, setup the texenv
 			// to replace our alpha channel instead of modulating it
-			if (supportShaders) glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 			drawPass(animated[i+1]);
 			// back to normal
-			if (supportShaders) glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
 		}
 

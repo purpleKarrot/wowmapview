@@ -1,7 +1,7 @@
 #include "world.h"
 #include "shaders.h"
-
 #include <cassert>
+#include <GL/glu.h>
 
 World *gWorld=0;
 
@@ -1016,7 +1016,7 @@ void World::draw()
 	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
 	glColor4f(1,1,1,1);
 	// if we're using shaders let's give it some specular
-	if (supportShaders && useshaders) {
+	if (useshaders) {
 		Vec4D spec_color(1,1,1,1);
 		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spec_color);
 		glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 20);
@@ -1057,7 +1057,7 @@ void World::draw()
 	glColor4f(1,1,1,1);
 	glEnable(GL_BLEND);
 
-	if (supportShaders && useshaders) {
+	if (useshaders) {
 		Vec4D spec_color(0,0,0,1);
 		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spec_color);
 		glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 0);
@@ -1087,7 +1087,7 @@ void World::draw()
 		}
 	}
 
-	if (supportShaders && useshaders) {
+	if (useshaders) {
 		Vec4D spec_color(1,1,1,1);
 		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spec_color);
 		glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 10);
@@ -1100,7 +1100,7 @@ void World::draw()
 			if (oktile(i,j) && drawwmo && current[j][i] != 0) current[j][i]->drawObjects();
 		}
 	}
-	if (supportShaders && useshaders) {
+	if (useshaders) {
 		Vec4D spec_color(0,0,0,1);
 		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spec_color);
 		glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 0);

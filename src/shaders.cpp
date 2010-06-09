@@ -1,35 +1,11 @@
 #include "shaders.h"
 #include "wowmapview.h"
-
-bool supportShaders = false;
-
-PFNGLPROGRAMSTRINGARBPROC glProgramStringARB = NULL;
-PFNGLBINDPROGRAMARBPROC glBindProgramARB = NULL;
-PFNGLDELETEPROGRAMSARBPROC glDeleteProgramsARB = NULL;
-PFNGLGENPROGRAMSARBPROC glGenProgramsARB = NULL;
-PFNGLPROGRAMLOCALPARAMETER4FARBPROC glProgramLocalParameter4fARB;
+#include <cstring>
+#include <cstdio>
 
 ShaderPair *terrainShaders[4]={0,0,0,0}, *wmoShader=0, *waterShaders[1]={0};
 
 void initShaders()
-{
-	supportShaders = isExtensionSupported("ARB_vertex_program") && isExtensionSupported("ARB_fragment_program");
-	if (supportShaders) {
-		// init extension stuff
-		//glARB = () SDL_GL_GetProcAddress("");
-		glProgramStringARB = (PFNGLPROGRAMSTRINGARBPROC) SDL_GL_GetProcAddress("glProgramStringARB");
-		glBindProgramARB = (PFNGLBINDPROGRAMARBPROC) SDL_GL_GetProcAddress("glBindProgramARB");
-		glDeleteProgramsARB = (PFNGLDELETEPROGRAMSARBPROC) SDL_GL_GetProcAddress("glDeleteProgramsARB");
-		glGenProgramsARB = (PFNGLGENPROGRAMSARBPROC) SDL_GL_GetProcAddress("glGenProgramsARB");
-		glProgramLocalParameter4fARB = (PFNGLPROGRAMLOCALPARAMETER4FARBPROC) SDL_GL_GetProcAddress("glProgramLocalParameter4fARB");
-
-		// init various shaders here
-		reloadShaders();
-	}
-	gLog("Shaders %s\n", supportShaders?"enabled":"disabled");
-}
-
-void reloadShaders()
 {
 	for (int i=0; i<4; i++) delete terrainShaders[i];
 	delete wmoShader;

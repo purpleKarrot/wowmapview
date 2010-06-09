@@ -5,11 +5,7 @@ project(wowmapview)
 #set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-find_package(OpenGL)
-include_directories(${OPENGL_INCLUDE_DIR})
-
-find_package(SDL)
-include_directories(${SDL_INCLUDE_DIR})
+add_definitions(-DGL_GLEXT_PROTOTYPES)
 
 set(QT_USE_QTOPENGL ON)
 find_package(Qt4 REQUIRED)
@@ -41,8 +37,6 @@ add_executable(wowmapview
   )
 
 target_link_libraries(wowmapview
-  ${OPENGL_LIBRARIES}
   ${QT_LIBRARIES}
-  ${SDL_LIBRARY}
   Storm
   )

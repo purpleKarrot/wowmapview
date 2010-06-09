@@ -5,6 +5,7 @@
 
 #include <cmath>
 #include <string>
+#include <Qt>
 
 static int gV = 0;
 
@@ -190,89 +191,87 @@ void Test::keypressed(int key, bool down)
 	{
 		switch (key)
 		{
-		case SDLK_ESCAPE:
+		case Qt::Key_Escape:
 			gPop = true;
 			break;
-		case SDLK_w:
+		case Qt::Key_W:
 			moving = 1.0f;
 			break;
-		case SDLK_s:
+		case Qt::Key_S:
 			moving = -1.0f;
 			break;
-		case SDLK_a:
+		case Qt::Key_A:
 			strafing = -1.0f;
 			break;
-		case SDLK_d:
+		case Qt::Key_D:
 			strafing = 1.0f;
 			break;
-		case SDLK_e:
+		case Qt::Key_E:
 			updown = -1.0f;
 			break;
-		case SDLK_q:
+		case Qt::Key_Q:
 			updown = 1.0f;
 			break;
-		case SDLK_i:
+		case Qt::Key_I:
 			mousedir *= -1.0f;
 			break;
-		case SDLK_p:
+		case Qt::Key_P:
 			movespd *= 2.0f;
 			break;
-		case SDLK_o:
+		case Qt::Key_O:
 			movespd *= 0.5f;
 			break;
-		case SDLK_r:
+		case Qt::Key_R:
 			ah += 180.0f;
 			break;
-		case SDLK_n:
+		case Qt::Key_N:
 			gV++;
 			break;
-		case SDLK_b:
+		case Qt::Key_B:
 			gV--;
 			if (gV < 0)
 				gV = 0;
 			break;
-		case SDLK_t:
+		case Qt::Key_T:
 			world->thirdperson = !world->thirdperson;
 			break;
-		case SDLK_l:
+		case Qt::Key_L:
 			world->lighting = !world->lighting;
 			break;
-		case SDLK_F1:
+		case Qt::Key_F1:
 			world->drawmodels = !world->drawmodels;
 			break;
-		case SDLK_F2:
+		case Qt::Key_F2:
 			world->drawdoodads = !world->drawdoodads;
 			break;
-		case SDLK_F3:
+		case Qt::Key_F3:
 			world->drawterrain = !world->drawterrain;
 			break;
-		case SDLK_F4:
+		case Qt::Key_F4:
 			hud = !hud;
 			break;
-		case SDLK_F6:
+		case Qt::Key_F6:
 			world->drawwmo = !world->drawwmo;
 			break;
-		case SDLK_F7:
+		case Qt::Key_F7:
 			world->useshaders = !world->useshaders;
 			break;
-		case SDLK_F8:
-			reloadShaders();
+		case Qt::Key_F8:
+			initShaders();
 			break;
-		case SDLK_h:
+		case Qt::Key_H:
 			world->drawhighres = !world->drawhighres;
 			break;
-		case SDLK_f:
+		case Qt::Key_F:
 			world->drawfog = !world->drawfog;
 			break;
-		case SDLK_KP_PLUS:
-		case SDLK_PLUS:
+		case Qt::Key_Plus:
 			world->fogdistance += 60.0f;
 			break;
-		case SDLK_KP_MINUS:
-		case SDLK_MINUS:
+		case Qt::Key_Minus:
 			world->fogdistance -= 60.0f;
 			break;
-		case SDLK_m:
+		case Qt::Key_M:
 			mapmode = !mapmode;
 		}
 	}
@@ -280,27 +279,27 @@ void Test::keypressed(int key, bool down)
 	{
 		switch (key)
 		{
-		case SDLK_w:
+		case Qt::Key_W:
 			if (moving > 0)
 				moving = 0;
 			break;
-		case SDLK_s:
+		case Qt::Key_S:
 			if (moving < 0)
 				moving = 0;
 			break;
-		case SDLK_d:
+		case Qt::Key_D:
 			if (strafing > 0)
 				strafing = 0;
 			break;
-		case SDLK_a:
+		case Qt::Key_A:
 			if (strafing < 0)
 				strafing = 0;
 			break;
-		case SDLK_q:
+		case Qt::Key_Q:
 			if (updown > 0)
 				updown = 0;
 			break;
-		case SDLK_e:
+		case Qt::Key_E:
 			if (updown < 0)
 				updown = 0;
 		}

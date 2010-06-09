@@ -14,21 +14,34 @@
 #include "areadb.h"
 
 #include <QGLWidget>
+#include <QMouseEvent>
+#include <QKeyEvent>
+#include <QTimer>
+#include <QTime>
 
 class View: public QGLWidget
 {
 public:
-	View(QWidget * parent = 0) :
+	View(QWidget* parent = 0) :
 		QGLWidget(parent)
 	{
+		QTimer* timer = new QTimer(this);
+		connect(timer, SIGNAL(timeout()), this, SLOT(updateGL()));
+		timer->start();
 	}
 
 private:
-//	void paintGL();
-//	void resizeGL(int width, int height);
-//	void initializeGL();
-//
-//	bool event(QEvent* e);
+	void paintGL();
+	//	void resizeGL(int width, int height);
+	void initializeGL();
+
+	bool event(QEvent* e);
+
+private:
+	QTime qtime;
+
+	int last_t, time;
+	int x, y;
 };
 
 int fullscreen = 0;
@@ -105,6 +118,86 @@ int file_exists(const std::string& path)
 	return false;
 }
 
+bool View::event(QEvent* e)
+{
+	AppState *as = 0;
+	if (!gStates.empty())
+		as = gStates[gStates.size() - 1];
+
+	if (as)
+	{
+		switch (e->type())
+		{
+		case QEvent::MouseMove:
+		{
+			QMouseEvent* me = (QMouseEvent*) e;
+			as->mousemove(x - me->x(), y - me->y());
+			x = me->x();
+			y = me->y();
+			return true;
+		}
+		case QEvent::MouseButtonPress:
+		case QEvent::MouseButtonRelease:
+		{
+			QMouseEvent* me = (QMouseEvent*) e;
+			as->mouseclick(me->x(), me->y(), e->type() == QEvent::MouseButtonPress);
+			x = me->x();
+			y = me->y();
+			return true;
+		}
+		case QEvent::KeyPress:
+		case QEvent::KeyRelease:
+		{
+			QKeyEvent* ke = (QKeyEvent*) e;
+			as->keypressed(ke->key(), e->type() == QEvent::KeyPress);
+			return true;
+		}
+		}
+
+		if (gPop)
+		{
+			gPop = false;
+			gStates.pop_back();
+			delete as;
+		}
+
+		if (gStates.empty())
+		{
+			close();
+			return true;
+		}
+	}
+
+	return QGLWidget::event(e);
+}
+
+void View::initializeGL()
+{
+	initFonts();
+	qtime.start();
+	last_t = qtime.elapsed();
+	time = 0;
+	video.init(width(), height(), fullscreen != 0);
+	gStates.push_back(new Menu());
+	gPop = false;
+}
+
+void View::paintGL()
+{
+	if (gStates.empty())
+		return;
+
+	int t = qtime.elapsed();
+	int dt = t - last_t;
+	last_t = t;
+	time += dt;
+	float ftime = time / 1000.f;
+
+	AppState* as = gStates[gStates.size() - 1];
+	as->tick(ftime, dt / 1000.f);
+	as->display(ftime, dt / 1000.f);
+}
+
 int main(int argc, char *argv[])
 {
 	QApplication app(argc, argv);
@@ -161,68 +254,8 @@ int main(int argc, char *argv[])
 	OpenDBs();
 
 	View view;
+	view.resize(xres, yres);
 	view.show();
-
-	video.init(xres,yres,fullscreen!=0);
-	SDL_WM_SetCaption(APP_TITLE,NULL);
-
-	initFonts();
-
-
-	float ftime;
-	Uint32 t, last_t, frames = 0, time = 0, fcount = 0, ft = 0;
-	AppState *as;
-	gFPS = 0;
-
-	gStates.push_back(new Menu());
-
-	bool done = false;
-	t = SDL_GetTicks();
-
-	while(gStates.size()>0 && !done) {
-		last_t = t;
-		t = SDL_GetTicks();
-		Uint32 dt = t - last_t;
-		time += dt;
-		ftime = time / 1000.0f;
-
-		as = gStates[gStates.size()-1];
-
-		SDL_Event event;
-		while ( SDL_PollEvent(&event) ) {
-			if ( event.type == SDL_QUIT ) {
-				done = true;
-			}
-			else if ( event.type == SDL_MOUSEMOTION) {
-				as->mousemove(event.motion.xrel, event.motion.yrel);
-			}
-			else if ( event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP) {
-				as->mouseclick(event.button.x, event.button.y, event.type == SDL_MOUSEBUTTONDOWN);
-			}
-			else if ( event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
-				as->keypressed(event.key.keysym.sym, event.type == SDL_KEYDOWN);
-			}
-		}
-
-		if (gPop) {
-			gPop = false;
-			gStates.pop_back();
-			delete as;
-		}
-
-		as = gStates[gStates.size() - 1];
-		if (as)
-		{
-			as->tick(ftime, dt / 1000.0f);
-			as->display(ftime, dt / 1000.0f);
-			video.flip();
-		}
-	}
-
-
-	deleteFonts();
-	
-	video.close();
 
 	return app.exec();
 }
