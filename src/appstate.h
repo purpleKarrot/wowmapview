@@ -1,9 +1,6 @@
 #ifndef APPSTATE_H
 #define APPSTATE_H
 
-#include <SDL.h>
-#include <vector>
-
 class AppState {
 public:
 	AppState() {};
@@ -12,11 +9,9 @@ public:
 	virtual void tick(float t, float dt) {};
 	virtual void display(float t, float dt) {};
 
-	virtual void mousemove(SDL_MouseMotionEvent *e) {};
-	virtual void mouseclick(SDL_MouseButtonEvent *e) {};
-	virtual void keypressed(SDL_KeyboardEvent *e) {};
-
-	//virtual void onPop() {};
+	virtual void mousemove(int xrel, int yrel) = 0;
+	virtual void mouseclick(int x, int y, bool down) = 0;
+	virtual void keypressed(int key, bool down) = 0;
 };
 
 

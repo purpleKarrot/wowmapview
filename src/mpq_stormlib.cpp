@@ -156,11 +156,11 @@ unsigned char* MPQFile::getPointer()
 	return &buffer[pointer];
 }
 
-void Filesystem::add(const char* filename)
+void Filesystem::add(const std::string& filename)
 {
 	HANDLE handle;
 
-	if (!SFileOpenArchive(filename, 0, 0, &handle))
+	if (!SFileOpenArchive(filename.c_str(), 0, 0, &handle))
 		return;
 
 	std::cout << "Added " << filename << " to file system." << std::endl;

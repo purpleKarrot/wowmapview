@@ -87,11 +87,11 @@ void Menu::randBackground()
 	if (bg) delete bg;
 	glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
 	
-	const char *ui[] = {"MainMenu", "NightElf", "Human", "Dwarf", "Orc", "Tauren", "Scourge"}; //, "Bloodelf", "Deathknight", "Draenei" };
+	const char *ui[] = {"MainMenu", "NightElf", "Human", "Dwarf", "Orc", "Tauren", "Scourge", "Bloodelf", "Deathknight", "Draenei" };
 	int dark[] = {0,0,1,1,0,0,0,0,1,1};
 	int randnum;
 	do {
-		randnum = randint(0,6);
+		randnum = rand() % 7;
 	} while (randnum == lastbg);
 	//randnum = 0;
 	const char *randui = ui[randnum];
@@ -127,8 +127,8 @@ void Menu::tick(float t, float dt)
 
 			if (world->nMaps > 0) {
 
-				float fx = (x/12.0f);
-				float fz = (y/12.0f);
+				float fx = (mx/12.0f);
+				float fz = (my/12.0f);
 
 				cx = (int)fx;
 				cz = (int)fz;
@@ -316,13 +316,7 @@ void Menu::display(float t, float dt)
 								"B,N - slower/faster time\n"
 			);
 
-#ifdef SFMPQAPI
-			f16->shprint(300, video.yres - 40, "World of Warcraft is (C) Blizzard Entertainment\n"
-				"Uses SFmpqapi, (C) ShadowFlare Software"
-			);
-#else
-			f16->shprint(160*3, video.yres - 60, "World of Warcraft map viewer\nhttp://code.google.com/p/wowmapviewer/\nWorld of Warcraft is (C) Blizzard Entertainment");
-#endif
+			f16->shprint(500, video.yres - 20, "World of Warcraft is (C) Blizzard Entertainment");
 		}
 
 		for (unsigned int i=0; i<maps.size(); i++) {
@@ -340,18 +334,14 @@ void Menu::display(float t, float dt)
 	}
 }
 
-void Menu::keypressed(SDL_KeyboardEvent *e)
+void Menu::keypressed(int key, bool down)
 {
-	if (e->type == SDL_KEYDOWN) {
-		if (e->keysym.sym == SDLK_ESCAPE) {
-		    gPop = true;
-		}
-	}
+	if (down && key == SDLK_ESCAPE)
+		gPop = true;
 }
 
-void Menu::mousemove(SDL_MouseMotionEvent *e)
+void Menu::mousemove(int xrel, int yrel)
 {
-
 }
 
 bool Clickable::hit(int x, int y)
@@ -360,40 +350,29 @@ bool Clickable::hit(int x, int y)
 }
 
 
-void Menu::mouseclick(SDL_MouseButtonEvent *e)
+void Menu::mouseclick(int x, int y, bool down)
 {
-	//int y = e->y;
-	//unsigned int s = y / 16;
-	//if (s < maps.size()) sel = s;
-
 	if (cmd != CMD_SELECT && cmd != CMD_SELECT_MINIMAP) 
 		return;
 
 	//gLog("key press %x, %x\n", e->x, e->y);
 	// key down, key up twice trigger this
-	if (e->x == last_key_x && e->y == last_key_y && e->type != last_key_type) {
-		last_key_type = e->type;
+	if (x == last_key_x && y == last_key_y && down != last_key_down) {
+		last_key_down = down;
 		return;
 	}
-	last_key_x = e->x;
-	last_key_y = e->y;
-	last_key_type = e->type;
+	last_key_x = x;
+	last_key_y = y;
+	last_key_down = down;
 
 	if (cmd == CMD_SELECT) {
 		int osel = sel;
 
-		/*if ((e->x >= 250) && (e->x < 250+12*64)) {
-			if (sel!=-1 && world !=0 && (e->y<12*64)) {
-				x = e->x - 200;
-				y = e->y;
-				cmd = CMD_LOAD_WORLD;
-			}
-			
-		} else*/ {
+			{
 			bool found = false;
 
 			for (unsigned int i=0; i<maps.size(); i++) {
-				if (maps[i].hit(e->x, e->y)) {
+				if (maps[i].hit(x, y)) {
 					sel = i;
 					found = true;
 					break;
@@ -414,8 +393,8 @@ void Menu::mouseclick(SDL_MouseButtonEvent *e)
 		}
 	} else if (cmd == CMD_SELECT_MINIMAP) {
 		if (sel!=-1 && world !=0) {
-			x = e->x - 200;
-			y = e->y;
+			mx = x - 200;
+			my = y;
 			cmd = CMD_LOAD_WORLD;
 		} else {
 			cmd = CMD_SELECT;

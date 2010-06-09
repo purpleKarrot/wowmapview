@@ -135,6 +135,7 @@ struct WMOFog {
 	void setup();
 };
 
+//! http://www.madx.dk/wowdev/wiki/index.php?title=WMO
 class WMO {
 public:
 	WMOGroup *groups;
@@ -143,7 +144,7 @@ public:
 	Vec3D v1,v2;
 	int LiquidType;
 	bool ok;
-	std::vector<std::string> textures;
+//	std::vector<wow::Texture> textures;
 	std::vector<std::string> models;
 	std::vector<ModelInstance> modelis;
 
@@ -173,38 +174,24 @@ typedef boost::flyweights::flyweight< //
 
 } // namespace wow
 
-struct SMMapObjDef {
-	uint32 nameId;
-	uint32 id;
-	Vec3D pos;
-	Vec3D dir;
-	Vec3D pos2, pos3;
-	uint16 flags;
-	uint16 doodadset;
-	uint16 nameset;
-	uint16 unk;
-};
-
-class WMOInstance {
-	static std::set<int> ids;
+class WMOInstance
+{
 public:
-	wow::WMO wmo;
+	WMOInstance(wow::WMO const& wmo, MPQFile &f);
 
-	uint32 id;
+	void draw();
+
+	wow::WMO wmo;
 	Vec3D pos;
+
+private:
+	uint32 id;
 	Vec3D dir;
 	Vec3D pos2, pos3;
 	uint16 flags;
 	uint16 doodadset;
 	uint16 nameset;
 	uint16 unk;
-
-	WMOInstance(wow::WMO const& wmo, MPQFile &f);
-	void draw();
-	//void drawPortals();
-
-	static void reset();
 };
-
 
 #endif

@@ -38,8 +38,9 @@ enum Commands {
 class Menu :public AppState
 {
 
-	int sel,cmd,x,y,cz,cx;
-	int last_key_x, last_key_y, last_key_type;
+	int sel,cmd,mx,my,cz,cx;
+	int last_key_x, last_key_y;
+	bool last_key_down;
 
 	World *world;
 
@@ -61,9 +62,9 @@ public:
 	void tick(float t, float dt);
 	void display(float t, float dt);
 
-	void keypressed(SDL_KeyboardEvent *e);
-	void mousemove(SDL_MouseMotionEvent *e);
-	void mouseclick(SDL_MouseButtonEvent *e);
+	void keypressed(int key, bool down);
+	void mousemove(int xrel, int yrel);
+	void mouseclick(int x, int y, bool down);
 
 	void randBackground();
 

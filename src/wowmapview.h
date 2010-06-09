@@ -24,8 +24,6 @@ extern float gFPS;
 float frand();
 float randfloat(float lower, float upper);
 int randint(int lower, int upper);
-void fixname(std::string &name);
-void fixnamen(char *name, size_t len);
 
 extern int fullscreen;
 // Area database

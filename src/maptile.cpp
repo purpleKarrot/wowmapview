@@ -315,7 +315,6 @@ MapTile::MapTile(int x0, int z0, char* filename, bool bigAlpha): x(x0), z(z0), t
 			while (p<buf+size) {
 				std::string texpath(p);
 				p+=strlen(p)+1;
-				fixname(texpath);
 
 				if (supportShaders) {
 					std::string texshader = texpath;
@@ -325,7 +324,7 @@ MapTile::MapTile(int x0, int z0, char* filename, bool bigAlpha): x(x0), z(z0), t
 						texpath = texshader;
 				}
 
-				textures.push_back(texpath);
+				textures.push_back(wow::Texture(texpath.c_str()));
 			}
 			delete[] buf;
 		}
@@ -343,9 +342,8 @@ MapTile::MapTile(int x0, int z0, char* filename, bool bigAlpha): x(x0), z(z0), t
 			while (p<buf+size) {
 				std::string path(p);
 				p+=strlen(p)+1;
-				fixname(path);
 
-				models.push_back(path);
+				models.push_back(wow::Model(path));
 			}
 			delete[] buf;
 		}
@@ -368,9 +366,8 @@ MapTile::MapTile(int x0, int z0, char* filename, bool bigAlpha): x(x0), z(z0), t
 			while (p<buf+size) {
 				std::string path(p);
 				p+=strlen(p)+1;
-				fixname(path);
 
-				wmos.push_back(path);
+				wmos.push_back(wow::WMO(path));
 			}
 			delete[] buf;
 		}
@@ -423,7 +420,7 @@ MapTile::MapTile(int x0, int z0, char* filename, bool bigAlpha): x(x0), z(z0), t
 			for (int i=0; i<nMDX; i++) {
 				int id;
 				f.read(&id, 4);
-				wow::Model model = wow::Model(models[id]);
+				wow::Model model = models[id];
 				ModelInstance inst(model, f);
 				modelis.push_back(inst);
 			}
@@ -473,7 +470,7 @@ MapTile::MapTile(int x0, int z0, char* filename, bool bigAlpha): x(x0), z(z0), t
 			for (int i=0; i<nWMO; i++) {
 				int id;
 				f.read(&id, 4);
-				wmois.push_back(WMOInstance(wow::WMO(wmos[id]), f));
+				wmois.push_back(WMOInstance(wmos[id], f));
 			}
 		}
 		else if (strncmp(fourcc,"MH2O",4)==0) {
@@ -1088,7 +1085,7 @@ void MapChunk::init(MapTile* mt, MPQFile &f, bool bigAlpha)
 					animated[i] = 0;
 				}
 
-				textures[i] = wow::Texture(mt->textures[mcly[i].textureId].c_str());
+				textures[i] = mt->textures[mcly[i].textureId];
 			}
 		}
 		else if (strncmp(fcc, "MCRF", 4) == 0) {

@@ -25,14 +25,17 @@ public:
 	private:
 		std::string message;
 	};
+
 	class NotFound: public Exception
 	{
 	public:
 		NotFound(): Exception("Key was not found")
 		{ }
 	};
+
 	// Iteration over database
 	class Iterator;
+
 	class Record
 	{
 	public:
@@ -85,6 +88,7 @@ public:
 		friend class DBCFile;
 		friend class DBCFile::Iterator;
 	};
+
 	/** Iterator that iterates over records
 	*/
 	class Iterator
@@ -133,6 +137,7 @@ public:
 		}
 		throw NotFound( );
 	}
+
 private:
 	std::string filename;
 	size_t recordSize;

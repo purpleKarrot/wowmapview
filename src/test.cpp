@@ -184,148 +184,145 @@ void Test::display(float t, float dt)
 
 };
 
-void Test::keypressed(SDL_KeyboardEvent *e)
+void Test::keypressed(int key, bool down)
 {
-	if (e->type == SDL_KEYDOWN) {
-		// key DOWN
-
-		// quit
-		if (e->keysym.sym == SDLK_ESCAPE) {
-		    gPop = true;
-		}
-		// movement
-		if (e->keysym.sym == SDLK_w) {
+	if (down)
+	{
+		switch (key)
+		{
+		case SDLK_ESCAPE:
+			gPop = true;
+			break;
+		case SDLK_w:
 			moving = 1.0f;
-		}
-		if (e->keysym.sym == SDLK_s) {
+			break;
+		case SDLK_s:
 			moving = -1.0f;
-		}
-		if (e->keysym.sym == SDLK_a) {
+			break;
+		case SDLK_a:
 			strafing = -1.0f;
-		}
-		if (e->keysym.sym == SDLK_d) {
+			break;
+		case SDLK_d:
 			strafing = 1.0f;
-		}
-		if (e->keysym.sym == SDLK_e) {
+			break;
+		case SDLK_e:
 			updown = -1.0f;
-		}
-		if (e->keysym.sym == SDLK_q) {
+			break;
+		case SDLK_q:
 			updown = 1.0f;
-		}
-
-		// invertmouse
-		if (e->keysym.sym == SDLK_i) {
+			break;
+		case SDLK_i:
 			mousedir *= -1.0f;
-		}
-		// move speed
-		if (e->keysym.sym == SDLK_p) {
+			break;
+		case SDLK_p:
 			movespd *= 2.0f;
-		}
-		if (e->keysym.sym == SDLK_o) {
+			break;
+		case SDLK_o:
 			movespd *= 0.5f;
-		}
-		// turn around
-		if (e->keysym.sym == SDLK_r) {
+			break;
+		case SDLK_r:
 			ah += 180.0f;
-		}
-
-		// testing
-		if (e->keysym.sym == SDLK_n) {
+			break;
+		case SDLK_n:
 			gV++;
-		}
-		if (e->keysym.sym == SDLK_b) {
+			break;
+		case SDLK_b:
 			gV--;
-			if (gV<0) gV = 0;
-		}
-
-		// toggles
-		if (e->keysym.sym == SDLK_t) {
+			if (gV < 0)
+				gV = 0;
+			break;
+		case SDLK_t:
 			world->thirdperson = !world->thirdperson;
-		}
-		if (e->keysym.sym == SDLK_l) {
+			break;
+		case SDLK_l:
 			world->lighting = !world->lighting;
-		}
-
-		if (e->keysym.sym == SDLK_F1) {
+			break;
+		case SDLK_F1:
 			world->drawmodels = !world->drawmodels;
-		}
-		if (e->keysym.sym == SDLK_F2) {
+			break;
+		case SDLK_F2:
 			world->drawdoodads = !world->drawdoodads;
-		}
-		if (e->keysym.sym == SDLK_F3) {
+			break;
+		case SDLK_F3:
 			world->drawterrain = !world->drawterrain;
-		}
-		if (e->keysym.sym == SDLK_F4) {
+			break;
+		case SDLK_F4:
 			hud = !hud;
-		}
-		if (e->keysym.sym == SDLK_F6) {
+			break;
+		case SDLK_F6:
 			world->drawwmo = !world->drawwmo;
-		}
-		if (e->keysym.sym == SDLK_F7) {
+			break;
+		case SDLK_F7:
 			world->useshaders = !world->useshaders;
-		}
-		if (e->keysym.sym == SDLK_F8) {
+			break;
+		case SDLK_F8:
 			reloadShaders();
-		}
-		if (e->keysym.sym == SDLK_h) {
+			break;
+		case SDLK_h:
 			world->drawhighres = !world->drawhighres;
-		}
-		if (e->keysym.sym == SDLK_f) {
+			break;
+		case SDLK_f:
 			world->drawfog = !world->drawfog;
-		}
-
-		if (e->keysym.sym == SDLK_KP_PLUS || e->keysym.sym == SDLK_PLUS) {
+			break;
+		case SDLK_KP_PLUS:
+		case SDLK_PLUS:
 			world->fogdistance += 60.0f;
-		}
-		if (e->keysym.sym == SDLK_KP_MINUS || e->keysym.sym == SDLK_MINUS) {
+			break;
+		case SDLK_KP_MINUS:
+		case SDLK_MINUS:
 			world->fogdistance -= 60.0f;
-		}
-
-		// minimap
-		if (e->keysym.sym == SDLK_m) {
+			break;
+		case SDLK_m:
 			mapmode = !mapmode;
 		}
-
-	} else {
-		// key UP
-
-		if (e->keysym.sym == SDLK_w) {
-			if (moving > 0) moving = 0;
-		}
-		if (e->keysym.sym == SDLK_s) {
-			if (moving < 0) moving = 0;
-		}
-		if (e->keysym.sym == SDLK_d) {
-			if (strafing > 0) strafing = 0;
-		}
-		if (e->keysym.sym == SDLK_a) {
-			if (strafing < 0) strafing = 0;
-		}
-		if (e->keysym.sym == SDLK_q) {
-			if (updown > 0) updown = 0;
-		}
-		if (e->keysym.sym == SDLK_e) {
-			if (updown < 0) updown = 0;
+	}
+	else
+	{
+		switch (key)
+		{
+		case SDLK_w:
+			if (moving > 0)
+				moving = 0;
+			break;
+		case SDLK_s:
+			if (moving < 0)
+				moving = 0;
+			break;
+		case SDLK_d:
+			if (strafing > 0)
+				strafing = 0;
+			break;
+		case SDLK_a:
+			if (strafing < 0)
+				strafing = 0;
+			break;
+		case SDLK_q:
+			if (updown > 0)
+				updown = 0;
+			break;
+		case SDLK_e:
+			if (updown < 0)
+				updown = 0;
 		}
 	}
 }
 
-void Test::mousemove(SDL_MouseMotionEvent *e)
+void Test::mousemove(int xrel, int yrel)
 {
 	if (look || fullscreen) {
-		ah += e->xrel / XSENS;
-		av += mousedir * e->yrel / YSENS;
+		ah += xrel / XSENS;
+		av += mousedir * yrel / YSENS;
 		if (av < -80) av = -80;
 		else if (av > 80) av = 80;
 	}
 
 }
 
-void Test::mouseclick(SDL_MouseButtonEvent *e)
+void Test::mouseclick(int x, int y, bool down)
 {
-	if (e->type == SDL_MOUSEBUTTONDOWN) {
+	if (down) {
 		look = true;
-	} else if (e->type == SDL_MOUSEBUTTONUP) {
+	} else {
 		look = false;
 	}
 

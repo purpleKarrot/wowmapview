@@ -62,7 +62,7 @@ public:
 		std::for_each(archives.begin(), archives.end(), SFileCloseArchive);
 	}
 
-	void add(const char* filename);
+	void add(const std::string& filename);
 
 private:
 	friend class MPQFile;

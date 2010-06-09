@@ -11,6 +11,10 @@ include_directories(${OPENGL_INCLUDE_DIR})
 find_package(SDL)
 include_directories(${SDL_INCLUDE_DIR})
 
+set(QT_USE_QTOPENGL ON)
+find_package(Qt4 REQUIRED)
+include(${QT_USE_FILE})
+
 file(COPY src/shaders src/arial.info src/arial.tga
   DESTINATION ${CMAKE_BINARY_DIR}/bin
   )
@@ -38,6 +42,7 @@ add_executable(wowmapview
 
 target_link_libraries(wowmapview
   ${OPENGL_LIBRARIES}
+  ${QT_LIBRARIES}
   ${SDL_LIBRARY}
   Storm
   )

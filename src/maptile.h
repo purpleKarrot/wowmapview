@@ -174,9 +174,9 @@ public:
 	void resetAnim();
 	void updateEmitters(float dt);
 
-	std::vector<std::string> textures;
-	std::vector<std::string> wmos;
-	std::vector<std::string> models;
+	std::vector<wow::Texture> textures;
+	std::vector<wow::WMO> wmos;
+	std::vector<wow::Model> models;
 
 	std::vector<WMOInstance> wmois;
 	std::vector<ModelInstance> modelis;

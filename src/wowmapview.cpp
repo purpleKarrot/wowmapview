@@ -1,14 +1,6 @@
-#ifdef _WIN32
-#pragma comment(lib,"OpenGL32.lib")
-#pragma comment(lib,"glu32.lib")
-#pragma comment(lib,"SDL.lib")
-#pragma comment(lib,"SDLmain.lib")
-//#pragma comment(lib,"SFmpq.lib")
 
-#define NOMINMAX
-#include <windows.h>
-#include <winerror.h>
-#endif
+#include <QApplication>
+//#include <QGLWidget>
 
 #include <ctime>
 #include <cstdlib>
@@ -21,13 +13,31 @@
 #include "menu.h"
 #include "areadb.h"
 
+#include <QGLWidget>
+
+class View: public QGLWidget
+{
+public:
+	View(QWidget * parent = 0) :
+		QGLWidget(parent)
+	{
+	}
+
+private:
+//	void paintGL();
+//	void resizeGL(int width, int height);
+//	void initializeGL();
+//
+//	bool event(QEvent* e);
+};
+
 int fullscreen = 0;
 
 
 std::vector<AppState*> gStates;
 bool gPop = false;
 
-char gamepath[1024];
+static std::string gamepath;
 
 
 float gFPS;
@@ -74,20 +84,20 @@ void getGamePath()
 		strcat(gamepath,"Data\\");
 	}
 #else
-	strcpy(gamepath, "data/");
+	gamepath = "data/";
 
 	const char* wow_path = getenv("WOW_PATH");
 	if (wow_path)
 	{
-		strcpy(gamepath, wow_path);
-		strcat(gamepath,"Data/");
+		gamepath = wow_path;
+		gamepath += "Data/";
 	}
 #endif
 }
 
-int file_exists(char *path)
+int file_exists(const std::string& path)
 {
-	FILE *f = fopen(path, "r");
+	FILE *f = fopen(path.c_str(), "r");
 	if (f) {
 		fclose(f);
 		return true;
@@ -97,6 +107,8 @@ int file_exists(char *path)
 
 int main(int argc, char *argv[])
 {
+	QApplication app(argc, argv);
+
 	srand((unsigned int)time(0));
 
 	int xres = 1024;
@@ -104,119 +116,55 @@ int main(int argc, char *argv[])
 
 	bool usePatch = true;
 
-	for (int i=1; i<argc; i++) {
-		if (!strcmp(argv[i],"-f")) fullscreen = 1;
-		else if (!strcmp(argv[i],"-w")) fullscreen = 0;
-		else if (!strcmp(argv[i],"-1024") || !strcmp(argv[i],"-1024x768")) {
-			xres = 1024;
-			yres = 768;
-		}
-		else if (!strcmp(argv[i],"-1280") || !strcmp(argv[i],"-1280x1024")) {
-			xres = 1280;
-			yres = 1024;
-		}
-		else if (!strcmp(argv[i],"-1280x960")) {
-			xres = 1280;
-			yres = 960;
-		}
-		else if (!strcmp(argv[i],"-1400") || !strcmp(argv[i],"-1400x1050")) {
-			xres = 1400;
-			yres = 1050;
-		}
-		else if (!strcmp(argv[i],"-1280x800")) {
-			xres = 1280;
-			yres = 800;
-		}
-		else if (!strcmp(argv[i],"-1600") || !strcmp(argv[i],"-1600x1200")) {
-			xres = 1600;
-			yres = 1200;
-		}
-		else if (!strcmp(argv[i],"-1920") || !strcmp(argv[i],"-1920x1200")) {
-			xres = 1920;
-			yres = 1200;
-		}
-		else if (!strcmp(argv[i],"-2048") || !strcmp(argv[i],"-2048x1536")) {
-			xres = 2048;
-			yres = 1536;
-		}
-		else if (!strcmp(argv[i],"-p")) usePatch = true;
-		else if (!strcmp(argv[i],"-np")) usePatch = false;
-	}
-
 	getGamePath();
 
-	gLog(APP_TITLE " " APP_VERSION "\nGame path: %s\n", gamepath);
+	std::cout << APP_TITLE " " APP_VERSION "\n"
+	"Game path: " << gamepath << std::endl;
 
-	int langID = 0;
+	const char* locale = 0;
 
 	const char *locales[] = {"enUS", "enGB", "deDE", "frFR", "zhTW", "ruRU", "esES", "koKR", "zhCN"};
 
 	char path[512];
 	for (size_t i=0; i<9; i++) {
-		sprintf(path, "%s%s/base-%s.MPQ", gamepath, locales[i], locales[i]);
-		if (file_exists(path)) {
-			langID = i;
+		if (file_exists(gamepath + locales[i] + "/base-" + locales[i] + ".MPQ")) {
+			locale = locales[i];
 			break;
 		}
 	}
-	gLog("Locale: %s\n", locales[langID]);
+	std::cout << "Locale: " << locale << std::endl;
 
-	if (usePatch) {
-		// patch goes first -> fake priority handling
-		sprintf(path, "%s%s", gamepath, "patch-3.MPQ");
-		FS().add(path);
+	if (usePatch)
+	{
+		FS().add(gamepath + "patch-3.MPQ");
+		FS().add(gamepath + "patch-2.MPQ");
+		FS().add(gamepath + "patch.MPQ");
 
-		sprintf(path, "%s%s", gamepath, "patch-2.MPQ");
-		FS().add(path);
-
-		sprintf(path, "%s%s", gamepath, "patch.MPQ");
-		FS().add(path);
-
-		sprintf(path, "%s%s/Patch-%s-2.MPQ", gamepath, locales[langID], locales[langID]);
-		FS().add(path);
-
-		sprintf(path, "%s%s/Patch-%s.MPQ", gamepath, locales[langID], locales[langID]);
-		FS().add(path);
+		FS().add(gamepath + locale + "/Patch-" + locale + "-2.MPQ");
+		FS().add(gamepath + locale + "/Patch-" + locale + ".MPQ");
 	}
 
-	const char* archiveNames[] = {"expansion3.MPQ", "expansion2.MPQ", "lichking.MPQ", "expansion.MPQ", "common-3.MPQ", "common-2.MPQ", "common.MPQ"};
-	for (size_t i=0; i<7; i++) {
-		sprintf(path, "%s%s", gamepath, archiveNames[i]);
-		FS().add(path);
-	}
+	FS().add(gamepath + "expansion3.MPQ");
+	FS().add(gamepath + "expansion2.MPQ");
+	FS().add(gamepath + "lichking.MPQ");
+	FS().add(gamepath + "expansion.MPQ");
+	FS().add(gamepath + "common-3.MPQ");
+	FS().add(gamepath + "common-2.MPQ");
+	FS().add(gamepath + "common.MPQ");
 
-	sprintf(path, "%s%s/expansion3-locale-%s.MPQ", gamepath, locales[langID], locales[langID]);
-	FS().add(path);
-
-	sprintf(path, "%s%s/expansion2-locale-%s.MPQ", gamepath, locales[langID], locales[langID]);
-	FS().add(path);
-
-	sprintf(path, "%s%s/lichking-locale-%s.MPQ", gamepath, locales[langID], locales[langID]);
-	FS().add(path);
-
-	sprintf(path, "%s%s/expansion-locale-%s.MPQ", gamepath, locales[langID], locales[langID]);
-	FS().add(path);
-
-	sprintf(path, "%s%s/locale-%s.MPQ", gamepath, locales[langID], locales[langID]);
-	FS().add(path);
+	FS().add(gamepath + locale + "/expansion3-locale-" + locale + ".MPQ");
+	FS().add(gamepath + locale + "/expansion2-locale-" + locale + ".MPQ");
+	FS().add(gamepath + locale + "/lichking-locale-" + locale + ".MPQ");
+	FS().add(gamepath + locale + "/expansion-locale-" + locale + ".MPQ");
+	FS().add(gamepath + locale + "/locale-" + locale + ".MPQ");
 
 	OpenDBs();
 
+	View view;
+	view.show();
+
 	video.init(xres,yres,fullscreen!=0);
 	SDL_WM_SetCaption(APP_TITLE,NULL);
-
-	if (!(supportVBO && supportMultiTex)) {
-		video.close();
-		const char *msg = "Error: Cannot initialize OpenGL extensions.";
-		gLog("%s\n",msg);
-		gLog("Missing required extensions:\n");
-		if (!supportVBO) gLog("GL_ARB_vertex_buffer_object\n");
-		if (!supportMultiTex) gLog("GL_ARB_multitexture\n");
-#ifdef _WIN32
-		MessageBox(0, msg, 0, MB_OK|MB_ICONEXCLAMATION);
-		exit(1);
-#endif
-	}
 
 	initFonts();
 
@@ -226,13 +174,11 @@ int main(int argc, char *argv[])
 	AppState *as;
 	gFPS = 0;
 
-	Menu *m = new Menu();
-	as = m;
-
-	gStates.push_back(as);
+	gStates.push_back(new Menu());
 
 	bool done = false;
 	t = SDL_GetTicks();
+
 	while(gStates.size()>0 && !done) {
 		last_t = t;
 		t = SDL_GetTicks();
@@ -248,19 +194,15 @@ int main(int argc, char *argv[])
 				done = true;
 			}
 			else if ( event.type == SDL_MOUSEMOTION) {
-				as->mousemove(&event.motion);
+				as->mousemove(event.motion.xrel, event.motion.yrel);
 			}
 			else if ( event.type == SDL_MOUSEBUTTONDOWN || event.type == SDL_MOUSEBUTTONUP) {
-				as->mouseclick(&event.button);
+				as->mouseclick(event.button.x, event.button.y, event.type == SDL_MOUSEBUTTONDOWN);
 			}
 			else if ( event.type == SDL_KEYDOWN || event.type == SDL_KEYUP) {
-				as->keypressed(&event.key);
+				as->keypressed(event.key.keysym.sym, event.type == SDL_KEYDOWN);
 			}
 		}
-
-		as->tick(ftime, dt/1000.0f);
-
-		as->display(ftime, dt/1000.0f);
 
 		if (gPop) {
 			gPop = false;
@@ -268,21 +210,13 @@ int main(int argc, char *argv[])
 			delete as;
 		}
 
-		frames++;
-		fcount++;
-		ft += dt;
-		if (ft >= 1000) {
-            float fps = (float)fcount / (float)ft * 1000.0f;
-			gFPS = fps;
-			char buf[32];
-			sprintf(buf, APP_TITLE " - %.2f fps",fps);
-			SDL_WM_SetCaption(buf,NULL);
-            ft = 0;
-			fcount = 0;
+		as = gStates[gStates.size() - 1];
+		if (as)
+		{
+			as->tick(ftime, dt / 1000.0f);
+			as->display(ftime, dt / 1000.0f);
+			video.flip();
 		}
-
-		video.flip();
-
 	}
 
 
@@ -290,9 +224,7 @@ int main(int argc, char *argv[])
 	
 	video.close();
 
-	gLog("\nExiting.\n");
-
-	return 0;
+	return app.exec();
 }
 
 float frand()
@@ -308,26 +240,4 @@ float randfloat(float lower, float upper)
 int randint(int lower, int upper)
 {
     return lower + (int)((upper+1-lower)*frand());
-}
-
-void fixnamen(char *name, size_t len)
-{
-	for (size_t i=0; i<len; i++) {
-		if (i>0 && name[i]>='A' && name[i]<='Z' && isalpha(name[i-1])) {
-			name[i] |= 0x20;
-		} else if ((i==0 || !isalpha(name[i-1])) && name[i]>='a' && name[i]<='z') {
-			name[i] &= ~0x20;
-		}
-	}
-}
-
-void fixname(std::string &name)
-{
-	for (size_t i=0; i<name.length(); i++) {
-		if (i>0 && name[i]>='A' && name[i]<='Z' && isalpha(name[i-1])) {
-			name[i] |= 0x20;
-		} else if ((i==0 || !isalpha(name[i-1])) && name[i]>='a' && name[i]<='z') {
-			name[i] &= ~0x20;
-		}
-	}
 }
