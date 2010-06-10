@@ -5,9 +5,6 @@
 #include <string>
 #include "appstate.h"
 
-extern std::vector<AppState*> gStates;
-extern bool gPop;
-
 #define gLog printf
 
 float frand();

@@ -8,6 +8,7 @@
 #include "sky.h"
 
 #include <string>
+#include <boost/scoped_ptr.hpp>
 
 #define MAPTILECACHESIZE 16
 
@@ -88,13 +89,9 @@ void	updateEmitters(float dt);
 	unsigned int getAreaID();
 };
 
-
-extern World *gWorld;
-
+extern boost::scoped_ptr<World> gWorld;
 
 void lightingDefaults();
 void myFakeLighting();
-
-
 
 #endif

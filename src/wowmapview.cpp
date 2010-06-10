@@ -9,14 +9,9 @@
 #include "video.h"
 #include "appstate.h"
 
-#include "test.h"
-#include "menu.h"
 #include "areadb.h"
 
 #include "widgets/MainWindow.hpp"
-
-std::vector<AppState*> gStates;
-bool gPop = false;
 
 static std::string gamepath;
 

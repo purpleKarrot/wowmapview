@@ -32,13 +32,11 @@ add_executable(wowmapview
   src/frustum.cpp
   src/liquid.cpp
   src/maptile.cpp
-  src/menu.cpp
   src/model.cpp
   src/mpq_stormlib.cpp
   src/particle.cpp
   src/shaders.cpp
   src/sky.cpp
-  src/test.cpp
   src/video.cpp
   src/wmo.cpp
   src/world.cpp

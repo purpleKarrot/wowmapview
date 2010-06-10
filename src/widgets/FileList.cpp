@@ -26,10 +26,14 @@ FileList::~FileList()
 {
 }
 
+void enterWorld(const MapEntry& entry);
+
+
 void FileList::select(const QModelIndex& index)
 {
-	if (gStates.empty())
-		return;
+	enterWorld(map_item_model->entry(index.row()));
 
-	gStates[gStates.size() - 1]->enter(map_item_model->entry(index.row()));
+//	if (gStates.empty())
+//		return;
+//	gStates[gStates.size() - 1]->enter(map_item_model->entry(index.row()));
 }

@@ -3,8 +3,7 @@
 #include <cassert>
 #include <GL/glu.h>
 
-World *gWorld=0;
-
+boost::scoped_ptr<World> gWorld;
 
 World::World(const char* name, int id):basename(name),mapid(id)
 {
