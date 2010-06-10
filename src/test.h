@@ -20,14 +20,11 @@ private:
 	void mouseclick(int x, int y, bool down);
 
 private:
-	GLuint tex;
-
 	float ah,av,moving,strafing,updown,mousedir,movespd;
 	bool look;
 	bool mapmode;
-	bool hud;
 
-	World *world;
+	World* world;
 };
 
 #endif

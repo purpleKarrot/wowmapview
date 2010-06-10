@@ -33,8 +33,6 @@ public:
 	void display(float t, float dt);
 
 	void mouseclick(int x, int y, bool down);
-
-	void shprint(Font *f, int x, int y, char *text);
 };
 
 #endif

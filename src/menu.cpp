@@ -7,11 +7,10 @@
 #include <fstream>
 
 Menu::Menu()
-{	
+{
 	cmd = 0;
 	world = 0;
 }
-
 
 Menu::~Menu()
 {
@@ -59,7 +58,7 @@ void Menu::tick(float t, float dt)
 
 		world->enterTile(cx, cz);
 
-		gStates.push_back(new Test(world, -90.f, -30.f));
+		gStates.push_back(new Test(world));
 
 		world = 0;
 
@@ -79,12 +78,12 @@ void Menu::display(float t, float dt)
 
 	video.set2D();
 	glEnable(GL_BLEND);
-	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_LIGHTING);
 
-	glColor4f(1,1,1,1);
+	glColor4f(1, 1, 1, 1);
 
 	glEnable(GL_TEXTURE_2D);
 
@@ -92,80 +91,62 @@ void Menu::display(float t, float dt)
 	int basey = 0;
 	int tilesize = 12;
 
-	if (cmd==CMD_LOAD_WORLD) {
-		const char *loadstr = "Loading...";
-
-		f32->shprint(video.xres/2 - f32->textwidth(loadstr)/2, video.yres/2-16, loadstr);
-
+	if (cmd == CMD_LOAD_WORLD)
+	{
+		status_message("Loading...");
 		cmd = CMD_DO_LOAD_WORLD;
-	} else if (cmd==CMD_SELECT_MINIMAP) {
-		if ((world!=0)) {
+		return;
+	}
 
-			if (world->minimap) {
-				// minimap time! ^_^
-				const int len = 768;
-				glColor4f(1,1,1,1);
-				glBindTexture(GL_TEXTURE_2D, world->minimap);
+	if (cmd != CMD_SELECT_MINIMAP || !world)
+		return;
+
+	if (world->minimap)
+	{
+		// minimap time! ^_^
+		const int len = 768;
+		glColor4f(1, 1, 1, 1);
+		glBindTexture(GL_TEXTURE_2D, world->minimap);
+		glBegin(GL_QUADS);
+		glTexCoord2f(0, 0);
+		glVertex2i(basex, basey);
+		glTexCoord2f(1, 0);
+		glVertex2i(basex + len, basey);
+		glTexCoord2f(1, 1);
+		glVertex2i(basex + len, basey + len);
+		glTexCoord2f(0, 1);
+		glVertex2i(basex, basey + len);
+		glEnd();
+	}
+
+	glDisable(GL_TEXTURE_2D);
+	for (int j = 0; j < 64; j++)
+	{
+		for (int i = 0; i < 64; i++)
+		{
+			if (world->maps[j][i])
+			{
+				glColor4f(0.7f, 0.9f, 0.8f, 0.2f);
 				glBegin(GL_QUADS);
-				glTexCoord2f(0,0);
-				glVertex2i(basex,basey);
-				glTexCoord2f(1,0);
-				glVertex2i(basex+len,basey);
-				glTexCoord2f(1,1);
-				glVertex2i(basex+len,basey+len);
-				glTexCoord2f(0,1);
-				glVertex2i(basex,basey+len);
+				glVertex2i(basex + i * tilesize, basey + j * tilesize);
+				glVertex2i(basex + (i + 1) * tilesize, basey + j * tilesize);
+				glVertex2i(basex + (i + 1) * tilesize, basey + (j + 1)
+					* tilesize);
+				glVertex2i(basex + i * tilesize, basey + (j + 1) * tilesize);
 				glEnd();
 			}
-
-			glDisable(GL_TEXTURE_2D);
-			for (int j=0; j<64; j++) {
-				for (int i=0; i<64; i++) {
-					if (world->maps[j][i]) {
-						glColor4f(0.7f,0.9f,0.8f,0.2f);
-						glBegin(GL_QUADS);
-						glVertex2i(basex+i*tilesize, basey+j*tilesize);
-						glVertex2i(basex+(i+1)*tilesize, basey+j*tilesize);
-						glVertex2i(basex+(i+1)*tilesize, basey+(j+1)*tilesize);
-						glVertex2i(basex+i*tilesize, basey+(j+1)*tilesize);
-						glEnd();
-					}
-				}
-			}
-			glEnable(GL_TEXTURE_2D);
-
-			glColor4f(1,1,1,1);
-			if (world->nMaps == 0) {
-				f16->shprint(400, 360, "Click to enter");
-			} else {
-				f16->shprint(400, 0, "Select your starting point");
-			}
 		}
-	} else if (cmd==CMD_SELECT) {
-		{
-			glColor4f(1,1,1,1);
+	}
+	glEnable(GL_TEXTURE_2D);
 
-			f24->shprint(680, 74, "Controls");
-			f16->shprint(620,110, "F1 - toggle models\n"
-								"F2 - toggle doodads\n"
-								"F3 - toggle terrain\n"
-								"F4 - toggle stats\n"
-								"F5 - save bookmark\n"
-								"F6 - toggle map objects\n"
-								"H - disable highres terrain\n"
-								"I - toggle invert mouse\n"
-								"M - minimap\n"
-								"Esc - back/exit\n"
-								"WASD - move\n"
-								"R - quick 180 degree turn\n"
-								"F - toggle fog\n"
-								"+,- - adjust fog distance\n"
-								"O,P - slower/faster movement\n"
-								"B,N - slower/faster time\n"
-			);
-
-			f16->shprint(500, video.yres - 20, "World of Warcraft is (C) Blizzard Entertainment");
-		}
+	glColor4f(1, 1, 1, 1);
+	if (world->nMaps == 0)
+	{
+		status_message("Click to enter");
+	}
+	else
+	{
+		status_message("Select your starting point");
 	}
 }
 

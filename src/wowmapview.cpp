@@ -20,8 +20,6 @@ bool gPop = false;
 
 static std::string gamepath;
 
-Font *f16, *f24, *f32;
-
 void getGamePath()
 {
 #ifdef _WIN32

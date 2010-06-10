@@ -7,16 +7,6 @@
 #include "../video.h"
 #include "../menu.h"
 
-static GLuint ftex;
-void initFonts()
-{
-	ftex = loadTGA("arial.tga",false);
-
-	f16 = new Font(ftex, 256, 256, 16, "arial.info");
-	f24 = new Font(ftex, 256, 256, 24, "arial.info");
-	f32 = new Font(ftex, 256, 256, 32, "arial.info");
-}
-
 RenderWidget::RenderWidget(QWidget* parent) :
 	QGLWidget(parent)
 {
@@ -85,7 +75,6 @@ bool RenderWidget::event(QEvent* e)
 
 void RenderWidget::initializeGL()
 {
-	initFonts();
 	qtime.start();
 	last_t = qtime.elapsed();
 	time = 0;

@@ -12,6 +12,7 @@ find_package(Qt4 REQUIRED)
 include(${QT_USE_FILE})
 
 qt4_wrap_cpp(MOC_SOURCE
+  src/widgets/MainWindow.hpp
   src/widgets/FileList.hpp
   )
 
@@ -28,7 +29,6 @@ add_executable(wowmapview
   src/widgets/RenderWidget.cpp
   src/areadb.cpp
   src/dbcfile.cpp
-  src/font.cpp
   src/frustum.cpp
   src/liquid.cpp
   src/maptile.cpp

@@ -5,6 +5,7 @@
 
 #include <cmath>
 #include <string>
+#include <sstream>
 #include <Qt>
 
 static int gV = 0;
@@ -12,6 +13,8 @@ static int gV = 0;
 #define XSENS 4.0f
 #define YSENS 8.0f
 #define SPEED 66.6f
+
+static char buffer[1024];
 
 // why the hell is this class called Test, anyway
 // I should rename it to MapViewer or something when I'm not lazy
@@ -26,7 +29,6 @@ Test::Test(World *w, float ah0, float av0): world(w), ah(ah0), av(av0)
 
 	look = false;
 	mapmode = false;
-	hud = false;
 
 	world->thirdperson = false;
 	world->lighting = true;
@@ -112,19 +114,17 @@ void Test::display(float t, float dt)
 		video.set3D();
 		world->draw();
 		
-		video.set2D();
-		glEnable(GL_BLEND);
-		glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//		video.set2D();
+//		glEnable(GL_BLEND);
+//		glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//
+//		glEnable(GL_TEXTURE_2D);
+//		glDisable(GL_DEPTH_TEST);
+//		glDisable(GL_CULL_FACE);
+//		glDisable(GL_LIGHTING);
+//		glColor4f(1,1,1,1);
 
-		glEnable(GL_TEXTURE_2D);
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_CULL_FACE);
-		glDisable(GL_LIGHTING);
-		glColor4f(1,1,1,1);
-
-		if (hud) {
-			//char *sn = world->skies->getSkyName();
-			//if (sn)	f16->print(5,60,"%s", sn);
+		std::stringstream status;
 
 			// TODO: look up WMO names/group names as well from some client db?
 			unsigned int areaID = world->getAreaID();
@@ -134,22 +134,24 @@ void Test::display(float t, float dt)
 				AreaDB::Record rec = gAreaDB.getByID(areaID);
 				std::string areaName = rec.getString(AreaDB::Name);
 				regionID = rec.getUInt(AreaDB::Region);
-				f16->print(5,20,"%s", areaName.c_str());
+				status << areaName;
 			} catch(AreaDB::NotFound)
 			{
-				/// Not found, unknown area
-				//f16->print(5,20,"Unknown [%i]", areaID);
 			}
+
+			status << "; ";
+
 			if (regionID != 0) {
 				/// Look up region
 				try {
 					std::string regionName = gAreaDB.getAreaName(regionID);
-					f16->print(5,40,"%s", regionName.c_str());
+					status << regionName;
 				} catch(AreaDB::NotFound)
 				{
-					//f16->print(5,40,"Unknown [%i]", regionID);
 				}
 			}
+
+			status << "; ";
 
 			int time = ((int)world->time)%2880;
 			int hh,mm;
@@ -157,30 +159,20 @@ void Test::display(float t, float dt)
             hh = time / 120;
 			mm = (time % 120) / 2;
 			
-			//f16->print(5, 60, "%02d:%02d", hh,mm);
-			f16->print(video.xres - 50, 0, "%02d:%02d", hh,mm);
+			sprintf(buffer, "%02d:%02d", hh,mm);
+			status << buffer << "; ";
 
-			f16->print(5, video.yres-22, "(%.0f, %.0f, %.0f)", 
-				-(world->camera.x - ZEROPOINT), 
+			sprintf(buffer, "(%.0f, %.0f, %.0f)",
+				-(world->camera.x - ZEROPOINT),
 				-(world->camera.z - ZEROPOINT),
 				world->camera.y);
+			status << buffer;
 
-		}
+			status_message(status.str());
 
-		if (world->loading) {
-			const char* loadstr = "Loading...";
-			const char* oobstr = "Out of bounds";
-
-			f16->print(video.xres/2 - f16->textwidth(loadstr)/2, /*video.yres/2-8*/ 0, world->oob?oobstr:loadstr);
-		}
-
-		/*
-		f16->print(5,20,"C: %.1f", world->l_const);
-		f16->print(5,40,"L: %.2f", world->l_linear);
-		f16->print(5,60,"Q: %.3f", world->l_quadratic);
-		*/
+		if (world->loading)
+			status_message(world->oob ? "Out of bounds" : "Loading...");
 	}
-
 };
 
 void Test::keypressed(int key, bool down)
@@ -244,9 +236,6 @@ void Test::keypressed(int key, bool down)
 			break;
 		case Qt::Key_F3:
 			world->drawterrain = !world->drawterrain;
-			break;
-		case Qt::Key_F4:
-			hud = !hud;
 			break;
 		case Qt::Key_F6:
 			world->drawwmo = !world->drawwmo;
@@ -312,7 +301,6 @@ void Test::mousemove(int xrel, int yrel)
 		if (av < -80) av = -80;
 		else if (av > 80) av = 80;
 	}
-
 }
 
 void Test::mouseclick(int x, int y, bool down)

@@ -737,27 +737,35 @@ void World::enterTile(int x, int z)
 
 MapTile *World::loadTile(int x, int z)
 {
-	if (!oktile(x,z) || !maps[z][x]) {
-		//gLog("Tile %d,%d not in map\n", x, z);
+	if (!oktile(x, z) || !maps[z][x])
 		return 0;
-	}
 
 	int firstnull = MAPTILECACHESIZE;
-	for (int i=0; i<MAPTILECACHESIZE; i++) {
-		if ((maptilecache[i] != 0)  && (maptilecache[i]->x == x) && (maptilecache[i]->z == z)) {
-            return maptilecache[i];
+	for (int i = 0; i < MAPTILECACHESIZE; i++)
+	{
+		if ((maptilecache[i] != 0) && //
+			(maptilecache[i]->x == x) && //
+			(maptilecache[i]->z == z))
+		{
+			return maptilecache[i];
 		}
-		if (maptilecache[i] == 0 && i < firstnull) firstnull = i;
+
+		if (maptilecache[i] == 0 && i < firstnull)
+			firstnull = i;
 	}
+
 	// ok we need to find a place in the cache
-	if (firstnull == MAPTILECACHESIZE) {
+	if (firstnull == MAPTILECACHESIZE)
+	{
 		int score, maxscore = 0, maxidx = 0;
 		// oh shit we need to throw away a tile
-		for (int i=0; i<MAPTILECACHESIZE; i++) {
+		for (int i = 0; i < MAPTILECACHESIZE; i++)
+		{
 			if (maptilecache[i] == 0)
 				continue;
 			score = abs(maptilecache[i]->x - cx) + abs(maptilecache[i]->z - cz);
-			if (score>maxscore) {
+			if (score > maxscore)
+			{
 				maxscore = score;
 				maxidx = i;
 			}
@@ -772,9 +780,10 @@ MapTile *World::loadTile(int x, int z)
 	// TODO: make a loader thread  or something :(
 
 	char name[256];
-	sprintf(name,"World\\Maps\\%s\\%s_%d_%d.adt", basename.c_str(), basename.c_str(), x, z);
+	sprintf(name, "World\\Maps\\%s\\%s_%d_%d.adt", //
+		basename.c_str(), basename.c_str(), x, z);
 
-	maptilecache[firstnull] = new MapTile(x,z,name,mBigAlpha);
+	maptilecache[firstnull] = new MapTile(x, z, name, mBigAlpha);
 	return maptilecache[firstnull];
 }
 
@@ -1168,17 +1177,21 @@ void World::draw()
 
 void World::tick(float dt)
 {
-	if (loading) {
-		if (ex!=-1 && ez!=-1) {
-			enterTile(ex,ez);
-		}
+	if (loading)
+	{
+		if (ex != -1 && ez != -1)
+			enterTile(ex, ez);
+
 		ex = ez = -1;
 		loading = false;
 	}
-	while (dt > 0.1f) {
+
+	while (dt > 0.1f)
+	{
 		updateEmitters(0.1f);
 		dt -= 0.1f;
 	}
+
 	updateEmitters(dt);
 }
 

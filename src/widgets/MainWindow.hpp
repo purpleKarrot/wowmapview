@@ -5,9 +5,15 @@
 
 class MainWindow: public QMainWindow
 {
+Q_OBJECT
+
 public:
 	MainWindow();
 	~MainWindow();
+
+private slots:
+	void about();
+	void controls();
 };
 
 #endif /* MAINWINDOW_HPP */
