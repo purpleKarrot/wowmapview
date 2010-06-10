@@ -6,7 +6,7 @@
 
 Video video;
 
-void Video::init(int xres, int yres, bool fullscreen)
+void Video::init(int xres, int yres)
 {
 	initShaders();
 
@@ -27,7 +27,7 @@ void Video::init(int xres, int yres, bool fullscreen)
 
 void Video::clearScreen()
 {
-	glClearColor(0.0f,0.0f,0.0f,0.0f);
+	glClearColor(0.f, 0.f, 0.f, 0.f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 

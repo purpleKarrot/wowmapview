@@ -11,12 +11,21 @@ set(QT_USE_QTOPENGL ON)
 find_package(Qt4 REQUIRED)
 include(${QT_USE_FILE})
 
+qt4_wrap_cpp(MOC_SOURCE
+  src/widgets/FileList.hpp
+  )
+
 file(COPY src/shaders src/arial.info src/arial.tga
   DESTINATION ${CMAKE_BINARY_DIR}/bin
   )
 
 add_executable(wowmapview
+  ${MOC_SOURCE}
   src/lib/texture.cpp
+  src/widgets/FileList.cpp
+  src/widgets/MapItemModel.cpp
+  src/widgets/MainWindow.cpp
+  src/widgets/RenderWidget.cpp
   src/areadb.cpp
   src/dbcfile.cpp
   src/font.cpp

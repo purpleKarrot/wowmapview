@@ -10,15 +10,13 @@
 
 #define PI 3.14159265358f
 
-typedef GLuint TextureID;
-
 #define GL_BUFFER_OFFSET(i) ((char *)(0) + (i))
 
 ////////// VIDEO CLASS
 
 struct Video
 {
-	void init(int xres, int yres, bool fullscreen);
+	void init(int xres, int yres);
 
 	void clearScreen();
 	void set3D();

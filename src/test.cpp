@@ -123,8 +123,6 @@ void Test::display(float t, float dt)
 		glColor4f(1,1,1,1);
 
 		if (hud) {
-			f16->print(5,0,"%.2f fps", gFPS);
-
 			//char *sn = world->skies->getSkyName();
 			//if (sn)	f16->print(5,60,"%s", sn);
 
@@ -308,7 +306,7 @@ void Test::keypressed(int key, bool down)
 
 void Test::mousemove(int xrel, int yrel)
 {
-	if (look || fullscreen) {
+	if (look) {
 		ah += xrel / XSENS;
 		av += mousedir * yrel / YSENS;
 		if (av < -80) av = -80;
@@ -319,11 +317,5 @@ void Test::mousemove(int xrel, int yrel)
 
 void Test::mouseclick(int x, int y, bool down)
 {
-	if (down) {
-		look = true;
-	} else {
-		look = false;
-	}
-
+	look = down;
 }
-

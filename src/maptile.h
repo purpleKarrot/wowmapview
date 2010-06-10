@@ -131,8 +131,8 @@ public:
 	float waterlevel[2];
 
 	wow::Texture textures[4];
-	TextureID alphamaps[3];
-	TextureID shadow, blend;
+	GLuint alphamaps[3];
+	GLuint shadow, blend;
 
 	int animated[4];
 

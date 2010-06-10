@@ -13,70 +13,14 @@
 #include "menu.h"
 #include "areadb.h"
 
-#include <QGLWidget>
-#include <QMouseEvent>
-#include <QKeyEvent>
-#include <QTimer>
-#include <QTime>
-
-class View: public QGLWidget
-{
-public:
-	View(QWidget* parent = 0) :
-		QGLWidget(parent)
-	{
-		QTimer* timer = new QTimer(this);
-		connect(timer, SIGNAL(timeout()), this, SLOT(updateGL()));
-		timer->start();
-	}
-
-private:
-	void paintGL();
-	void resizeGL(int width, int height);
-	void initializeGL();
-
-	bool event(QEvent* e);
-
-private:
-	QTime qtime;
-
-	int last_t, time;
-	int x, y;
-};
-
-int fullscreen = 0;
-
+#include "widgets/MainWindow.hpp"
 
 std::vector<AppState*> gStates;
 bool gPop = false;
 
 static std::string gamepath;
 
-
-float gFPS;
-
-GLuint ftex;
 Font *f16, *f24, *f32;
-
-
-void initFonts()
-{
-	ftex = loadTGA("arial.tga",false);
-
-	f16 = new Font(ftex, 256, 256, 16, "arial.info");
-	f24 = new Font(ftex, 256, 256, 24, "arial.info");
-	f32 = new Font(ftex, 256, 256, 32, "arial.info");
-}
-
-void deleteFonts()
-{
-	glDeleteTextures(1, &ftex);
-
-	delete f16;
-	delete f24;
-	delete f32;
-}
-
 
 void getGamePath()
 {
@@ -118,93 +62,6 @@ int file_exists(const std::string& path)
 	return false;
 }
 
-bool View::event(QEvent* e)
-{
-	AppState *as = 0;
-	if (!gStates.empty())
-		as = gStates[gStates.size() - 1];
-
-	if (as)
-	{
-		switch (e->type())
-		{
-		case QEvent::MouseMove:
-		{
-			QMouseEvent* me = (QMouseEvent*) e;
-			as->mousemove(x - me->x(), y - me->y());
-			x = me->x();
-			y = me->y();
-			return true;
-		}
-		case QEvent::MouseButtonPress:
-		case QEvent::MouseButtonRelease:
-		{
-			QMouseEvent* me = (QMouseEvent*) e;
-			as->mouseclick(me->x(), me->y(), e->type() == QEvent::MouseButtonPress);
-			x = me->x();
-			y = me->y();
-			return true;
-		}
-		case QEvent::KeyPress:
-		case QEvent::KeyRelease:
-		{
-			QKeyEvent* ke = (QKeyEvent*) e;
-			as->keypressed(ke->key(), e->type() == QEvent::KeyPress);
-			return true;
-		}
-		}
-
-		if (gPop)
-		{
-			gPop = false;
-			gStates.pop_back();
-			delete as;
-		}
-
-		if (gStates.empty())
-		{
-			close();
-			return true;
-		}
-	}
-
-	return QGLWidget::event(e);
-}
-
-void View::initializeGL()
-{
-	initFonts();
-	qtime.start();
-	last_t = qtime.elapsed();
-	time = 0;
-	video.init(width(), height(), fullscreen != 0);
-	gStates.push_back(new Menu());
-	gPop = false;
-}
-
-void View::resizeGL(int width, int height)
-{
-	glViewport(0, 0, (GLint)width, (GLint)height);
-	video.xres = width;
-	video.yres = height;
-}
-
-void View::paintGL()
-{
-	if (gStates.empty())
-		return;
-
-	int t = qtime.elapsed();
-	int dt = t - last_t;
-	last_t = t;
-	time += dt;
-	float ftime = time / 1000.f;
-
-	AppState* as = gStates[gStates.size() - 1];
-	as->tick(ftime, dt / 1000.f);
-	as->display(ftime, dt / 1000.f);
-}
-
 int main(int argc, char *argv[])
 {
 	QApplication app(argc, argv);
@@ -217,9 +74,6 @@ int main(int argc, char *argv[])
 	bool usePatch = true;
 
 	getGamePath();
-
-	std::cout << APP_TITLE " " APP_VERSION "\n"
-	"Game path: " << gamepath << std::endl;
 
 	const char* locale = 0;
 
@@ -260,7 +114,7 @@ int main(int argc, char *argv[])
 
 	OpenDBs();
 
-	View view;
+	MainWindow view;
 	view.resize(xres, yres);
 	view.show();
 
