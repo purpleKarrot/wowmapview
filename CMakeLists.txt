@@ -11,36 +11,19 @@ set(QT_USE_QTOPENGL ON)
 find_package(Qt4 REQUIRED)
 include(${QT_USE_FILE})
 
-qt4_wrap_cpp(MOC_SOURCE
-  src/widgets/MainWindow.hpp
-  src/widgets/FileList.hpp
+
+include_directories(include)
+
+add_subdirectory(lib)
+add_subdirectory(mapview)
+add_subdirectory(modelview)
+
+
+file(COPY
+    data/enUS
+    data/shaders
+    data/ridable.csv
+  DESTINATION
+    ${CMAKE_BINARY_DIR}/bin
   )
 
-file(COPY src/shaders DESTINATION ${CMAKE_BINARY_DIR}/bin)
-
-add_executable(wowmapview
-  ${MOC_SOURCE}
-  src/lib/texture.cpp
-  src/widgets/FileList.cpp
-  src/widgets/MapItemModel.cpp
-  src/widgets/MainWindow.cpp
-  src/widgets/RenderWidget.cpp
-  src/areadb.cpp
-  src/dbcfile.cpp
-  src/frustum.cpp
-  src/liquid.cpp
-  src/maptile.cpp
-  src/model.cpp
-  src/mpq_stormlib.cpp
-  src/particle.cpp
-  src/shaders.cpp
-  src/sky.cpp
-  src/wmo.cpp
-  src/world.cpp
-  src/wowmapview.cpp
-  )
-
-target_link_libraries(wowmapview
-  ${QT_LIBRARIES}
-  Storm
-  )
