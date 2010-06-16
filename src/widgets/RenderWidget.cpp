@@ -5,7 +5,6 @@
 #include <sstream>
 
 #include "../wowmapview.h"
-#include "../video.h"
 #include "../menu.h"
 #include "../shaders.h"
 #include "../areadb.h"
@@ -13,6 +12,7 @@
 #define XSENS 4.0f
 #define YSENS 8.0f
 #define SPEED 66.6f
+#define PI 3.14159265358f
 
 static int gV = 0;
 static char buffer[1024];
@@ -80,14 +80,27 @@ void RenderWidget::initializeGL()
 	qtime.start();
 	last_t = qtime.elapsed();
 	time = 0;
-	video.init(width(), height());
+
+	initShaders();
+//	video.xres = width();
+//	video.yres = height();
+
+	glViewport(0, 0, width(), height());
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(45.0f, GLfloat(width()) / GLfloat(height()), 1.0f, 1024.0f);
+
+	// hmmm...
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_NORMAL_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 }
 
 void RenderWidget::resizeGL(int width, int height)
 {
 	glViewport(0, 0, (GLint) width, (GLint) height);
-	video.xres = width;
-	video.yres = height;
+//	video.xres = width;
+//	video.yres = height;
 }
 
 void RenderWidget::paintGL()
@@ -100,7 +113,8 @@ void RenderWidget::paintGL()
 
 	tick(ftime, dt / 1000.f);
 
-	video.clearScreen();
+	glClearColor(0.f, 0.f, 0.f, 0.f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	display(ftime, dt / 1000.f);
 }
 
@@ -337,7 +351,12 @@ void RenderWidget::drawMinimap()
 {
 	glDisable(GL_FOG);
 
-	video.set2D();
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(0, width(), height(), 0, -1.0, 1.0);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glDisable(GL_DEPTH_TEST);
@@ -412,7 +431,12 @@ void RenderWidget::display(float t, float dt)
 		return;
 	}
 
-	video.set3D();
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(45.0f, GLfloat(width()) / GLfloat(height()), 1.0f, 1024.0f);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
 	gWorld->draw();
 
 	std::stringstream status;

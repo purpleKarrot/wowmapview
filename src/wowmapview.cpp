@@ -1,12 +1,11 @@
 
 #include <QApplication>
-//#include <QGLWidget>
+#include <iostream>
 
 #include <ctime>
 #include <cstdlib>
 
 #include "mpq.h"
-#include "video.h"
 #include "appstate.h"
 
 #include "areadb.h"

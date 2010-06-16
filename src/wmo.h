@@ -6,7 +6,6 @@
 #include "model.h"
 #include <vector>
 #include <set>
-#include "video.h"
 #include "lib/texture.hpp"
 
 class WMO;

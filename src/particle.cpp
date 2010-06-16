@@ -2,6 +2,7 @@
 #include "wowmapview.h"
 
 #define MAX_PARTICLES 10000
+#define PI 3.14159265358f
 
 
 Vec4D fromARGB(uint32 color)
@@ -203,20 +204,6 @@ void ParticleSystem::setup(int anim, int time)
 {
 	manim = anim;
 	mtime = time;
-
-	/*
-	if (transform) {
-		// transform every particle by the parent trans matrix   - apparently this isn't needed
-		Matrix m = parent->mat;
-		for (ParticleList::iterator it = particles.begin(); it != particles.end(); ++it) {
-			it->tpos = m * it->pos;
-		}
-	} else {
-		for (ParticleList::iterator it = particles.begin(); it != particles.end(); ++it) {
-			it->tpos = it->pos;
-		}
-	}
-	*/
 }
 
 void ParticleSystem::draw()
@@ -272,56 +259,6 @@ void ParticleSystem::draw()
 	//glDepthMask(GL_FALSE);
 
 	texture.get().bind();
-
-	/*
-	if (supportPointSprites && rows==1 && cols==1) {
-		// This is how will our point sprite's size will be modified by 
-		// distance from the viewer
-		float quadratic[] = {0.1f, 0.0f, 0.5f};
-		//float quadratic[] = {0.88f, 0.001f, 0.000004f};
-		glPointParameterfvARB( GL_POINT_DISTANCE_ATTENUATION_ARB, quadratic);
-
-		// Query for the max point size supported by the hardware
-		float maxSize = 512.0f;
-		//glGetFloatv(GL_POINT_SIZE_MAX_ARB, &maxSize );
-
-		// Clamp size to 100.0f or the sprites could get a little too big on some  
-		// of the newer graphic cards. My ATI card at home supports a max point 
-		// size of 1024.0f!
-		//if( maxSize > 100.0f )
-		//	maxSize = 100.0f;
-
-		glPointSize(maxSize);
-
-		// The alpha of a point is calculated to allow the fading of points 
-		// instead of shrinking them past a defined threshold size. The threshold 
-		// is defined by GL_POINT_FADE_THRESHOLD_SIZE_ARB and is not clamped to 
-		// the minimum and maximum point sizes.
-		glPointParameterfARB(GL_POINT_FADE_THRESHOLD_SIZE_ARB, 60.0f);
-
-		glPointParameterfARB(GL_POINT_SIZE_MIN_ARB, 1.0f );
-		glPointParameterfARB(GL_POINT_SIZE_MAX_ARB, maxSize );
-
-		// Specify point sprite texture coordinate replacement mode for each texture unit
-		glTexEnvf(GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, GL_TRUE);
-		// Render point sprites...
-		glEnable(GL_POINT_SPRITE_ARB);
-
-		glBegin(GL_POINTS);
-		{
-			for (ParticleList::iterator it = particles.begin(); it != particles.end(); ++it) {
-				glPointSize(it->size);
-				glTexCoord2fv(tiles[it->tile].tc[0]);
-				glColor4fv(it->color);
-				glVertex3fv(it->pos);
-			}
-		}
-		glEnd();
-
-		glDisable(GL_POINT_SPRITE_ARB);
-		glTexEnvf(GL_POINT_SPRITE_ARB, GL_COORD_REPLACE_ARB, GL_FALSE);
-
-	} else { // Old slow method */
 
 		Vec3D vRight(1,0,0);
 		Vec3D vUp(0,1,0);

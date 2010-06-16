@@ -16,9 +16,7 @@ qt4_wrap_cpp(MOC_SOURCE
   src/widgets/FileList.hpp
   )
 
-file(COPY src/shaders src/arial.info src/arial.tga
-  DESTINATION ${CMAKE_BINARY_DIR}/bin
-  )
+file(COPY src/shaders DESTINATION ${CMAKE_BINARY_DIR}/bin)
 
 add_executable(wowmapview
   ${MOC_SOURCE}
@@ -37,7 +35,6 @@ add_executable(wowmapview
   src/particle.cpp
   src/shaders.cpp
   src/sky.cpp
-  src/video.cpp
   src/wmo.cpp
   src/world.cpp
   src/wowmapview.cpp

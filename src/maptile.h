@@ -8,7 +8,6 @@
 
 #define	CHUNKS_IN_TILE	16
 
-#include "video.h"
 #include "mpq.h"
 #include "wmo.h"
 #include "model.h"

@@ -3,7 +3,6 @@
 
 class Liquid;
 
-#include "video.h"
 #include "mpq.h"
 #include "maptile.h"
 

@@ -1725,17 +1725,16 @@ void MapChunk::drawNoDetail()
 
 void MapChunk::drawWater()
 {
-	if( wTextures.size() == 0 )
+	if( wTextures.empty())
 		return;
 
-	glActiveTextureARB(GL_TEXTURE1_ARB);
+	glActiveTexture(GL_TEXTURE1);
 	glDisable(GL_TEXTURE_2D);
-	glActiveTextureARB(GL_TEXTURE0_ARB);
+	glActiveTexture(GL_TEXTURE0);
 	glDisable(GL_TEXTURE_2D);
 
 	size_t texidx = (size_t)(gWorld->animtime / 60.0f) % wTextures.size();
 	wTextures[texidx].get().bind();
-	//glBindTexture(GL_TEXTURE_2D, gWorld->water);
 
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	

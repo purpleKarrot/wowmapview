@@ -1,5 +1,5 @@
 #include "frustum.h"
-#include "video.h"
+#include <GL/gl.h>
 
 
 void Plane::normalize()

@@ -3,6 +3,8 @@
 #include "liquid.h"
 #include "shaders.h"
 
+#define PI 3.14159265358f
+
 WMO::WMO(std::string name): name(name), groups(0), nTextures(0), nGroups(0),
 	nP(0), nLights(0), nModels(0), nDoodads(0), nDoodadSets(0), nX(0), mat(0), LiquidType(0)
 {

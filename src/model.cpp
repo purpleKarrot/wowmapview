@@ -4,6 +4,8 @@
 #include <algorithm>
 #include <GL/glu.h>
 
+#define GL_BUFFER_OFFSET(i) ((char *)(0) + (i))
+#define PI 3.14159265358f
 int globalTime = 0;
 
 Model::Model(std::string name, bool forceAnim) : forceAnim(forceAnim)
@@ -30,7 +32,7 @@ Model::Model(std::string name, bool forceAnim) : forceAnim(forceAnim)
 	// HACK: these particle systems are way too active and cause horrible horrible slowdowns
 	// I'm removing them until I can fix emission speed so it doesn't get this crazy
 	if (false
-	|| name=="World\\Kalimdor\\Orgrimmar\\Passivedoodads\\Orgrimmarbonfire\\Orgrimmarsmokeemitter.Mdx"	
+	|| name=="World\\Kalimdor\\Orgrimmar\\Passivedoodads\\Orgrimmarbonfire\\Orgrimmarsmokeemitter.Mdx"
 	//|| name=="World\\Kalimdor\\Orgrimmar\\Passivedoodads\\Orgrimmarbonfire\\Orgrimmarbonfire01.Mdx"	
 	) {
         header.nParticleEmitters = 0;
@@ -65,9 +67,9 @@ Model::Model(std::string name, bool forceAnim) : forceAnim(forceAnim)
 		memcpy(globalSequences, (f.getBuffer() + header.ofsGlobalSequences), header.nGlobalSequences * 4);
 	}
 
-	if (animated) 
+	if (animated)
 		initAnimated(f);
-	else 
+	else
 		initStatic(f);
 
 	f.close();
@@ -220,7 +222,7 @@ void Model::initCommon(MPQFile &f)
 		}
 
 		float len = origVertices[i].pos.lengthSquared();
-		if (len > rad){ 
+		if (len > rad){
 			rad = len;
 		}
 		/*
@@ -271,7 +273,7 @@ void Model::initCommon(MPQFile &f)
 	if (header.nColors) {
 		colors = new ModelColor[header.nColors];
 		ModelColorDef *colorDefs = (ModelColorDef*)(f.getBuffer() + header.ofsColors);
-		for (size_t i=0; i<header.nColors; i++) 
+		for (size_t i=0; i<header.nColors; i++)
 			colors[i].init(f, colorDefs[i], globalSequences);
 	}
 	// init transparency
@@ -279,7 +281,7 @@ void Model::initCommon(MPQFile &f)
 	if (header.nTransparency) {
 		transparency = new ModelTransparency[header.nTransparency];
 		ModelTransDef *trDefs = (ModelTransDef*)(f.getBuffer() + header.ofsTransparency);
-		for (size_t i=0; i<header.nTransparency; i++) 
+		for (size_t i=0; i<header.nTransparency; i++)
 			transparency[i].init(f, trDefs[i], globalSequences);
 	}
 
@@ -344,10 +346,10 @@ void Model::initCommon(MPQFile &f)
 			//TextureID texid = textures[texlookup[tex[j].textureid]];
 			//pass.texture = texid;
 			pass.tex = texlookup[tex[j].textureid];
-			
+
 			// TODO: figure out these flags properly -_-
 			ModelRenderFlags &rf = renderFlags[tex[j].flagsIndex];
-			
+
 
 			pass.blendmode = rf.blend;
 			pass.color = tex[j].colorIndex;
@@ -457,7 +459,7 @@ void Model::initAnimated(MPQFile &f)
 		delete[] normals;
 	}
 	Vec2D *texcoords = new Vec2D[header.nVertices];
-	for (size_t i=0; i<header.nVertices; i++) 
+	for (size_t i=0; i<header.nVertices; i++)
 		texcoords[i] = origVertices[i].texcoords;
 	glBindBufferARB(GL_ARRAY_BUFFER_ARB, tbuf);
 	glBufferDataARB(GL_ARRAY_BUFFER_ARB, 2*size, texcoords, GL_STATIC_DRAW_ARB);
@@ -491,17 +493,11 @@ void Model::initAnimated(MPQFile &f)
 		}
 	}
 
-	// just use the first camera, meh
-	if (header.nCameras>0) {
-		ModelCameraDef *camDefs = (ModelCameraDef*)(f.getBuffer() + header.ofsCameras);
-		cam.init(f, camDefs[0], globalSequences);
-	}
-
 	// init lights
 	if (header.nLights) {
 		lights = new ModelLight[header.nLights];
 		ModelLightDef *lDefs = (ModelLightDef*)(f.getBuffer() + header.ofsLights);
-		for (size_t i=0; i<header.nLights; i++) 
+		for (size_t i=0; i<header.nLights; i++)
 			lights[i].init(f, lDefs[i], globalSequences);
 	}
 
@@ -533,36 +529,34 @@ void Model::animate(int anim)const
 		calcBones(anim, t);
 	}
 
-	if (animGeometry) {
-
-		glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbuf);
-        glBufferDataARB(GL_ARRAY_BUFFER_ARB, 2*vbufsize, NULL, GL_STREAM_DRAW_ARB);
-		vertices = (Vec3D*)glMapBufferARB(GL_ARRAY_BUFFER_ARB, GL_WRITE_ONLY);
+	if (animGeometry)
+	{
+		glBindBuffer(GL_ARRAY_BUFFER, vbuf);
+		glBufferData(GL_ARRAY_BUFFER, 2 * vbufsize, NULL, GL_STREAM_DRAW);
+		vertices = (Vec3D*) glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
 
 		// transform vertices
 		ModelVertex *ov = origVertices;
-		for (size_t i=0,k=0; i<header.nVertices; ++i,++ov) {
-			Vec3D v(0,0,0), n(0,0,0);
+		for (size_t i = 0, k = 0; i < header.nVertices; ++i, ++ov)
+		{
+			Vec3D v(0, 0, 0), n(0, 0, 0);
 
-			for (size_t b=0; b<4; b++) {
-				if (ov->weights[b]>0) {
+			for (size_t b = 0; b < 4; b++)
+			{
+				if (ov->weights[b] > 0)
+				{
 					Vec3D tv = bones[ov->bones[b]].mat * ov->pos;
 					Vec3D tn = bones[ov->bones[b]].mrot * ov->normal;
-					v += tv * ((float)ov->weights[b] / 255.0f);
-					n += tn * ((float)ov->weights[b] / 255.0f);
+					v += tv * (float(ov->weights[b]) / 255.f);
+					n += tn * (float(ov->weights[b]) / 255.f);
 				}
 			}
 
-			/*
 			vertices[i] = v;
-			normals[i] = n;
-			*/
-			vertices[i] = v;
-			vertices[header.nVertices + i] = n.normalize(); // shouldn't these be normal by default?
+			vertices[header.nVertices + i] = n.normalize();
 		}
 
-        glUnmapBufferARB(GL_ARRAY_BUFFER_ARB);
-
+		glUnmapBufferARB(GL_ARRAY_BUFFER_ARB);
 	}
 
 	for (size_t i=0; i<header.nLights; i++) {
@@ -636,11 +630,11 @@ bool ModelRenderPass::init(Model const& m)
 		//GLuint bindtex = 0;
 		if (m.specialTextures[tex]==-1)
 			m.textures[tex].get().bind();
-		else 
+		else
 			m.replaceTextures[m.specialTextures[tex]].get().bind();
-		
+
 		// --
-		
+
 		// TODO: Add proper support for multi-texturing.
 
 		// blend mode
@@ -669,7 +663,7 @@ bool ModelRenderPass::init(Model const& m)
 			break;
 		case BM_MODULATE2: // 6
 			glEnable(GL_BLEND);
-			glBlendFunc(GL_DST_COLOR,GL_SRC_COLOR); 
+			glBlendFunc(GL_DST_COLOR,GL_SRC_COLOR);
 			break;
 		default:
 			gLog("Error: Unknown blendmode: %d\n", blendmode);
@@ -701,22 +695,22 @@ bool ModelRenderPass::init(Model const& m)
 			// Turn on the 'reflection' shine, using 18.0f as that is what WoW uses based on the reverse engineering
 			// This is now set in InitGL(); - no need to call it every render.
 			glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 18.0f);
-		
+
 			// env mapping
 			glEnable(GL_TEXTURE_GEN_S);
 			glEnable(GL_TEXTURE_GEN_T);
-		
+
 			const GLint maptype = GL_SPHERE_MAP;
 			//const GLint maptype = GL_REFLECTION_MAP_ARB;
-		
+
 			glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, maptype);
 			glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, maptype);
 		}
-		
+
 		if (texanim!=-1) {
 			glMatrixMode(GL_TEXTURE);
 			glPushMatrix();
-		
+
 			m.texAnims[texanim].setup(texanim);
 		}
 
@@ -772,63 +766,48 @@ void ModelRenderPass::deinit()
 	//glColor4f(1,1,1,1); //???
 }
 
-void Model::drawModel()const
+void Model::drawModel() const
 {
-	// assume these client states are enabled: GL_VERTEX_ARRAY, GL_NORMAL_ARRAY, GL_TEXTURE_COORD_ARRAY
-
-	if (animated) {
-
-		if (animGeometry) {
-
-			glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbuf);
-
+	if (animated)
+	{
+		if (animGeometry)
+		{
+			glBindBuffer(GL_ARRAY_BUFFER, vbuf);
 			glVertexPointer(3, GL_FLOAT, 0, 0);
 			glNormalPointer(GL_FLOAT, 0, GL_BUFFER_OFFSET(vbufsize));
 
-		} else {
-			glBindBufferARB(GL_ARRAY_BUFFER_ARB, vbuf);
+		}
+		else
+		{
+			glBindBuffer(GL_ARRAY_BUFFER, vbuf);
 			glVertexPointer(3, GL_FLOAT, 0, 0);
-			glBindBufferARB(GL_ARRAY_BUFFER_ARB, nbuf);
+			glBindBuffer(GL_ARRAY_BUFFER, nbuf);
 			glNormalPointer(GL_FLOAT, 0, 0);
 		}
 
-		glBindBufferARB(GL_ARRAY_BUFFER_ARB, tbuf);
+		glBindBuffer(GL_ARRAY_BUFFER, tbuf);
 		glTexCoordPointer(2, GL_FLOAT, 0, 0);
-		
-		//glTexCoordPointer(2, GL_FLOAT, sizeof(ModelVertex), &origVertices[0].texcoords);
 	}
 
-	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glAlphaFunc (GL_GREATER, 0.3f);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glAlphaFunc(GL_GREATER, 0.3f);
 
-	for (size_t i=0; i<passes.size(); i++) {
-		ModelRenderPass &p = passes[i];
+	for (size_t i = 0; i < passes.size(); i++)
+	{
+		ModelRenderPass& p = passes[i];
 
-		if (p.init(*this)) {
-			// we don't want to render completely transparent parts
-		
-			// render
-			if (animated) {
-				//glDrawElements(GL_TRIANGLES, p.indexCount, GL_UNSIGNED_SHORT, indices + p.indexStart);
-				// a GDC OpenGL Performace Tuning paper recommended glDrawRangeElements over glDrawElements
-				// I can't notice a difference but I guess it can't hurt
-				//if ( supportVBO &&  supportDrawRangeElements) {
-					glDrawRangeElements(GL_TRIANGLES, p.vertexStart, p.vertexEnd, p.indexCount, GL_UNSIGNED_SHORT, indices + p.indexStart);
-				//} else if (!supportVBO) {
-				//	glDrawElements(GL_TRIANGLES, p.indexCount, GL_UNSIGNED_SHORT, indices + p.indexStart); 
-//				} else {
-//					glBegin(GL_TRIANGLES);
-//					for (size_t k=0, b=p.indexStart; k<p.indexCount; k++,b++) {
-//						uint16 a = indices[b];
-//						glNormal3fv(normals[a]);
-//						glTexCoord2fv(origVertices[a].texcoords);
-//						glVertex3fv(vertices[a]);
-//					}
-//					glEnd();
-//				}
-			} else {
+		if (p.init(*this))
+		{
+			if (animated)
+			{
+				glDrawRangeElements(GL_TRIANGLES, p.vertexStart, p.vertexEnd,
+					p.indexCount, GL_UNSIGNED_SHORT, indices + p.indexStart);
+			}
+			else
+			{
 				glBegin(GL_TRIANGLES);
-				for (size_t k = 0, b=p.indexStart; k<p.indexCount; k++,b++) {
+				for (size_t k = 0, b = p.indexStart; k < p.indexCount; k++, b++)
+				{
 					uint16 a = indices[b];
 					glNormal3fv(normals[a]);
 					glTexCoord2fv(origVertices[a].texcoords);
@@ -841,14 +820,13 @@ void Model::drawModel()const
 		}
 
 	}
-	// done with all render ops
 
-	glAlphaFunc (GL_GREATER, 0.0f);
-	glDisable (GL_ALPHA_TEST);
+	glAlphaFunc(GL_GREATER, 0.0f);
+	glDisable(GL_ALPHA_TEST);
 
-	GLfloat czero[4] = {0,0,0,1};
+	GLfloat czero[4] = { 0, 0, 0, 1 };
 	glMaterialfv(GL_FRONT, GL_EMISSION, czero);
-	glColor4f(1,1,1,1);
+	glColor4f(1, 1, 1, 1);
 	glDepthMask(GL_TRUE);
 }
 
@@ -877,41 +855,6 @@ void TextureAnim::setup(int anim)
 	if (scale.uses(anim)) {
 		glScalef(sval.x, sval.y, sval.z);
 	}
-}
-
-void ModelCamera::init(MPQFile &f, ModelCameraDef &mcd, int *global)
-{
-	ok = true;
-    nearclip = mcd.nearclip;
-	farclip = mcd.farclip;
-	fov = mcd.fov;
-	pos = fixCoordSystem(mcd.pos);
-	target = fixCoordSystem(mcd.target);
-	tPos.init(mcd.transPos, f, global);
-	tTarget.init(mcd.transTarget, f, global);
-	rot.init(mcd.rot, f, global);
-	tPos.fix(fixCoordSystem);
-	tTarget.fix(fixCoordSystem);
-}
-
-void ModelCamera::setup(int time)
-{
-	if (!ok) return;
-
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluPerspective(fov * 34.5f, (GLfloat)video.xres/(GLfloat)video.yres, nearclip, farclip);
-
-	Vec3D p = pos + tPos.getValue(0, time);
-	Vec3D t = target + tTarget.getValue(0, time);
-
-	Vec3D u(0,1,0);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	gluLookAt(p.x, p.y, p.z, t.x, t.y, t.z, u.x, u.y, u.z);
-	//float roll = rot.getValue(0, time) / PI * 180.0f;
-	//glRotatef(roll, 0, 0, 1);
 }
 
 void ModelColor::init(MPQFile &f, ModelColorDef &mcd, int *global)
@@ -989,7 +932,7 @@ void Bone::calcMatrix(Bone *allbones, int anim, int time)
 	bool tr = rot.uses(anim) || scale.uses(anim) || trans.uses(anim) || billboard;
 	if (tr) {
 		m.translation(pivot);
-		
+
 		if (trans.uses(anim)) {
 			Vec3D tr = trans.getValue(anim, time);
 			m *= Matrix::newTranslation(tr);
@@ -1019,7 +962,7 @@ void Bone::calcMatrix(Bone *allbones, int anim, int time)
 		}
 
 		m *= Matrix::newTranslation(pivot*-1.0f);
-		
+
 	} else m.unit();
 
 	if (parent>=0) {
@@ -1137,7 +1080,7 @@ void ModelInstance::init2(const wow::Model& m, MPQFile &f)
 	dir = Vec3D(ff[0],ff[1],ff[2]);
 	f.read(&sc,4); // Scale factor
 	unsigned int d1;
-	f.read(&d1,4); // (B,G,R,A) Lightning-color. 
+	f.read(&d1,4); // (B,G,R,A) Lightning-color.
 	lcol = fromARGB(d1);
 }
 

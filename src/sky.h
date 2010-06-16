@@ -1,7 +1,6 @@
 #ifndef SKY_H
 #define SKY_H
 
-#include "video.h"
 #include "model.h"
 #include "mpq.h"
 #include <vector>

@@ -1,7 +1,7 @@
 #ifndef SHADERS_H
 #define SHADERS_H
 
-#include "video.h"
+#include <GL/gl.h>
 
 void initShaders();
 

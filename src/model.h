@@ -9,7 +9,6 @@ class Bone;
 Vec3D fixCoordSystem(Vec3D v);
 
 #include "mpq.h"
-#include "video.h"
 
 #include "modelheaders.h"
 #include "quaternion.h"
@@ -107,20 +106,6 @@ struct ModelRenderPass {
 	}
 };
 
-struct ModelCamera {
-	bool ok;
-
-	Vec3D pos, target;
-	float nearclip, farclip, fov;
-	Animated<Vec3D> tPos, tTarget;
-	Animated<float> rot;
-
-	void init(MPQFile &f, ModelCameraDef &mcd, int *global);
-	void setup(int time=0);
-
-	ModelCamera():ok(false) {}
-};
-
 struct ModelLight {
 	int type, parent;
 	Vec3D pos, tpos, dir, tdir;
@@ -173,7 +158,6 @@ class Model {
 	void lightsOff(GLuint lbase)const;
 
 public:
-	ModelCamera cam;
 	Bone *bones;
 
 	// ===============================
