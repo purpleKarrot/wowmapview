@@ -127,10 +127,6 @@ public:
 	bool supportWGLPixelFormat; 
 	bool supportTexRects;
 
-	//bool disableHWAcc;//  = false;
-	bool useMasking;
-
-	//bool useAntiAlias;//  = true;
 	bool useEnvMapping;//  = true;
 	bool useShaders;
 	bool useCompression;// = false;

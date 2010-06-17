@@ -306,7 +306,9 @@ Model::Model(std::string name, bool forceAnim) : ManagedItem(name), forceAnim(fo
 	modelType = MT_NORMAL;
 	// --
 
-	MPQFile f((char *)tempname.c_str());
+	std::cout << "Loading: " << name << " : " << (char*)tempname.c_str() << std::endl;
+
+	MPQFile f(name.c_str());
 	g_modelViewer->modelOpened->Add(tempname);
 	ok = false;
 	if (f.isEof() || (f.getSize() < sizeof(ModelHeader))) {
@@ -636,13 +638,14 @@ void Model::initCommon(MPQFile &f)
 			2	Texture wrap Y
 			*/
 
-			char texname[256] = "";
 			if (texdef[i].type == TEXTURE_FILENAME) {
+				char texname[256] = "";
 				strncpy(texname, (const char*)f.getBuffer() + texdef[i].nameOfs, texdef[i].nameLen);
 				texname[texdef[i].nameLen] = 0;
 				textures[i] = texturemanager.add(texname);
 				TextureList.push_back(texname);
-				wxLogMessage(_T("Info: Added %s to the TextureList."), texname);
+				std::cout << "Info: Added " << texname
+					<< " to the TextureList." << std::endl;
 			} else {
 				// special texture - only on characters and such...
 				textures[i] = 0;
@@ -651,49 +654,51 @@ void Model::initCommon(MPQFile &f)
 				specialTextures[i] = texdef[i].type;
 
 				if (modelType == MT_NORMAL){
-					wxString tex;
+					std::string tex;
 					if (texdef[i].type == TEXTURE_HAIR){
-						tex = _T("Hair.blp");
+						tex = ("Hair.blp");
 					}else if(texdef[i].type == TEXTURE_BODY){
-						tex = _T("Body.blp");
+						tex = ("Body.blp");
 					}else if(texdef[i].type == TEXTURE_CAPE){
-						tex = _T("Cape.blp");
+						tex = ("Cape.blp");
 					}else if(texdef[i].type == TEXTURE_FUR){
-						tex = _T("Fur.blp");
+						tex = ("Fur.blp");
 					}else if(texdef[i].type == TEXTURE_ARMORREFLECT){
-						tex = _T("Reflection.blp");
+						tex = ("Reflection.blp");
 					}else if(texdef[i].type == TEXTURE_GAMEOBJECT1){
-						tex = _T("ChangableTexture1.blp");
+						tex = ("ChangableTexture1.blp");
 					}else if(texdef[i].type == TEXTURE_GAMEOBJECT2){
-						tex = _T("ChangableTexture2.blp");
+						tex = ("ChangableTexture2.blp");
 					}else if(texdef[i].type == TEXTURE_GAMEOBJECT3){
-						tex = _T("ChangableTexture3.blp");
+						tex = ("ChangableTexture3.blp");
 					}
-					strncpy(texname,(const char*)(tex.c_str()),tex.Len());
-					wxLogMessage(_T("Info: Added %s to the TextureList via specialTextures."), texname);
-					TextureList.push_back(texname);
+					std::cout << "Info: Added " << tex
+						<< " to the TextureList via specialTextures."
+						<< std::endl;
+					TextureList.push_back(tex);
 				}else{
-					wxString tex;
+					std::string tex;
 					if (texdef[i].type == TEXTURE_HAIR){
-						tex = _T("NHair.blp");
+						tex = ("NHair.blp");
 					}else if(texdef[i].type == TEXTURE_BODY){
-						tex = _T("NBody.blp");
+						tex = ("NBody.blp");
 					}else if(texdef[i].type == TEXTURE_CAPE){
-						tex = _T("NCape.blp");
+						tex = ("NCape.blp");
 					}else if(texdef[i].type == TEXTURE_FUR){
-						tex = _T("NFur");
+						tex = ("NFur");
 					}else if(texdef[i].type == TEXTURE_ARMORREFLECT){
-						tex = _T("NReflection.blp");
+						tex = ("NReflection.blp");
 					}else if(texdef[i].type == TEXTURE_GAMEOBJECT1){
-						tex = _T("NChangableTexture1.blp");
+						tex = ("NChangableTexture1.blp");
 					}else if(texdef[i].type == TEXTURE_GAMEOBJECT2){
-						tex = _T("NChangableTexture2.blp");
+						tex = ("NChangableTexture2.blp");
 					}else if(texdef[i].type == TEXTURE_GAMEOBJECT3){
-						tex = _T("NChangableTexture3.blp");
+						tex = ("NChangableTexture3.blp");
 					}
-					strncpy(texname,(const char*)(tex.c_str()),tex.Len());
-					wxLogMessage(_T("Info: Added %s to the TextureList via specialTextures."), texname);
-					TextureList.push_back(texname);
+					std::cout << "Info: Added " << tex
+						<< " to the TextureList via specialTextures."
+						<< std::endl;
+					TextureList.push_back(tex);
 				}
 
 				if (texdef[i].type < TEXTURE_MAX)
@@ -776,7 +781,7 @@ void Model::initCommon(MPQFile &f)
 		lodname = modelname.BeforeLast(_T('.'));
 		fullname = lodname;
 		lodname.Append(_T("00.skin")); // Lods: 00, 01, 02, 03
-		MPQFile g((char *)lodname.c_str());
+		MPQFile g(lodname.mb_str());
 		g_modelViewer->modelOpened->Add(lodname);
 		if (g.isEof()) {
 			wxLogMessage(_T("Error: Unable to load Lods: [%s]"), lodname.c_str());

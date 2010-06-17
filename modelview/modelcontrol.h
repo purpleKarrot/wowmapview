@@ -88,7 +88,7 @@ class ModelOpened: public wxWindow
 public:
 
 	ModelOpened(wxWindow* parent, wxWindowID id);
-	~ModelOpened();	
+	~ModelOpened();
 
 	void OnButton(wxCommandEvent &event);
 	void OnCombo(wxCommandEvent &event);

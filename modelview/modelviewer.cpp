@@ -919,7 +919,7 @@ void ModelViewer::LoadModel(const wxString fn)
 	isModel = true;
 
 	// check if this is a character model
-	isChar = (fn.StartsWith(_T("Char"), false));
+	isChar = (fn.StartsWith(_T("Char"), false)) || (fn.StartsWith(_T("CHAR"), false));
 
 	Attachment *modelAtt = NULL;
 
@@ -1460,7 +1460,7 @@ void ModelViewer::OnToggleCommand(wxCommandEvent &event)
 		break;
 
 	case ID_SHOW_MASK:
-		video.useMasking = !video.useMasking;
+		break;
 
 	case ID_SHOW_BOUNDS:
 		canvas->model->showBounds = !canvas->model->showBounds;

@@ -1,3 +1,6 @@
+
+#include <GL/glew.h>
+#include "qtcanvas.hpp"
 #include "modelcanvas.h"
 #include "video.h"
 #include "animcontrol.h"
@@ -120,6 +123,8 @@ ModelCanvas::ModelCanvas(wxWindow *parent, VideoCaps *caps)
 	
 	root = new Attachment(NULL, NULL, -1, -1);
 	sky = new Attachment(NULL, NULL, -1, -1);
+
+	new_ = new qtcanvas(this);
 }
 
 ModelCanvas::~ModelCanvas()
@@ -462,7 +467,10 @@ void ModelCanvas::InitGL()
 
 void ModelCanvas::OnPaint(wxPaintEvent& WXUNUSED(event))
 {
+	new_->updateGL();
+
 	// Set this window handler as the reference to draw to.
+	SetCurrent();
 	wxPaintDC dc(this);
 
 	if (!init)
@@ -533,55 +541,35 @@ inline void ModelCanvas::RenderSkybox()
 
 inline void ModelCanvas::RenderObjects()
 {
-	if (video.useMasking) {
-		glDisable(GL_LIGHTING);
-		glDisable(GL_TEXTURE_2D);
-		glDisable(GL_DEPTH_TEST);
-	} else {
-
-		glEnable(GL_LIGHTING);
-		glEnable(GL_TEXTURE_2D);
-		glEnable(GL_DEPTH_TEST);
-		glDepthFunc(GL_LEQUAL);
-	}
+	glEnable(GL_LIGHTING);
+	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
 
 	root->draw(this);
 
-	if (!video.useMasking) {
-		// render our particles, we do this afterwards so that all the particles display "OK" without having things like shields "overwriting" the particles.
-		glEnable(GL_TEXTURE_2D);
-		glDisable(GL_LIGHTING);
+	glEnable(GL_TEXTURE_2D);
+	glDisable(GL_LIGHTING);
 
-		glDepthMask(GL_FALSE);
-		glEnable(GL_BLEND);
-		
-		root->drawParticles();
-		
-		glDisable(GL_BLEND);
-		glDepthMask(GL_TRUE);
-	}
+	glDepthMask(GL_FALSE);
+	glEnable(GL_BLEND);
+
+	root->drawParticles();
+
+	glDisable(GL_BLEND);
+	glDepthMask(GL_TRUE);
 }
 
 inline void ModelCanvas::Render()
 {
-	// Sets the "clear" colour.  Without this you get the "ghosting" effecting 
-	// as the buffer doesn't get set/cleared.
-	if (video.useMasking)
-		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	else
-		glClearColor(vecBGColor.x, vecBGColor.y, vecBGColor.z, 0.0f);
-
+	glClearColor(vecBGColor.x, vecBGColor.y, vecBGColor.z, 0.0f);
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	
 	// (re)set the view
 	InitView();
 
-	// If masking isn't enabled
-	if (!video.useMasking) {
-		// render the skybox, if any
-		if (drawSky && skyModel && sky->model)
-			RenderSkybox();
-	}
+	if (drawSky && skyModel && sky->model)
+		RenderSkybox();
 
 	camera.Setup();
 
@@ -646,218 +634,15 @@ inline void ModelCanvas::Render()
 			}
 		}
 	}
-	// ==============================================
-			
-	// render our main model
-	if (model) {
-		//if (video.supportFragProg)
-		//	deathShader.Enable();
-		if (video.supportGLSL) {
-			// Per pixel lighting, experimental
-			//perpixelShader.Enable();
-			//int texture_location = perpixelShader.GetVariable("base_texture");
-			//perpixelShader.SetInt(texture_location, 0);
-		}
 
+	if (model)
+	{
 		glEnable(GL_NORMALIZE);
 		RenderObjects();
 		glDisable(GL_NORMALIZE);
-
-		//if (video.supportFragProg)
-		//	deathShader.Disable();
-
-		// Blur/Glowing effects
-		if (video.supportGLSL) {
-			//perpixelShader.Disable();
-			//RenderToTexture();
-		}
 	}
 
-	
-	// Finished rendering, swap it into our front buffer (to the screen)
-	//glFlush();
-	//glFinish();
 	SwapBuffers();
-}
-
-inline void ModelCanvas::RenderToTexture()
-{
-
-	/*
-	// -------------------------------------------
-	// Render to Texture
-	// -------------------------------------------
-	glBindTexture(GL_TEXTURE_2D, 0);
-	rtt[0]->BeginRender();
-
-	glPushAttrib(GL_VIEWPORT_BIT | GL_POLYGON_BIT);
-
-	glViewport( 0, 0, rtt[0]->nWidth, rtt[0]->nHeight); 
-	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-	
-	glMatrixMode(GL_PROJECTION);						// Select The Projection Matrix
-	glPushMatrix();
-	glLoadIdentity();									// Reset The Projection Matrix
-
-	// Calculate The Aspect Ratio Of The Window
-	gluPerspective(video.fov, (float)rtt[0]->nWidth/(float)rtt[0]->nHeight, 0.1f, 128.0f*5);
-
-	glMatrixMode(GL_MODELVIEW);							// Select The Modelview Matrix
-	glPushMatrix();
-	glLoadIdentity();									// Reset The Modelview Matrix
-
-	if (model) {
-		if (useCamera && model->hasCamera) {
-			model->cam.setup();
-		} else {
-			glTranslatef(model->pos.x, model->pos.y, -model->pos.z);
-			glRotatef(model->rot.x, 1.0f, 0.0f, 0.0f);
-			glRotatef(model->rot.y, 0.0f, 1.0f, 0.0f);
-			glRotatef(model->rot.z, 0.0f, 0.0f, 1.0f);
-			// --==--
-		}
-	}
-	// adding little scale to model. This will make effect to be more noticable
-	//glScalef(1.05f, 1.05f, 1.05f);		
-
-	// render our main model
-	if (model)
-		RenderObjects();
-
-	glPopMatrix();
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-	glMatrixMode(GL_MODELVIEW);	
-	glPopAttrib();
-	rtt[0]->EndRender();
-
-	int buff_index=0;
-
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
-
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-
-	glOrtho(0, 1, 0, 1, 0.01, 100);
-	
-	glPushAttrib(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-	glViewport( 0, 0, rtt[0]->nWidth, rtt[0]->nHeight);
-	glDisable(GL_DEPTH_TEST); 
-
-	// ==========================================================
-	// BLURRING SCREEN SPACE TEXTURE
-	if (fxBlur) {
-		blurShader.Enable();
-		rtt[0]->BindTexture();
-		
-		// How many passes do we want?   The more passes the more bluring.
-		for(int i=0; i<5; i++, buff_index=!buff_index) {
-			rtt[!buff_index]->BeginRender();
-			rtt[buff_index]->BindTexture(); // binding buffer to a texture
-			
-			glBegin(GL_QUADS);
-			glTexCoord2d(0,	0);	glVertex3d(0, 0, -1); 
-			glTexCoord2d(1, 0);	glVertex3d(1, 0, -1);
-			glTexCoord2d(1, 1);	glVertex3d(1, 1, -1);
-			glTexCoord2d(0, 1);	glVertex3d(0, 1, -1);
-			glEnd();
-
-			rtt[buff_index]->ReleaseTexture();
-			rtt[!buff_index]->EndRender();
-		}
-
-		blurShader.Disable();
-	}
-	// =============================================================
-
-	
-	// =============================================================
-	// RENDERING SCREEN SPACE TEXTURE TO FRAMEBUFFER
-	if (fxGlow) {
-		glowShader.Enable();
-		rtt[buff_index]->BindTexture();
-
-		// additive blending setup
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_ONE, GL_ONE);
-		
-		glBegin(GL_QUADS);
-		glTexCoord2d(0,	0);	glVertex3d(0, 0, -1); 
-		glTexCoord2d(1, 0);	glVertex3d(1, 0, -1);
-		glTexCoord2d(1, 1);	glVertex3d(1, 1, -1);
-		glTexCoord2d(0, 1);	glVertex3d(0, 1, -1);
-		glEnd();
-
-		glDisable(GL_BLEND);
-		glowShader.Disable();
-		rtt[buff_index]->ReleaseTexture();	// release pbuffer texture for further rendering
-	}
-	
-	// =============================================================
-	// RENDERING FOG-LIKE EFFECTS USING MULTI TEXTURING
-	if (fxFog) {
-		multitexShader.Enable();
-
-		// Activate the first texture ID and bind the background texture to it
-		glActiveTextureARB(GL_TEXTURE0_ARB);
-		//glBindTexture(GL_TEXTURE_2D,  g_Texture[0]);
-		//rtt[0]->BindTexture();
-		glEnable(GL_TEXTURE_2D);
-
-		// Activate the second texture ID and bind the fog texture to it
-		glActiveTextureARB(GL_TEXTURE1_ARB);
-		glBindTexture(GL_TEXTURE_2D,  fogTex);
-		glEnable(GL_TEXTURE_2D);
-
-		// Here pass in our texture unit 0 (GL_TEXTURE0_ARB) for "texture1" in the shader.
-		multitexShader.SetInt(multitexShader.GetVariable("texture1"), 0);
-
-		// Here pass in our texture unit 1 (GL_TEXTURE1_ARB) for "texture2" in the shader.
-		multitexShader.SetInt(multitexShader.GetVariable("texture2"), 1);
-
-		// Like our "time" variable in the first shader tutorial, we pass in a continually
-		// increasing float to create the animated wrapping effect of the fog.
-		static float wrap = 0.0f;
-		multitexShader.SetFloat(multitexShader.GetVariable("wrap"), wrap);
-		wrap += 0.002f;
-		
-		// Display a multitextured quad texture to the screen
-		glBegin(GL_QUADS);
-			// Display the top left vertice with each texture's texture coordinates
-			glMultiTexCoord2fARB(GL_TEXTURE0_ARB, 0.0f, 1.0f);
-			glMultiTexCoord2fARB(GL_TEXTURE1_ARB, 0.0f, 1.0f);
-			glVertex2f(0, 1);
-
-			// Display the bottom left vertice with each texture's coordinates
-			glMultiTexCoord2fARB(GL_TEXTURE0_ARB, 0.0f, 0.0f);
-			glMultiTexCoord2fARB(GL_TEXTURE1_ARB, 0.0f, 0.0f);
-			glVertex2f(0, 0);
-
-			// Display the bottom right vertice with each texture's coordinates
-			glMultiTexCoord2fARB(GL_TEXTURE0_ARB, 1.0f, 0.0f);
-			glMultiTexCoord2fARB(GL_TEXTURE1_ARB, 1.0f, 0.0f);
-			glVertex2f(1, 0);
-
-			// Display the top right vertice with each texture's coordinates
-			glMultiTexCoord2fARB(GL_TEXTURE0_ARB, 1.0f, 1.0f);
-			glMultiTexCoord2fARB(GL_TEXTURE1_ARB, 1.0f, 1.0f);
-			glVertex2f(1, 1);
-		glEnd();
-
-		multitexShader.Disable();
-	}
-
-	glPopAttrib();
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
-
-	glPopMatrix();
-	*/
 }
 
 inline void ModelCanvas::RenderWMO()
@@ -1010,7 +795,7 @@ inline void Attachment::draw(ModelCanvas *c)
 				glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			}
 
-			if (!m->showTexture || video.useMasking)
+			if (!m->showTexture)
 				glDisable(GL_TEXTURE_2D);
 			else
 				glEnable(GL_TEXTURE_2D);
@@ -1032,7 +817,6 @@ inline void Attachment::draw(ModelCanvas *c)
 				glEnable(GL_COLOR_MATERIAL);
 			}
 
-			if (!video.useMasking) {
 				glDisable(GL_LIGHTING);
 				glDisable(GL_TEXTURE_2D);
 
@@ -1043,7 +827,6 @@ inline void Attachment::draw(ModelCanvas *c)
 					m->drawBones();
 					
 				glEnable(GL_LIGHTING);
-			}
 		}
 	}
 

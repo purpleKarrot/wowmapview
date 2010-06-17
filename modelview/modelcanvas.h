@@ -92,7 +92,7 @@ struct Attachment {
 	inline void drawParticles(bool force=false);
 	void tick(float dt);
 };
-
+class qtcanvas;
 class ModelCanvas:
 #ifdef _WINDOWS
 		public wxWindow
@@ -109,6 +109,8 @@ class ModelCanvas:
 	GLuint fogTex;
 
 	bool fxBlur, fxGlow, fxFog;
+
+	qtcanvas* new_;
 
 public:
 	ModelCanvas(wxWindow *parent, VideoCaps *cap = NULL);
@@ -141,7 +143,6 @@ public:
 
 	// Main render routines which call the sub routines
 	void Render();
-	void RenderToTexture();
 	void RenderWMO();
 	void RenderADT();
 	void RenderLight(Light *l);

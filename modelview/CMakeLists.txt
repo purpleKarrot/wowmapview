@@ -24,9 +24,7 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}
     ${PNG_PNG_INCLUDE_DIR}
 )
 
-add_definitions(
-    -DWotLK
-)
+add_definitions(-DWotLK)
 
 add_library(cximage STATIC ${CXIMAGE_SOURCES})
 

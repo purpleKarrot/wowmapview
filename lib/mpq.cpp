@@ -11,6 +11,8 @@ typedef std::vector<std::pair<std::string, void*> > ArchiveSet;
 
 void MPQFile::openFile(const char* filename)
 {
+	std::cout << "opening file: " << filename << std::endl;
+
 	eof = false;
 	pointer = 0;
 
