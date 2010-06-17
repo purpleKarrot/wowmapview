@@ -1,7 +1,7 @@
 #ifndef VIDEO_H
 #define VIDEO_H
 
-#include "RenderTexture.h"
+#include "OpenGLHeaders.h"
 
 #include "util.h"
 #include "vec3d.h"

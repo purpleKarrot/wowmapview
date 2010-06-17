@@ -184,7 +184,6 @@ ModelViewer::ModelViewer()
 	settingsControl = NULL;
 	modelbankControl = NULL;
 	modelOpened = NULL;
-	animExporter = NULL;
 	fileControl = NULL;
 	exportOptionsControl = NULL;
 
@@ -335,11 +334,9 @@ void ModelViewer::InitMenu()
 	if (canvas) {
 		viewMenu->Append(ID_BG_COLOR, _("Background Color..."));
 		viewMenu->AppendCheckItem(ID_BACKGROUND, _("Load Background\tCTRL+L"));
-		viewMenu->Check(ID_BACKGROUND, canvas->drawBackground);
 		viewMenu->AppendCheckItem(ID_SKYBOX, _("Skybox"));
 		viewMenu->Check(ID_SKYBOX, canvas->drawSky);
 		viewMenu->AppendCheckItem(ID_SHOW_GRID, _("Show Grid"));
-		viewMenu->Check(ID_SHOW_GRID, canvas->drawGrid);
 
 		viewMenu->AppendCheckItem(ID_SHOW_MASK, _("Show Mask"));
 		viewMenu->Check(ID_SHOW_MASK, false);
@@ -556,8 +553,6 @@ void ModelViewer::InitObjects()
 	modelControl->animControl = animControl;
 	
 	enchants = new EnchantsDialog(this, charControl);
-
-	animExporter = new CAnimationExporter(this, wxID_ANY, _T("Animation Exporter"), wxDefaultPosition, wxSize(350, 220), wxCAPTION|wxSTAY_ON_TOP|wxFRAME_NO_TASKBAR);
 }
 
 void ModelViewer::InitDatabase()
@@ -816,20 +811,7 @@ void ModelViewer::LoadSession()
 		pConfig->Read(_T("ShowParticle"), &bShowParticle, true);
 		pConfig->Read(_T("ZeroParticle"), &bZeroParticle, true);
 		pConfig->Read(_T("KnightEyeGlow"), &bKnightEyeGlow, true);
-		pConfig->Read(_T("DBackground"), &canvas->drawBackground, false);
 		pConfig->Read(_T("BackgroundImage"), &bgImagePath, wxEmptyString);
-		if (!bgImagePath.IsEmpty()) {
-			canvas->LoadBackground(bgImagePath);
-			//viewMenu->Check(ID_BACKGROUND, canvas->drawBackground);
-		}
-		
-
-		// model file
-		/*wxString modelfn;
-		pConfig->Read(_T("Model"), &modelfn);
-		if (modelfn) {
-			LoadModel(modelfn);
-		}*/
 	}
 
 	wxDELETE(pConfig);
@@ -871,19 +853,9 @@ void ModelViewer::SaveSession()
 		pConfig->Write(_T("ZeroParticle"), bZeroParticle);
 		pConfig->Write(_T("KnightEyeGlow"), bKnightEyeGlow);
 
-		pConfig->Write(_T("DBackground"), canvas->drawBackground);
-		if (canvas->drawBackground)
-			pConfig->Write(_T("BackgroundImage"), bgImagePath);
-		else
-			pConfig->Write(_T("BackgroundImage"), wxEmptyString);
-
-		// model file
 		if (canvas->model)
 			pConfig->Write(_T("Model"), wxString(canvas->model->name.c_str(), wxConvUTF8));
 	}
-
-	// character details
-	// equipment
 
 	wxDELETE(pConfig);
 }
@@ -1257,11 +1229,6 @@ ModelViewer::~ModelViewer()
 	// Save our session and layout info
 	SaveSession();
 
-	if (animExporter) {
-		animExporter->Destroy();
-		wxDELETE(animExporter);
-	}
-
 	if (canvas) {
 		canvas->Disable();
 		canvas->Destroy(); 
@@ -1500,7 +1467,6 @@ void ModelViewer::OnToggleCommand(wxCommandEvent &event)
 		break;
 
 	case ID_SHOW_GRID:
-		canvas->drawGrid = event.IsChecked();
 		break;
 
 	case ID_USE_CAMERA:
@@ -1627,9 +1593,6 @@ void ModelViewer::OnLightMenu(wxCommandEvent &event)
 				}
 				f.close();
 
-				if (lightObj) 
-					canvas->drawLightDir = true;
-
 				if (lightDir) {
 					canvas->lightType = LIGHT_DYNAMIC; //LT_DIRECTIONAL;
 					
@@ -1671,7 +1634,6 @@ void ModelViewer::OnLightMenu(wxCommandEvent &event)
 			return;
 		*/
 		case ID_LT_DIRECTION:
-			canvas->drawLightDir = event.IsChecked();
 			return;
 		case ID_LT_TRUE:
 			if (event.IsChecked()){
@@ -1737,9 +1699,6 @@ void ModelViewer::OnSetColor(wxCommandEvent &event)
 	int id = event.GetId();
 	if (id==ID_BG_COLOR) {
 		canvas->vecBGColor = DoSetColor(canvas->vecBGColor);
-		canvas->drawBackground = false;
-	//} else if (id==ID_LT_COLOR) {
-	//	canvas->ltColor = DoSetColor(canvas->ltColor);
 	}
 }
 
@@ -1882,78 +1841,6 @@ void ModelViewer::OnMount(wxCommandEvent &event)
 
 void ModelViewer::OnSave(wxCommandEvent &event)
 {
-	static wxFileName dir = cfgPath;
-		
-	if (!canvas || (!canvas->model && !canvas->wmo))
-		return;
-
-	if (event.GetId() == ID_FILE_SCREENSHOT) {
-		wxString tmp = _T("screenshot_");
-		tmp << ssCounter;
-		wxFileDialog dialog(this, _("Save screenshot"), dir.GetPath(wxPATH_GET_VOLUME), tmp, _T("Bitmap Images (*.bmp)|*.bmp|TGA Images (*.tga)|*.tga|JPEG Images (*.jpg)|*.jpg|PNG Images (*.png)|*.png"), wxFD_SAVE|wxFD_OVERWRITE_PROMPT);
-		dialog.SetFilterIndex(imgFormat);
-
-		if (dialog.ShowModal()==wxID_OK) {
-			imgFormat = dialog.GetFilterIndex();
-			tmp = dialog.GetPath();
-			dialog.Show(false);
-			canvas->Screenshot(tmp);
-			dir.SetPath(tmp);
-			ssCounter++;
-		}
-
-		//canvas->InitView();
-
-	} else if (event.GetId() == ID_FILE_EXPORTGIF) {
-		if (canvas->wmo)
-			return;
-
-		if (!canvas->model)
-			return;
-
-		if (!video.supportFBO && !video.supportPBO) {
-			wxMessageBox(_T("This function is currently disabled for video cards that don't\nsupport the FrameBufferObject or PixelBufferObject OpenGL extensions"), _T("Error"));
-			return;
-		}
-		
-		wxFileDialog dialog(this, _T("Save Animation"), dir.GetPath(wxPATH_GET_VOLUME), _T("filename"), _T("Animation"), wxFD_SAVE|wxFD_OVERWRITE_PROMPT, wxDefaultPosition);
-		
-		if (dialog.ShowModal()==wxID_OK) {
-			// Save the folder location for next time
-			dir.SetPath(dialog.GetPath());
-
-			// Show our exporter window			
-			animExporter->Init(dialog.GetPath());
-			animExporter->Show(true);
-		}
-
-	} else if (event.GetId() == ID_FILE_EXPORTAVI) {
-		if (canvas->wmo && !canvas->model)
-			return;
-
-		if (!video.supportFBO && !video.supportPBO) {
-			wxMessageBox(_T("This function is currently disabled for video cards that don't\nsupport the FrameBufferObject or PixelBufferObject OpenGL extensions"), _T("Error"));
-			return;
-		}
-		
-		wxFileDialog dialog(this, _T("Save AVI"), dir.GetPath(wxPATH_GET_VOLUME), _T("animation.avi"), _T("animation (*.avi)|*.avi"), wxFD_SAVE|wxFD_OVERWRITE_PROMPT, wxDefaultPosition);
-		
-		if (dialog.ShowModal()==wxID_OK) {
-			animExporter->CreateAvi(dialog.GetPath());
-		}
-
-	} else if (event.GetId() == ID_FILE_SCREENSHOTCONFIG) {
-		if (!imageControl) {
-			imageControl = new ImageControl(this, ID_IMAGE_FRAME, canvas);
-
-			interfaceManager.AddPane(imageControl, wxAuiPaneInfo().
-				Name(wxT("Screenshot")).Caption(_("Screenshot")).
-				FloatingSize(wxSize(295,145)).Float().Fixed().
-				Dockable(false)); //.FloatingPosition(GetStartPosition())
-		}
-
-		imageControl->OnShow(&interfaceManager);
-	}
 }
 
 void ModelViewer::OnBackground(wxCommandEvent &event)
@@ -1966,14 +1853,11 @@ void ModelViewer::OnBackground(wxCommandEvent &event)
 		if (event.IsChecked()) {
 			wxFileDialog dialog(this, _("Load Background"), dir.GetPath(wxPATH_GET_VOLUME), wxEmptyString, _("Bitmap Images (*.bmp)|*.bmp|TGA Images (*.tga)|*.tga|Jpeg Images (*.jpg)|*.jpg|PNG Images (*.png)|*.png|AVI Video file(*.avi)|*.avi"));
 			if (dialog.ShowModal() == wxID_OK) {
-				canvas->LoadBackground(dialog.GetPath());
 				dir.SetPath(dialog.GetPath());
-				viewMenu->Check(ID_BACKGROUND, canvas->drawBackground);
 			} else {
 				viewMenu->Check(ID_BACKGROUND, false);
 			}
 		} else {
-			canvas->drawBackground = false;
 		}
 	} else if (id == ID_SKYBOX) {
 		if (canvas->skyModel) {
@@ -2131,17 +2015,6 @@ void ModelViewer::OnLanguage(wxCommandEvent &event)
 
 void ModelViewer::OnAbout(wxCommandEvent &event)
 {
-/*
-text = new wxStaticText(this, wxID_ANY, _T("Developers:		UfoZ, Darjk\n\n\
-Pioneers:		UfoZ,  Linghuye,  nSzAbolcs\n\n\
-Translators:	Culhag (French), Die_Backe (Deutsch)\n\n\
-Developed Using:\n\
-wxWidgets(2.6.3), wxAUI(0.9.2), OpenGL, zlib,\n\
-CxImage(5.99c), MPQLib, DDSLib, GLEW(1.3.3)\n\n\
-Build Info:\nVersion 0.5 compiled using Visual C++ 7.1 (2003) for\n\
-Windows 98\\ME\\2000\\XP on 17th December 2006\n\n\
-*/
-
 	wxAboutDialogInfo info;
     info.SetName(APP_TITLE);
     info.SetVersion(APP_VERSION _T(" ") APP_PLATFORM APP_ISDEBUG);

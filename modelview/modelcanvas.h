@@ -35,14 +35,9 @@
 #include "maptile.h"
 //#include "viewcontrol.h"
 #include "lightcontrol.h"
-#include "RenderTexture.h"
+#include "OpenGLHeaders.h"
 //#include "CShader.h"
 #include "camera.h"
-#include "AnimExporter.h"
-#ifdef _WINDOWS
-#include "AVIGenerator.h"
-#endif
-
 #include "enums.h"
 
 
@@ -53,10 +48,6 @@ class LightControl;
 
 class ModelViewer;
 class ModelCanvas;
-
-// 100 fps?
-const int TIME_STEP = 10; // 10 millisecs between each frame
-
 
 struct SceneState {
 	Vec3D pos;	// Model Position
@@ -108,7 +99,6 @@ class ModelCanvas:
 #else
 		public wxGLCanvas
 #endif
-//class ModelCanvas: public wxGLCanvas
 {
 	DECLARE_CLASS(ModelCanvas)
     DECLARE_EVENT_TABLE()
@@ -116,25 +106,9 @@ class ModelCanvas:
 	float time, modelsize;
 	SceneState sceneState[4]; // 4 scene states for F1-F4
 
-	void CreateTexture(wxString filename, GLuint texture);
-
-	
-	// Special Effects Stuff
-	// ----------------------------
-	/*
-	CShader perpixelShader;
-	CShader toonShader;
-	CShader blurShader;
-	CShader glowShader;
-	CShader deathShader;
-	CShader desaturateShader;
-	CShader multitexShader;
-	*/
-
 	GLuint fogTex;
 
 	bool fxBlur, fxGlow, fxFog;
-	// ----------------------------
 
 public:
 	ModelCanvas(wxWindow *parent, VideoCaps *cap = NULL);
@@ -146,19 +120,12 @@ public:
 
 	CCamera camera;
 
-#ifdef _WINDOWS
-	RenderTexture *rt;
-	RenderTexture *rtt[2];
-#endif
-	//GLuint texShadowMap;
-
 	// Event Handlers
     void OnPaint(wxPaintEvent& WXUNUSED(event));
     void OnSize(wxSizeEvent& event);
     void OnMouse(wxMouseEvent& event);
 	void OnKey(wxKeyEvent &event);
 
-	//void OnIdle(wxIdleEvent& event);
 	void OnEraseBackground(wxEraseEvent& event);
     void OnTimer(wxTimerEvent& event);
 	void tick();
@@ -177,18 +144,12 @@ public:
 	void RenderToTexture();
 	void RenderWMO();
 	void RenderADT();
-	void RenderToBuffer();
-	void RenderWMOToBuffer();
 	void RenderLight(Light *l);
 
 	// Render sub routines
 	void RenderSkybox();
 	void RenderObjects();
-	void RenderBackground();
-	void RenderGrid();
-	void GenerateShadowMap();
 
-	void Screenshot(const wxString fn, int x=0, int y=0);
 	void SaveSceneState(int id);
 	void LoadSceneState(int id);
 
@@ -205,17 +166,13 @@ public:
 	
 	Attachment* LoadModel(const char* fn);
 	Attachment* LoadCharModel(const char* fn);
-#if 0
-	Attachment* AddModel(const char *fn);
-#endif
 	void LoadWMO(wxString fn);
 	void LoadADT(wxString fn);
-	//void TogglePause();
 	
 	// Various toggles
 	bool init;
 	bool initShaders;
-	bool drawLightDir, drawBackground, drawSky, drawGrid, drawAVIBackground;
+	bool drawSky;
 	bool useCamera; //, useLights;
 
 	// These are now handled by each individual model.
@@ -241,15 +198,6 @@ public:
 
 	// Background colour
 	Vec3D vecBGColor;
-
-	// Backgroun image stuff
-	GLuint uiBGTexture;
-	void LoadBackground(wxString filename);
-#ifdef _WINDOWS
-	CAVIGenerator cAvi;
-#endif
 };
 
-
 #endif
-

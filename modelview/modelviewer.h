@@ -35,7 +35,6 @@
 #include "modelcontrol.h"
 #include "imagecontrol.h"
 #include "util.h"
-#include "AnimExporter.h"
 #include "effects.h"
 #include "arrows.h"
 #include "modelexport.h"
@@ -114,9 +113,6 @@ public:
 	ModelBankControl *modelbankControl;
 	ModelOpened *modelOpened;
 	ModelExportOptions_Control *exportOptionsControl;
-
-	CAnimationExporter *animExporter;
-
 	FileControl *fileControl;
 
 	//wxWidget objects

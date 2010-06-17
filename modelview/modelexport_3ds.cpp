@@ -5,10 +5,6 @@
 #include "modelexport_3ds.h"
 #include "modelcanvas.h"
 
-//#include "CxImage/ximage.h"
-
-
-
 // 3D Studio Max
 // http://gpwiki.org/index.php/Loading_3ds_files
 // http://www.martinreddy.net/gfx/3d/3DS.spec

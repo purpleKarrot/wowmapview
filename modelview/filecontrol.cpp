@@ -329,38 +329,6 @@ void FileControl::Export(wxString val, int select)
 	f.close();
 }
 
-void FileControl::ExportPNG(wxString val, wxString suffix)
-{
-	if (val.IsEmpty())
-		return;
-	wxFileName fn(val);
-	if (fn.GetExt().Lower() != _T("blp"))
-		return;
-	TextureID temptex = texturemanager.add(std::string(val.mb_str()));
-	Texture &tex = *((Texture*)texturemanager.items[temptex]);
-	if (tex.w == 0 || tex.h == 0)
-		return;
-
-	wxString temp;
-
-	unsigned char *tempbuf = (unsigned char*)malloc(tex.w*tex.h*4);
-	tex.getPixels(tempbuf, GL_BGRA_EXT);
-
-	CxImage *newImage = new CxImage(0);
-	newImage->AlphaCreate();	// Create the alpha layer
-	newImage->IncreaseBpp(32);	// set image to 32bit 
-	newImage->CreateFromArray(tempbuf, tex.w, tex.h, 32, (tex.w*4), true);
-	temp = wxGetCwd()+SLASH+wxT("Export")+SLASH+fn.GetName()+wxT(".")+suffix;
-	//wxLogMessage(_T("Info: Exporting texture to %s..."), temp.c_str());
-	if (suffix == _T("tga"))
-		newImage->Save(temp.mb_str(), CXIMAGE_FORMAT_TGA);
-	else
-		newImage->Save(temp.mb_str(), CXIMAGE_FORMAT_PNG);
-	free(tempbuf);
-	newImage->Destroy();
-	wxDELETE(newImage);
-}
-
 void FileControl::OnPopupClick(wxCommandEvent &evt)
 {
 	FileTreeData *data = (FileTreeData*)(static_cast<wxMenu *>(evt.GetEventObject())->GetClientData());
@@ -380,7 +348,6 @@ void FileControl::OnPopupClick(wxCommandEvent &evt)
 		wxLogMessage(_T("Playing: %s, Vol: %f, State: %d"), filename.c_str(), mcPlayer->GetVolume(), mcPlayer->GetState());
 #endif
 	} else if (ID_FILELIST_VIEW) {
-		ExportPNG(val, _T("png"));
 		wxFileName fn(val);
 		wxString temp;
 		temp = wxGetCwd()+SLASH+wxT("Export")+SLASH+fn.GetName()+wxT(".png");
@@ -652,10 +619,8 @@ void FileControl::OnTreeSelect(wxTreeEvent &event)
 
 		// For Graphics
 		wxString val(data->fn.c_str(), wxConvUTF8);
-		ExportPNG(val, _T("png"));
 		wxFileName fn(val);
 		wxString temp(wxGetCwd()+SLASH+wxT("Export")+SLASH+fn.GetName()+wxT(".png"));
-		modelviewer->canvas->LoadBackground(temp);
 		wxRemoveFile(temp);
 
 		UpdateInterface();

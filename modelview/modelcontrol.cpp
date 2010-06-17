@@ -441,44 +441,6 @@ void ModelOpened::Export(wxString val)
 	f.close();
 }
 
-void ModelOpened::ExportPNG(wxString val, wxString suffix)
-{
-	if (val == wxEmptyString)
-		return;
-	wxFileName fn(val);
-	if (fn.GetExt().Lower() != _T("blp"))
-		return;
-	TextureID temptex = texturemanager.add(std::string(val.mb_str()));
-	Texture &tex = *((Texture*)texturemanager.items[temptex]);
-	if (tex.w == 0 || tex.h == 0)
-		return;
-
-	wxString temp;
-
-	unsigned char *tempbuf = (unsigned char*)malloc(tex.w*tex.h*4);
-	tex.getPixels(tempbuf, GL_BGRA_EXT);
-
-	CxImage *newImage = new CxImage(0);
-	newImage->AlphaCreate();	// Create the alpha layer
-	newImage->IncreaseBpp(32);	// set image to 32bit 
-	newImage->CreateFromArray(tempbuf, tex.w, tex.h, 32, (tex.w*4), true);
-	if (bPathPreserved) {
-		wxFileName::Mkdir(wxGetCwd()+SLASH+wxT("Export")+SLASH+fn.GetPath(), 0755, wxPATH_MKDIR_FULL);
-		temp = wxGetCwd()+SLASH+wxT("Export")+SLASH+fn.GetPath()+SLASH+fn.GetName()+wxT(".")+suffix;
-	} else {
-		temp = wxGetCwd()+SLASH+wxT("Export")+SLASH+fn.GetName()+wxT(".")+suffix;
-	}
-	//wxLogMessage(_T("Info: Exporting texture to %s..."), temp.c_str());
-	if (suffix == _T("tga"))
-		newImage->Save(temp.mb_str(), CXIMAGE_FORMAT_TGA);
-	else
-		newImage->Save(temp.mb_str(), CXIMAGE_FORMAT_PNG);
-	free(tempbuf);
-	newImage->Destroy();
-	wxDELETE(newImage);
-}
-
-
 void ModelOpened::OnButton(wxCommandEvent &event)
 {
 	bool dialOK = true;
@@ -493,7 +455,6 @@ void ModelOpened::OnButton(wxCommandEvent &event)
 		}
 	} else if (id == ID_MODELOPENED_VIEW) {
 		wxString val = openedList->GetValue();
-		ExportPNG(val, _T("png"));
 		wxFileName fn(val);
 		wxString temp;
 		if (bPathPreserved)
@@ -505,11 +466,9 @@ void ModelOpened::OnButton(wxCommandEvent &event)
 		dialOK = false;
 	} else if (id == ID_MODELOPENED_EXPORTALLPNG) {
 		for (unsigned int i = 0; i < opened_files.GetCount(); i++) {
-			ExportPNG(opened_files[i], _T("png"));
 		}
 	} else if (id == ID_MODELOPENED_EXPORTALLTGA) {
 		for (unsigned int i = 0; i < opened_files.GetCount(); i++) {
-			ExportPNG(opened_files[i], _T("tga"));
 		}
 	}
 

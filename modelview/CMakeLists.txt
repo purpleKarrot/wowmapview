@@ -33,15 +33,20 @@ add_library(cximage STATIC ${CXIMAGE_SOURCES})
 add_definitions(-D_LINUX)
 add_definitions(-D_LINUX32)
 
-add_executable(wowmodelviewer ${WOWMV_SOURCES})
+qt4_wrap_cpp(MOC_SOURCE
+  app.h
+  )
+
+add_executable(wowmodelviewer ${WOWMV_SOURCES} ${MOC_SOURCE})
 
 target_link_libraries(wowmodelviewer
-    ${EXTRA_LIBS}
-    cximage Storm wowview
-    ${wxWidgets_LIBRARIES}
-    ${BZIP2_LIBRARIES}
-    ${ZLIB_LIBRARIES}
-    ${GLEW_LIBRARIES}
-    ${JPEG_LIBRARIES}
-    ${PNG_LIBRARY}
+  ${QT_LIBRARIES}
+  ${EXTRA_LIBS}
+  cximage Storm wowview
+  ${wxWidgets_LIBRARIES}
+  ${BZIP2_LIBRARIES}
+  ${ZLIB_LIBRARIES}
+  ${GLEW_LIBRARIES}
+  ${JPEG_LIBRARIES}
+  ${PNG_LIBRARY}
 )

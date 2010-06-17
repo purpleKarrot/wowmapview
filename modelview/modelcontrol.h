@@ -96,7 +96,6 @@ public:
 	void Add(wxString str);
 	void Clear();
 	void Export(wxString val);
-	void ExportPNG(wxString val, wxString suffix);
 };
 
 #endif

@@ -100,7 +100,6 @@ void ImageControl::OnButton(wxCommandEvent &event)
 		video.render = false;
 		manager->GetPane(this).Show(false);
 		manager->Update();
-		cc->Screenshot(filename->GetValue(), x ,y);
 		ssCounter++;
 		cc->InitView();
 		video.render = true;
