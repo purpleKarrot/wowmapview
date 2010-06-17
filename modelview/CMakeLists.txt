@@ -13,7 +13,6 @@ find_package(PNG REQUIRED)
 set(USE_STORM 1)
 
 include(${wxWidgets_USE_FILE})
-include(cmake/sources.cmake)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR}
     ${wxWidgets_INCLUDE_DIRS}
@@ -26,8 +25,6 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR}
 
 add_definitions(-DWotLK)
 
-add_library(cximage STATIC ${CXIMAGE_SOURCES})
-
 add_definitions(-D_LINUX)
 add_definitions(-D_LINUX32)
 
@@ -35,12 +32,13 @@ qt4_wrap_cpp(MOC_SOURCE
   app.h
   )
 
+file(GLOB WOWMV_SOURCES *.cpp)
 add_executable(wowmodelviewer ${WOWMV_SOURCES} ${MOC_SOURCE})
 
 target_link_libraries(wowmodelviewer
   ${QT_LIBRARIES}
   ${EXTRA_LIBS}
-  cximage Storm wowview
+  Storm wowview
   ${wxWidgets_LIBRARIES}
   ${BZIP2_LIBRARIES}
   ${ZLIB_LIBRARIES}

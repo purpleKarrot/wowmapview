@@ -47,7 +47,6 @@ BEGIN_EVENT_TABLE(ModelViewer, wxFrame)
 	EVT_MENU(ID_SHOW_CHAR, ModelViewer::OnToggleDock)
 	EVT_MENU(ID_SHOW_LIGHT, ModelViewer::OnToggleDock)
 	EVT_MENU(ID_SHOW_MODEL, ModelViewer::OnToggleDock)
-	EVT_MENU(ID_SHOW_MODELBANK, ModelViewer::OnToggleDock)	
 	EVT_MENU(ID_SHOW_MODELOPENED, ModelViewer::OnToggleDock)	
 	// --
 	EVT_MENU(ID_SHOW_MASK, ModelViewer::OnToggleCommand)
@@ -170,7 +169,6 @@ ModelViewer::ModelViewer()
 	arrowControl = NULL;
 	imageControl = NULL;
 	settingsControl = NULL;
-	modelbankControl = NULL;
 	modelOpened = NULL;
 	fileControl = NULL;
 
@@ -276,7 +274,6 @@ void ModelViewer::InitMenu()
 	viewMenu->Append(ID_SHOW_CHAR, _("Show character control"));
 	viewMenu->Append(ID_SHOW_LIGHT, _("Show light control"));
 	viewMenu->Append(ID_SHOW_MODEL, _("Show model control"));
-	viewMenu->Append(ID_SHOW_MODELBANK, _("Show model bank"));
 	viewMenu->AppendSeparator();
 	if (canvas) {
 		viewMenu->Append(ID_BG_COLOR, _("Background Color..."));
@@ -479,7 +476,6 @@ void ModelViewer::InitObjects()
 	modelControl = new ModelControl(this, ID_MODEL_FRAME);
 	settingsControl = new SettingsControl(this, ID_SETTINGS_FRAME);
 	settingsControl->Show(false);
-	modelbankControl = new ModelBankControl(this, ID_MODELBANK_FRAME);
 	modelOpened = new ModelOpened(this, ID_MODELOPENED_FRAME);
 
 	canvas = new ModelCanvas(this);
@@ -646,12 +642,6 @@ void ModelViewer::InitDocking()
 	interfaceManager.AddPane(modelControl, wxAuiPaneInfo().
 		Name(wxT("Models")).Caption(_("Models")).
 		FloatingSize(wxSize(160,460)).Float().Show(false).
-		DestroyOnClose(false));
-
-	// model bank control
-	interfaceManager.AddPane(modelbankControl, wxAuiPaneInfo().
-		Name(_T("ModelBank")).Caption(_("ModelBank")).
-		FloatingSize(wxSize(300,320)).Float().Fixed().Show(false).
 		DestroyOnClose(false));
 
 	// model opened
@@ -1344,8 +1334,6 @@ void ModelViewer::OnToggleDock(wxCommandEvent &event)
 	else if (id==ID_SHOW_SETTINGS) {
 		interfaceManager.GetPane(settingsControl).Show(true);
 		settingsControl->Open();
-	} else if (id==ID_SHOW_MODELBANK) {
-		interfaceManager.GetPane(modelbankControl).Show(true);
 	} else if (id==ID_SHOW_MODELOPENED) {
 		interfaceManager.GetPane(modelOpened).Show(true);
 	}else if(id==ID_MODELEXPORT_OPTIONS){

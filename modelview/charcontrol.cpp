@@ -5,7 +5,6 @@
 #include "itemselection.h"
 #include "mpq.hpp"
 #include "globalvars.h"
-#include "CxImage/ximage.h"
 
 int slotOrder[] = {	
 	CS_SHIRT,
@@ -944,57 +943,6 @@ void CharControl::RefreshModel()
 		}
       }
 
-	/*
-	// TODO, Temporary work-around - need to do more research.
-	// Check to see if we are wearing a helmet - if so, we need to hide our hair
-	if (cd.equipment[CS_HEAD] != 0) {
-		try {
-			const ItemRecord &item = items.getById(cd.equipment[CS_HEAD]);
-			int type = item.type;
-			if (type==IT_HEAD) {
-				ItemDisplayDB::Record r = itemdisplaydb.getById(item.model);
-				
-				int geoID;
-				if(cd.gender == 0)
-					geoID = r.getUInt(ItemDisplayDB::GeosetVisID1);
-				else
-					geoID = r.getUInt(ItemDisplayDB::GeosetVisID2);
-
-				if (geoID) {
-				HelmGeosetDB::Record rec = helmetdb.getById(geoID);
-				int Hair = rec.getInt(HelmGeosetDB::Hair);
-				//char c2 = rec.getByte(HelmGeosetDB::Facial1Flags);
-				//char c3 = rec.getByte(HelmGeosetDB::Facial2Flags);
-				//unsigned char c4 = rec.getByte(HelmGeosetDB::Facial3Flags);
-				//unsigned char c5 = rec.getByte(HelmGeosetDB::EarsFlags);
-				
-				// TODO: Work out what exactly these geosets mean and act accordingly.
-				// These values point to records in HelmetGeosetVisData.dbc
-				// Still not sure if the 2 columns are for male / female or
-				// for facial hair / normal hair
-				//std::cout << "----------\n" << r.getUInt(ItemDisplayDB::GeosetVisID1) << "\t" << r.getUInt(ItemDisplayDB::GeosetVisID2) << "\n";
-				
-				//std::cout << (unsigned int)rec.getByte(HelmGeosetDB::Field1) << "\t" << (unsigned int)rec.getByte(HelmGeosetDB::Field2) << "\t" << (unsigned int)rec.getByte(HelmGeosetDB::Field3) << "\t" << (unsigned int)rec.getByte(HelmGeosetDB::Field4) << "\t" << (unsigned int)rec.getByte(HelmGeosetDB::Field5) << "\n";
-				//rec = helmetdb.getById(r.getUInt(ItemDisplayDB::GeosetVisID2));
-				//std::cout << (unsigned int)rec.getByte(HelmGeosetDB::Field1) << "\t" << (unsigned int)rec.getByte(HelmGeosetDB::Field2) << "\t" << (unsigned int)rec.getByte(HelmGeosetDB::Field3) << "\t" << (unsigned int)rec.getByte(HelmGeosetDB::Field4) << "\t" << (unsigned int)rec.getByte(HelmGeosetDB::Field5) << "\n";
-				
-				
-				//std::cout << (int)c1 << " " << (int)c2 << " " << (int)c3 << " " << (unsigned int)c4 << " " << (unsigned int)c5 << "\n";
-
-				if(Hair != 0)
-					showHair = false;
-					
-				//if(c5 == 1)
-				//	showFacialHair = false;
-
-				//if(r.getUInt(ItemDisplayDB::GeosetG) > 265)
-				//	showFacialHair = false;
-				}
-			}
-		} catch (...) {}
-	}
-	*/
-
 	// check if we have a robe on
 	bool hadRobe = false;
 	if (cd.equipment[CS_CHEST] != 0) {
@@ -1773,7 +1721,8 @@ wxString CharControl::makeItemTexture(int region, const wxString name)
 void CharTexture::compose(TextureID texID)
 {
 	// if we only have one texture then don't bother with compositing
-	if (components.size()==1) {
+	if (components.size() == 1)
+	{
 		Texture temp(std::string(components[0].name.mb_str()));
 		texturemanager.LoadBLP(texID, &temp);
 		return;
@@ -1781,74 +1730,62 @@ void CharTexture::compose(TextureID texID)
 
 	std::sort(components.begin(), components.end());
 
-	unsigned char *destbuf, *tempbuf;
-	destbuf = (unsigned char*)malloc(REGION_PX*REGION_PX*4);
-	memset(destbuf, 0, REGION_PX*REGION_PX*4);
 
-	for (std::vector<CharTextureComponent>::iterator it = components.begin(); it != components.end(); ++it) {
+	std::vector<unsigned char> destbuf(REGION_PX * REGION_PX * 4);
+	std::fill(destbuf.begin(), destbuf.end(), 0);
+
+	std::vector<unsigned char> tempbuf;
+
+	for (std::vector<CharTextureComponent>::iterator it = components.begin(); it
+		!= components.end(); ++it)
+	{
 		CharTextureComponent &comp = *it;
 		const CharRegionCoords &coords = regions[comp.region];
 		TextureID temptex = texturemanager.add(std::string(comp.name.mb_str()));
-		Texture &tex = *((Texture*)texturemanager.items[temptex]);
+		Texture &tex = *((Texture*) texturemanager.items[temptex]);
 
 		// Alfred 2009.07.03, tex width or height can't be zero
-		if (tex.w == 0 || tex.h == 0) {
+		if (tex.w == 0 || tex.h == 0)
+		{
 			texturemanager.del(temptex);
 			continue;
 		}
-		tempbuf = (unsigned char*)malloc(tex.w*tex.h*4);
-		if (!tempbuf)
-			continue;
-		memset(tempbuf, 0, tex.w*tex.h*4);
 
-		if (tex.w!=coords.xsize || tex.h!=coords.ysize)
-		{
-			tex.getPixels(tempbuf, GL_BGRA_EXT);
-			CxImage *newImage = new CxImage(0);
-			if (newImage) {
-				newImage->AlphaCreate();	// Create the alpha layer
-				newImage->IncreaseBpp(32);	// set image to 32bit 
-				newImage->CreateFromArray(tempbuf, tex.w, tex.h, 32, (tex.w*4), false);
-				newImage->Resample(coords.xsize, coords.ysize, 0); // 0: hight quality, 1: normal quality
-				wxDELETE(tempbuf);
-				tempbuf = NULL;
-				long size = coords.xsize * coords.ysize * 4;
-				newImage->Encode2RGBA(tempbuf, size, false);
-				wxDELETE(newImage);
-			} else {
-				free(tempbuf);
-				continue;
-			}
-		} else
-			tex.getPixels(tempbuf);
+		tempbuf.resize(tex.w * tex.h * 4);
+
+		tex.getPixels(&tempbuf[0]);
 
 		// blit the texture region over the original
-		for (int y=0, dy=coords.ypos; y<coords.ysize; y++,dy++) {
-			for (int x=0, dx=coords.xpos; x<coords.xsize; x++,dx++) {
-				unsigned char *src = tempbuf + y*coords.xsize*4 + x*4;
-				unsigned char *dest = destbuf + dy*REGION_PX*4 + dx*4;
-		
+		for (int y = 0, dy = coords.ypos; y < coords.ysize; y++, dy++)
+		{
+			for (int x = 0, dx = coords.xpos; x < coords.xsize; x++, dx++)
+			{
+				int sx = (x * tex.w) / coords.xsize;
+				int sy = (y * tex.h) / coords.ysize;
+
+				unsigned char *src = &tempbuf[0] + sy * tex.w * 4 + sx * 4;
+				unsigned char *dest = &destbuf[0] + dy * REGION_PX * 4 + dx * 4;
+
 				// this is slow and ugly but I don't care
 				float r = src[3] / 255.0f;
 				float ir = 1.0f - r;
 				// zomg RGBA?
-				dest[0] = (unsigned char)(dest[0]*ir + src[0]*r);
-				dest[1] = (unsigned char)(dest[1]*ir + src[1]*r);
-				dest[2] = (unsigned char)(dest[2]*ir + src[2]*r);
+				dest[0] = (unsigned char) (dest[0] * ir + src[0] * r);
+				dest[1] = (unsigned char) (dest[1] * ir + src[1] * r);
+				dest[2] = (unsigned char) (dest[2] * ir + src[2] * r);
 				dest[3] = 255;
 			}
 		}
 
-		free(tempbuf);
 		texturemanager.del(temptex);
 	}
 
 	// good, upload this to video
 	glBindTexture(GL_TEXTURE_2D, texID);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, REGION_PX, REGION_PX, 0, GL_RGBA, GL_UNSIGNED_BYTE, destbuf);
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-	free(destbuf);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, REGION_PX, REGION_PX, 0, GL_RGBA,
+		GL_UNSIGNED_BYTE, &destbuf[0]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
 
 void CharDetails::reset()
@@ -2717,37 +2654,6 @@ void CharDetails::loadStart(StartOutfitDB &start, ItemDatabase &items, int setid
 
 const std::string CharControl::selectCharModel()
 {
-/* // Alfred 2009.07.21 called by OnMount, but not complete
-	wxArrayString arr;
-	std::vector<int> ids;
-	for (CharRacesDB::Iterator it = racedb.begin(); it != racedb.end(); ++it) {
-		char buf[64];
-		sprintf(buf,"%s Male", it->getString(CharRacesDB::FullName+langOffset).mb_str());
-		arr.Add(buf);
-		sprintf(buf,"%s Female", it->getString(CharRacesDB::FullName+langOffset).mb_str());
-		arr.Add(buf);
-		ids.push_back(it->getInt(CharRacesDB::RaceID));
-	}
-	wxSingleChoiceDialog dialog(this, _T("Choose a character model"), _T("Races"), arr);
-	if (dialog.ShowModal() == wxID_OK) {
-		int sel = dialog.GetSelection();
-		int raceid = ids[sel >> 1];
-		int gender = sel & 1;
-		string genderStr = gender ? "Female" : "Male";
-		try {
-			CharRacesDB::Record r = racedb.getById(raceid);
-			std::string path = "Character\\";
-			path += r.getString(CharRacesDB::Name).mb_str();
-			path += "\\" + genderStr + "\\";
-			path += r.getString(CharRacesDB::Name).mb_str();
-			path += genderStr + ".m2";
-			return path;
-		} catch (CharRacesDB::NotFound) {
-			return ""; // wtf
-		}
-	}
-	
-*/
 	return "";
 }
 

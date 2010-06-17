@@ -38,7 +38,6 @@
 #include "effects.h"
 #include "arrows.h"
 #include "settings.h"
-#include "modelbankcontrol.h"
 #include "filecontrol.h"
 
 #include "enums.h"
@@ -108,7 +107,6 @@ public:
 	ImageControl *imageControl;
 	//SoundControl *soundControl;
 	SettingsControl *settingsControl;
-	ModelBankControl *modelbankControl;
 	ModelOpened *modelOpened;
 	FileControl *fileControl;
 
