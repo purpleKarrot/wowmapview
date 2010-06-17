@@ -17,7 +17,7 @@ class Bone;
 Vec3D fixCoordSystem(Vec3D v);
 
 #include "manager.h"
-#include "mpq.h"
+#include "mpq.hpp"
 
 #include "modelheaders.h"
 #include "quaternion.h"

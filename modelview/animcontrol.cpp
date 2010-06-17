@@ -312,7 +312,7 @@ void AnimControl::UpdateWMO(WMO *w, int group)
 }
 
 wxString sFilterDir;
-bool filterDir(std::string fn)
+bool filterDir(std::string const& fn)
 {
 	wxString tmp(fn.c_str(), wxConvUTF8);
 	tmp.MakeLower();
@@ -673,13 +673,13 @@ bool AnimControl::UpdateCreatureModel(Model *m)
 	std::set<FileTreeItem> filelist;
 	sFilterDir = fn.BeforeLast(SLASH)+SLASH;
 	sFilterDir.MakeLower();
-	getFileLists(filelist, filterDir);
+	FS().getFileLists(filelist, filterDir);
 	if (filelist.begin() != filelist.end()) {
 		TextureGroup grp;
 		grp.base = 11;
 		grp.count = 1;
 		for (std::set<FileTreeItem>::iterator it = filelist.begin(); it != filelist.end(); ++it) {
-			wxString str((*it).fn.c_str(), wxConvUTF8);
+			wxString str((*it).file_name.c_str(), wxConvUTF8);
 			grp.tex[0] = std::string((char *)str.BeforeLast(_T('.')).AfterLast(SLASH).c_str());
 			skins.insert(grp);
 		}
@@ -737,13 +737,13 @@ bool AnimControl::UpdateItemModel(Model *m)
 	std::set<FileTreeItem> filelist;
 	sFilterDir = wxString(m->name.c_str(), wxConvUTF8).BeforeLast(_T('.'));
 	sFilterDir.MakeLower();
-	getFileLists(filelist, filterDir);
+	FS().getFileLists(filelist, filterDir);
 	if (filelist.begin() != filelist.end()) {
 		TextureGroup grp;
 		grp.base = 2;
 		grp.count = 1;
 		for (std::set<FileTreeItem>::iterator it = filelist.begin(); it != filelist.end(); ++it) {
-			wxString str((*it).fn.c_str(), wxConvUTF8);
+			wxString str((*it).file_name.c_str(), wxConvUTF8);
 			grp.tex[0] = std::string((char *)str.BeforeLast(_T('.')).AfterLast(SLASH).c_str());
 			skins.insert(grp);
 		}

@@ -3,7 +3,6 @@
 #include <cstring>
 
 #define MAX_PARTICLES 10000
-#define PI 3.14159265358f
 
 
 Vec4D fromARGB(uint32 color)

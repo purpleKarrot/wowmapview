@@ -4,7 +4,7 @@
 class Liquid;
 
 #include "video.h"
-#include "mpq.h"
+#include "mpq.hpp"
 #include "maptile.h"
 
 const float LQ_DEFAULT_TILESIZE = CHUNKSIZE / 8.0f;
@@ -22,7 +22,7 @@ class Liquid {
 	float texRepeats;
 
 	void initGeometry(MPQFile &f);
-	void initTextures(char *basename, int first, int last);
+	void initTextures(const char* basename, int first, int last);
 
 	int type;
 	

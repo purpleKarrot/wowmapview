@@ -12,7 +12,6 @@
 #define XSENS 4.0f
 #define YSENS 8.0f
 #define SPEED 66.6f
-#define PI 3.14159265358f
 
 static int gV = 0;
 static char buffer[1024];

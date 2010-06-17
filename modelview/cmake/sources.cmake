@@ -2,7 +2,6 @@ file(GLOB WOWMV_SOURCES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
 
 list(REMOVE_ITEM WOWMV_SOURCES particle_test.cpp)
 list(REMOVE_ITEM WOWMV_SOURCES mpq_libmpq.cpp)
-list(REMOVE_ITEM WOWMV_SOURCES RenderTexture.cpp AVIGenerator.cpp)
 
 set(CXIMAGE_SOURCES
     CxImage/tif_xfile.cpp

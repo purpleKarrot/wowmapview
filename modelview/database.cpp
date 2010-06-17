@@ -1,6 +1,6 @@
 
 #include "database.h"
-#include "mpq.h"
+#include "mpq.hpp"
 
 ItemDatabase		items;
 // dbs

@@ -8,7 +8,6 @@
 #include <cstdio>
 
 #define GL_BUFFER_OFFSET(i) ((char *)(0) + (i))
-#define PI 3.14159265358f
 int globalTime = 0;
 
 Model::Model(std::string name, bool forceAnim) : forceAnim(forceAnim)

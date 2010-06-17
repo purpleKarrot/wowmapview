@@ -1,7 +1,7 @@
 
 #include "modelviewer.h"
 #include "globalvars.h"
-#include "mpq.h"
+#include "mpq.hpp"
 
 // default colour values
 const static float def_ambience[4] = {1.0f, 1.0f, 1.0f, 1.0f};
@@ -1254,13 +1254,6 @@ ModelViewer::~ModelViewer()
 	// wxAUI stuff
 	interfaceManager.UnInit();
 
-	// Clear the MPQ archives.
-	for (std::vector<MPQArchive*>::iterator it = archives.begin(); it != archives.end(); ++it) {
-        (*it)->close();
-		//archives.erase(it);
-	}
-	archives.clear();
-
 	// Save our session and layout info
 	SaveSession();
 
@@ -1326,8 +1319,7 @@ bool ModelViewer::InitMPQArchives()
 	wxString path;
 
 	for (size_t i=0; i<mpqArchives.GetCount(); i++) {
-		if (wxFileName::FileExists(mpqArchives[i]))
-			archives.push_back(new MPQArchive(mpqArchives[i].mb_str()));
+		FS().add(std::string(mpqArchives[i].mb_str()));
 	}
 
 	// Checks and logs the "TOC" version of the interface files that were loaded
@@ -3004,7 +2996,7 @@ void ModelViewer::ImportArmoury(wxString strURL)
 	}
 
 	// Char Name Corrections
-	// Done so names like Daïmhôndrùs will get the proper page...
+	// Done so names like Daï¿½mhï¿½ndrï¿½s will get the proper page...
 	strChar = wxString(strChar.ToUTF8(), wxConvUTF8);
 
 	// Build Page file

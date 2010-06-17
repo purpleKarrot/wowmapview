@@ -3,7 +3,7 @@
 #include "charcontrol.h"
 #include "modelviewer.h"
 #include "itemselection.h"
-#include "mpq.h"
+#include "mpq.hpp"
 #include "globalvars.h"
 #include "CxImage/ximage.h"
 
@@ -2079,7 +2079,7 @@ void CharControl::selectStart()
 	itemDialog->Show();
 }
 
-bool filterCreatures(std::string fn)
+bool filterCreatures(std::string const& fn)
 {
 	wxString tmp(fn.c_str(), wxConvUTF8);
 	tmp.MakeLower();
@@ -2108,7 +2108,7 @@ void CharControl::selectMount()
 
 		wxArrayString knownRidable;
 
-		getFileLists(filelist, filterCreatures);
+		FS().getFileLists(filelist, filterCreatures);
 
 		wxTextFile file;
 		file.Open(_T("ridable.csv"));
@@ -2124,7 +2124,7 @@ void CharControl::selectMount()
 		}
 		
 		for (std::set<FileTreeItem>::iterator it = filelist.begin(); it != filelist.end(); ++it) {
-			wxString str((*it).fn.c_str(), wxConvUTF8);
+			wxString str((*it).file_name.c_str(), wxConvUTF8);
 			str.MakeLower();
 			creaturemodels.push_back(str);
 			ridablelist.push_back(knownRidable.Index(str, false)!=wxNOT_FOUND);

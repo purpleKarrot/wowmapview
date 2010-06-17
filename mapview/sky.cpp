@@ -5,7 +5,6 @@
 #include <cstdio>
 
 const float skymul = 36.0f;
-#define PI 3.14159265358f
 
 
 SkyColor::SkyColor( int t, int col )

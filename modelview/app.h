@@ -7,10 +7,6 @@
 #include "wx/wx.h"
 #endif
 
-#ifndef _WINDOWS
-#include "wmv.xpm"
-#endif
-
 #include <wx/app.h>
 #include <wx/log.h>
 #include <wx/tokenzr.h>

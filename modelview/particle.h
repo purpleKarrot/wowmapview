@@ -6,7 +6,7 @@ class RibbonEmitter;
 
 #include "model.h"
 #include "animated.h"
-#include "mpq.h"
+#include "mpq.hpp"
 
 #include <list>
 

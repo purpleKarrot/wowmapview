@@ -9,17 +9,12 @@
 
 class MPQFile
 {
-	bool eof;
-	std::vector<unsigned char> buffer;
-	std::size_t pointer;
-
-	// disable copying
-	MPQFile(const MPQFile &f);
-	void operator=(const MPQFile &f);
-
 public:
-	MPQFile():eof(false),pointer(0) {}
-	MPQFile(const char* filename);	// filenames are not case sensitive
+	MPQFile() :
+		eof(false), pointer(0)
+	{
+	}
+	MPQFile(const char* filename); // filenames are not case sensitive
 	void openFile(const char* filename);
 	~MPQFile();
 	size_t read(void* dest, size_t bytes);
@@ -35,18 +30,38 @@ public:
 
 	static bool exists(const char* filename);
 	static int getSize(const char* filename); // Used to do a quick check to see if a file is corrupted
+
+private:
+	bool eof;
+	std::vector<unsigned char> buffer;
+	std::size_t pointer;
+
+	// disable copying
+	MPQFile(const MPQFile &f);
+	void operator=(const MPQFile &f);
 };
 
 inline void flipcc(char *fcc)
 {
 	char t;
-	t=fcc[0];
-	fcc[0]=fcc[3];
-	fcc[3]=t;
-	t=fcc[1];
-	fcc[1]=fcc[2];
-	fcc[2]=t;
+	t = fcc[0];
+	fcc[0] = fcc[3];
+	fcc[3] = t;
+	t = fcc[1];
+	fcc[1] = fcc[2];
+	fcc[2] = t;
 }
+
+struct FileTreeItem
+{
+	std::string file_name;
+	int color;
+
+	bool operator<(const FileTreeItem &i) const
+	{
+		return file_name < i.file_name;
+	}
+};
 
 class Filesystem
 {
@@ -56,9 +71,17 @@ public:
 
 	void add(const std::string& filename);
 
+	static bool defaultFilterFunc(std::string const&)
+	{
+		return true;
+	}
+
+	void getFileLists(std::set<FileTreeItem>& dest, //
+		bool filterfunc(std::string const&) = defaultFilterFunc);
+
 private:
 	friend class MPQFile;
-	std::vector<void*> archives;
+	std::vector<std::pair<std::string, void*> > archives;
 };
 
 Filesystem& FS();

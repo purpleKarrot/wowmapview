@@ -1,5 +1,5 @@
 #include "dbcfile.h"
-#include "mpq.h"
+#include "mpq.hpp"
 
 DBCFile::DBCFile(const std::string &filename) : filename(filename)
 {

@@ -9,7 +9,7 @@
 // Our headers
 #include "manager.h"
 #include "vec3d.h"
-#include "mpq.h"
+#include "mpq.hpp"
 #include "model.h"
 #include "video.h"
 #include "displayable.h"

@@ -95,8 +95,6 @@ class ModelViewer: public wxFrame
     DECLARE_CLASS(ModelViewer)
     DECLARE_EVENT_TABLE()
 
-	std::vector<MPQArchive*> archives;
-
 public:
 	// Constructor + Deconstructor
 	ModelViewer();

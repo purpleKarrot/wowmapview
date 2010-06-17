@@ -1,39 +1,40 @@
 #include "mpq.hpp"
 
 #include <StormLib/StormLib.h>
+#include <boost/algorithm/string/predicate.hpp>
 
 #include <vector>
 #include <string>
 #include <iostream>
 
-typedef std::vector<HANDLE> ArchiveSet;
+typedef std::vector<std::pair<std::string, void*> > ArchiveSet;
 
-void
-MPQFile::openFile(const char* filename)
+void MPQFile::openFile(const char* filename)
 {
 	eof = false;
 	pointer = 0;
 
 	ArchiveSet& gOpenArchives = FS().archives;
-	for(ArchiveSet::iterator i=gOpenArchives.begin(); i!=gOpenArchives.end(); ++i)
+	for (ArchiveSet::iterator i = gOpenArchives.begin(); i
+		!= gOpenArchives.end(); ++i)
 	{
-		HANDLE mpq_a = *i;
+		HANDLE mpq_a = i->second;
 
 		HANDLE fh;
 
-		if( !SFileOpenFileEx( mpq_a, filename, 0, &fh ) )
+		if (!SFileOpenFileEx(mpq_a, filename, 0, &fh))
 			continue;
 
 		// Found!
-		DWORD filesize = SFileGetFileSize( fh );
+		DWORD filesize = SFileGetFileSize(fh);
 
 		// HACK: in patch.mpq some files don't want to open and give 1 for filesize
-		if (filesize<=1)
+		if (filesize <= 1)
 			return;
 
 		buffer.resize(filesize);
-		SFileReadFile( fh, &buffer[0], buffer.size() );
-		SFileCloseFile( fh );
+		SFileReadFile(fh, &buffer[0], buffer.size());
+		SFileCloseFile(fh);
 
 		return;
 	}
@@ -41,9 +42,8 @@ MPQFile::openFile(const char* filename)
 	eof = true;
 }
 
-MPQFile::MPQFile(const char* filename):
-	eof(false),
-	pointer(0)
+MPQFile::MPQFile(const char* filename) :
+	eof(false), pointer(0)
 {
 	openFile(filename);
 }
@@ -56,11 +56,12 @@ MPQFile::~MPQFile()
 bool MPQFile::exists(const char* filename)
 {
 	ArchiveSet& gOpenArchives = FS().archives;
-	for(ArchiveSet::iterator i=gOpenArchives.begin(); i!=gOpenArchives.end();++i)
+	for (ArchiveSet::iterator i = gOpenArchives.begin(); i
+		!= gOpenArchives.end(); ++i)
 	{
-		HANDLE mpq_a = *i;
+		HANDLE mpq_a = i->second;
 
-		if( SFileHasFile( mpq_a, filename ) )
+		if (SFileHasFile(mpq_a, filename))
 			return true;
 	}
 
@@ -77,7 +78,8 @@ size_t MPQFile::read(void* dest, size_t bytes)
 		return 0;
 
 	size_t rpos = pointer + bytes;
-	if (rpos > buffer.size()) {
+	if (rpos > buffer.size())
+	{
 		bytes = buffer.size() - pointer;
 		eof = true;
 	}
@@ -91,7 +93,7 @@ size_t MPQFile::read(void* dest, size_t bytes)
 
 bool MPQFile::isEof()
 {
-    return eof;
+	return eof;
 }
 
 void MPQFile::seek(int offset)
@@ -120,16 +122,17 @@ size_t MPQFile::getSize()
 int MPQFile::getSize(const char* filename)
 {
 	ArchiveSet& gOpenArchives = FS().archives;
-	for(ArchiveSet::iterator i=gOpenArchives.begin(); i!=gOpenArchives.end();++i)
+	for (ArchiveSet::iterator i = gOpenArchives.begin(); i
+		!= gOpenArchives.end(); ++i)
 	{
-		HANDLE mpq_a = *i;
+		HANDLE mpq_a = i->second;
 		HANDLE fh;
-		
-		if( !SFileOpenFileEx( mpq_a, filename, 0, &fh ) )
+
+		if (!SFileOpenFileEx(mpq_a, filename, 0, &fh))
 			continue;
 
-		DWORD filesize = SFileGetFileSize( fh );
-		SFileCloseFile( fh );
+		DWORD filesize = SFileGetFileSize(fh);
+		SFileCloseFile(fh);
 		return filesize;
 	}
 
@@ -157,9 +160,12 @@ Filesystem::Filesystem()
 
 Filesystem::~Filesystem()
 {
-	std::for_each(archives.begin(), archives.end(), SFileCloseArchive);
-}
+	ArchiveSet::iterator begin = archives.begin();
+	ArchiveSet::iterator end = archives.end();
 
+	for (ArchiveSet::iterator i = begin; i != end; ++i)
+		SFileCloseArchive(i->second);
+}
 
 void Filesystem::add(const std::string& filename)
 {
@@ -170,7 +176,74 @@ void Filesystem::add(const std::string& filename)
 
 	std::cout << "Added " << filename << " to file system." << std::endl;
 
-	archives.push_back(handle);
+	archives.push_back(std::pair<std::string, void*>(filename, handle));
+}
+
+void Filesystem::getFileLists(std::set<FileTreeItem> &dest, //
+	bool filterfunc(std::string const&))
+{
+	for (ArchiveSet::iterator i = archives.begin(); i != archives.end(); ++i)
+	{
+		HANDLE mpq_a = i->second;
+
+		HANDLE fh;
+		if (SFileOpenFileEx(mpq_a, "(listfile)", 0, &fh))
+		{
+			DWORD filesize = SFileGetFileSize(fh);
+			size_t size = filesize;
+
+			std::string temp = i->first;
+			int col = 0; // Black
+
+			if (boost::algorithm::iends_with(temp, "patch.mpq"))
+				col = 1; // Blue
+			else if (boost::algorithm::iends_with(temp, "patch-2.mpq"))
+				col = 2; // Red
+			else if (boost::algorithm::iends_with(temp, "patch-3.mpq"))
+				col = 3; // Green
+			else if (boost::algorithm::iends_with(temp, "expansion.mpq"))
+				col = 4; // Outlands Purple
+			else if (boost::algorithm::iends_with(temp, "expansion2.mpq")
+				|| boost::algorithm::iends_with(temp, "lichking.mpq"))
+				col = 5; // Frozen Blue
+			else if (boost::algorithm::iends_with(temp, "expansion3.mpq"))
+				col = 6; // Destruction Orange
+
+			std::vector<char> buffer;
+			if (size > 0)
+			{
+				buffer.resize(size);
+				SFileReadFile(fh, &buffer[0], buffer.size());
+				char *p = &buffer[0], *end = &buffer[size];
+
+				while (p <= end)
+				{
+					char *q = p;
+					do
+					{
+						if (*q == 13)
+							break;
+					} while (q++ <= end);
+
+					std::string line(p, q - p);
+					if (line.empty())
+						break;
+
+					p = q + 2;
+
+					if (filterfunc(line))
+					{
+						FileTreeItem tmp;
+						tmp.file_name = line;
+						tmp.color = col;
+						dest.insert(tmp);
+					}
+				}
+			}
+
+			SFileCloseFile(fh);
+		}
+	}
 }
 
 Filesystem& FS()

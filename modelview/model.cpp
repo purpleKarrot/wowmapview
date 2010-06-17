@@ -1,7 +1,7 @@
 #include "globalvars.h"
 #include "modelviewer.h"
 #include "model.h"
-#include "mpq.h"
+#include "mpq.hpp"
 
 #include <cassert>
 #include <algorithm>

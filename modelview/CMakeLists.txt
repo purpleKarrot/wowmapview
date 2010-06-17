@@ -37,7 +37,7 @@ add_executable(wowmodelviewer ${WOWMV_SOURCES})
 
 target_link_libraries(wowmodelviewer
     ${EXTRA_LIBS}
-    cximage Storm
+    cximage Storm wowview
     ${wxWidgets_LIBRARIES}
     ${BZIP2_LIBRARIES}
     ${ZLIB_LIBRARIES}

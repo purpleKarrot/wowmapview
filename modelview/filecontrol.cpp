@@ -1,6 +1,6 @@
 #include "modelviewer.h"
 #include "globalvars.h"
-#include "mpq.h"
+#include "mpq.hpp"
 #include "CxImage/ximage.h"
 
 typedef std::pair<wxTreeItemId, std::string> TreeStackItem;
@@ -65,7 +65,7 @@ FileControl::~FileControl()
 
 wxString content;
 
-bool filterModelsSearch(std::string s)
+bool filterModelsSearch(std::string const& s)
 {
 	const size_t len = s.length();
 	if (len < 4) 
@@ -81,7 +81,7 @@ bool filterModelsSearch(std::string s)
 	return true;
 }
 
-bool filterWMOsSearch(std::string s)
+bool filterWMOsSearch(std::string const& s)
 {
 	const size_t len = s.length();
 	if (len < 4) 
@@ -97,7 +97,7 @@ bool filterWMOsSearch(std::string s)
 	return true;
 }
 
-bool filterSoundsSearch(std::string s)
+bool filterSoundsSearch(std::string const& s)
 {
 	const size_t len = s.length();
 	if (len < 4) 
@@ -113,7 +113,7 @@ bool filterSoundsSearch(std::string s)
 	return true;
 }
 
-bool filterGraphicsSearch(std::string s)
+bool filterGraphicsSearch(std::string const& s)
 {
 	const size_t len = s.length();
 	if (len < 4) 
@@ -129,7 +129,7 @@ bool filterGraphicsSearch(std::string s)
 	return true;
 }
 
-bool filterADTsSearch(std::string s)
+bool filterADTsSearch(std::string const& s)
 {
 	const size_t len = s.length();
 	if (len < 4) 
@@ -155,15 +155,15 @@ void FileControl::Init(ModelViewer* mv)
 	content = txtContent->GetValue().MakeLower().Trim();
 
 	if (filterMode == FILE_FILTER_MODEL)
-		getFileLists(filelist, filterModelsSearch);
+		FS().getFileLists(filelist, filterModelsSearch);
 	else if (filterMode == FILE_FILTER_WMO)
-		getFileLists(filelist, filterWMOsSearch);
+		FS().getFileLists(filelist, filterWMOsSearch);
 	else if (filterMode == FILE_FILTER_SOUND)
-		getFileLists(filelist, filterSoundsSearch);
+		FS().getFileLists(filelist, filterSoundsSearch);
 	else if (filterMode == FILE_FILTER_IMAGE)
-		getFileLists(filelist, filterGraphicsSearch);
+		FS().getFileLists(filelist, filterGraphicsSearch);
 	else if (filterMode == FILE_FILTER_ADT)
-		getFileLists(filelist, filterADTsSearch);
+		FS().getFileLists(filelist, filterADTsSearch);
 
 	// Put all the viewable files into our File Tree.
 	TreeStack stack;
@@ -178,7 +178,7 @@ void FileControl::Init(ModelViewer* mv)
 	size_t index=0;
 
 	for (std::set<FileTreeItem>::iterator it = filelist.begin(); it != filelist.end(); ++it) {
-		const std::string &str = (*it).fn;
+		const std::string &str = (*it).file_name;
 		size_t p = 0;
 		size_t i;
 
@@ -219,19 +219,19 @@ void FileControl::Init(ModelViewer* mv)
 				newItem.first = fileTree->AppendItem(stack[stack.size()-1].first, wxString(newItem.second.c_str(), wxConvUTF8));
 				
 				//if (colour == true) {
-					if ((*it).col == 0)
+					if ((*it).color == 0)
 						fileTree->SetItemTextColour(newItem.first, *wxBLACK);
-					else if ((*it).col == 1)
+					else if ((*it).color == 1)
 						fileTree->SetItemTextColour(newItem.first, *wxBLUE);
-					else if ((*it).col == 2)
+					else if ((*it).color == 2)
 						fileTree->SetItemTextColour(newItem.first, *wxRED);
-					else if ((*it).col == 3)
+					else if ((*it).color == 3)
 						fileTree->SetItemTextColour(newItem.first, wxColour(0,170,0));		// Green
-					else if ((*it).col == 4)
+					else if ((*it).color == 4)
 						fileTree->SetItemTextColour(newItem.first, wxColour(160,0,160));	// Outland Purple
-					else if ((*it).col == 5)
+					else if ((*it).color == 5)
 						fileTree->SetItemTextColour(newItem.first, wxColour(35,130,179));	// Frozen Blue
-					else if ((*it).col == 6)
+					else if ((*it).color == 6)
 						fileTree->SetItemTextColour(newItem.first, wxColour(233,109,17));	// Destruction Orange
 					else
 						fileTree->SetItemTextColour(newItem.first, *wxLIGHT_GREY);
@@ -248,19 +248,19 @@ void FileControl::Init(ModelViewer* mv)
 		std::string fileName = str.substr(start);
 
 		item = fileTree->AppendItem(stack[stack.size()-1].first, wxString(fileName.c_str(), *wxConvCurrent), -1, -1, new FileTreeData(str));
-		if ((*it).col == 0)
+		if ((*it).color == 0)
 			fileTree->SetItemTextColour(item, *wxBLACK);
-		else if ((*it).col == 1)
+		else if ((*it).color == 1)
 			fileTree->SetItemTextColour(item, *wxBLUE);
-		else if ((*it).col == 2)
+		else if ((*it).color == 2)
 			fileTree->SetItemTextColour(item, *wxRED);
-		else if ((*it).col == 3)
+		else if ((*it).color == 3)
 			fileTree->SetItemTextColour(item, wxColour(0,170,0));		// Green
-		else if ((*it).col == 4)
+		else if ((*it).color == 4)
 			fileTree->SetItemTextColour(item, wxColour(160,0,160));		// Outland Purple
-		else if ((*it).col == 5)
+		else if ((*it).color == 5)
 			fileTree->SetItemTextColour(item, wxColour(35,130,179));	// Frozen Blue
-		else if ((*it).col == 6)
+		else if ((*it).color == 6)
 			fileTree->SetItemTextColour(item, wxColour(233,109,17));	// Destruction Orange
 		else
 			fileTree->SetItemTextColour(item, *wxLIGHT_GREY);

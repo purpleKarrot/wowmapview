@@ -9,7 +9,7 @@
 #define	CHUNKS_IN_TILE	16
 
 #include "video.h"
-#include "mpq.h"
+#include "mpq.hpp"
 #include "wmo.h"
 #include "model.h"
 #include "liquid.h"
@@ -121,7 +121,7 @@ public:
 	unsigned int areaID;
 
 	std::vector<GLuint> wTextures;
-	void initTextures(char *basename, int first, int last);
+	void initTextures(const char* basename, int first, int last);
 
 	bool haswater;
 	std::vector< SWaterLayer > waterLayer;

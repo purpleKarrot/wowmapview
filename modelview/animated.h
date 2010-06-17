@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "modelheaders.h"
-#include "mpq.h"
+#include "mpq.hpp"
 #include "vec3d.h"
 #include "quaternion.h"
 
