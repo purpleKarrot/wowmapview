@@ -7,6 +7,8 @@
 #include <algorithm>
 #include "util.h"
 
+#define GL_BUFFER_OFFSET(i) ((char *)(0) + (i))
+
 int globalTime = 0;
 extern ModelViewer *g_modelViewer;
 

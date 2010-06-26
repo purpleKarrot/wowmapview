@@ -2,6 +2,7 @@
 
 #include <StormLib/StormLib.h>
 #include <boost/algorithm/string/predicate.hpp>
+#include <boost/algorithm/string/case_conv.hpp>
 
 #include <vector>
 #include <string>
@@ -233,13 +234,9 @@ void Filesystem::getFileLists(std::set<FileTreeItem> &dest, //
 
 					p = q + 2;
 
+					boost::algorithm::to_lower(line);
 					if (filterfunc(line))
-					{
-						FileTreeItem tmp;
-						tmp.file_name = line;
-						tmp.color = col;
-						dest.insert(tmp);
-					}
+						dest.insert(FileTreeItem(line, col));
 				}
 			}
 

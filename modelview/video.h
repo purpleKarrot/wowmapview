@@ -1,7 +1,7 @@
 #ifndef VIDEO_H
 #define VIDEO_H
 
-#include "OpenGLHeaders.h"
+#include <GL/glew.h>
 
 #include "util.h"
 #include "vec3d.h"
@@ -107,7 +107,7 @@ public:
 	
 	// Is there hardware support?
 	bool hasHardware;
-	bool secondPass;
+//	bool secondPass;
 
 	// Video card support for OGL Extensions
 	bool supportFragProg;

@@ -14,7 +14,7 @@
 // --
 
 // OpenGL headers
-#include "OpenGLHeaders.h"
+#include <GL/glew.h>
 
 #include "enums.h"
 

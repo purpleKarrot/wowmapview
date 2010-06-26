@@ -38,53 +38,8 @@
 #include "effects.h"
 #include "arrows.h"
 #include "settings.h"
-#include "filecontrol.h"
 
 #include "enums.h"
-
-//#include "CShader.h"
-
-// defines
-#define APP_TITLE _T("World of Warcraft Model Viewer")
-#define APP_VERSION _T("v0.7.0.1 r225")		// Revision number should match the revision number on GoogleCode.
-#ifdef _DEBUG
-	#define APP_ISDEBUG _T(" Debug")
-#else
-	#define APP_ISDEBUG _T("")
-#endif
-
-// This should only be touched when adding a new OS or platform.
-#if defined (_WINDOWS)
-	#if defined (_WIN64)
-		#define APP_PLATFORM _T("Windows 64-bit")
-	#elif defined (_WIN32)
-		#define APP_PLATFORM _T("Windows 32-bit")
-	#else
-		#error _T("Your Windows platform is not defined. Please specify either _WIN64 or _WIN32.")
-	#endif
-#elif defined (_MAC)
-	#if defined (_MAC_INTEL)
-		#define APP_PLATFORM _T("Macintosh Intel")
-	#elif defined (_MAC_PPC)
-		#define APP_PLATFORM _T("Macintosh PowerPC")
-	#else
-		#error _T("Your Macintosh platform is not defined. Please specify either _MAC_INTEL or _MAC_PPC.")
-	#endif
-#elif defined (_LINUX)
-	#if defined (_LINUX64)
-		#define APP_PLATFORM _T("Linux 64-bit")
-	#elif defined (_LINUX32)
-		#define APP_PLATFORM _T("Linux 32-bit")
-	#else
-		#error _T("Your Linux platform is not defined. Please specify either _LINUX64 or _LINUX32.")
-	#endif
-#else
-	#ifdef _DEBUG
-		#error _T("You have not specified a valid Operating System for your Debug configuration.")
-	#else
-		#error _T("You have not specified a valid Operating System for your Release configuration.")
-	#endif
-#endif
 
 class ModelViewer: public wxFrame
 {    
@@ -108,7 +63,6 @@ public:
 	//SoundControl *soundControl;
 	SettingsControl *settingsControl;
 	ModelOpened *modelOpened;
-	FileControl *fileControl;
 
 	//wxWidget objects
 	wxMenuBar *menuBar;
@@ -143,7 +97,7 @@ public:
 	void LoadChar(const char *fn);
 	void SaveChar(const char *fn);
 
-	void LoadModel(const wxString fn);
+	void LoadModel(const std::string& fn);
 	void LoadItem(unsigned int displayID);
 	void LoadNPC(unsigned int modelid);
 
@@ -171,16 +125,12 @@ public:
 	void OnBackground(wxCommandEvent &event);
 	void OnLanguage(wxCommandEvent &event);
 	void OnAbout(wxCommandEvent &event);
-	void OnCheckForUpdate(wxCommandEvent &event);
 	void OnCanvasSize(wxCommandEvent &event);
 	void OnTest(wxCommandEvent &event);
 	void OnExportOther(wxCommandEvent &event);
 	
 	void UpdateControls();
    
-	void ImportArmoury(wxString strURL);
-	void ModelInfo();
-
 	Vec3D DoSetColor(const Vec3D &defColor);
 };
 

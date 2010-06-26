@@ -67,7 +67,6 @@ bool WowModelViewApp::OnInit()
 	g_canvas = frame->canvas;
 	g_animControl = frame->animControl;
 	g_charControl = frame->charControl;
-	g_fileControl = frame->fileControl;
 
 	frame->interfaceManager.Update();
 

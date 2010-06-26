@@ -35,7 +35,7 @@
 #include "maptile.h"
 //#include "viewcontrol.h"
 #include "lightcontrol.h"
-#include "OpenGLHeaders.h"
+#include <GL/glew.h>
 //#include "CShader.h"
 #include "camera.h"
 #include "enums.h"

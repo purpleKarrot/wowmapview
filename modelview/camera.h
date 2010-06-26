@@ -18,7 +18,7 @@
 //#include <gl\glut.h>		// Need to include it here because the GL* types are required
 
 #include "vec3d.h"
-#include "OpenGLHeaders.h"
+#include <GL/glew.h>
 
 //Note: All angles in degrees
 

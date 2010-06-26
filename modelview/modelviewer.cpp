@@ -1,7 +1,9 @@
 
+#include "widgets/FileList.hpp"
 #include "modelviewer.h"
 #include "globalvars.h"
 #include "mpq.hpp"
+#include <boost/algorithm/string/predicate.hpp>
 
 // default colour values
 const static float def_ambience[4] = {1.0f, 1.0f, 1.0f, 1.0f};
@@ -136,7 +138,6 @@ BEGIN_EVENT_TABLE(ModelViewer, wxFrame)
 	EVT_MENU(ID_CHAR_RANDOMISE, ModelViewer::OnSetEquipment)
 
 	// About menu
-	EVT_MENU(ID_CHECKFORUPDATE, ModelViewer::OnCheckForUpdate)
 	EVT_MENU(ID_LANGUAGE, ModelViewer::OnLanguage)
 	EVT_MENU(ID_HELP, ModelViewer::OnAbout)
 	EVT_MENU(ID_ABOUT, ModelViewer::OnAbout)
@@ -170,7 +171,6 @@ ModelViewer::ModelViewer()
 	imageControl = NULL;
 	settingsControl = NULL;
 	modelOpened = NULL;
-	fileControl = NULL;
 
 	//wxWidget objects
 	menuBar = NULL;
@@ -185,7 +185,7 @@ ModelViewer::ModelViewer()
 
 	//wxCAPTION|wxRESIZE_BORDER|wxSYSTEM_MENU
 	// create our main frame
-	if (Create(NULL, wxID_ANY, wxString(APP_TITLE _T(" ") APP_VERSION _T(" ") APP_PLATFORM APP_ISDEBUG), wxDefaultPosition, wxSize(1024, 768), wxDEFAULT_FRAME_STYLE|wxCLIP_CHILDREN, _T("ModelViewerFrame"))) {
+	if (Create(NULL, wxID_ANY, wxString(_T("WoW Viewer")), wxDefaultPosition, wxSize(1024, 768), wxDEFAULT_FRAME_STYLE|wxCLIP_CHILDREN, _T("ModelViewerFrame"))) {
 		SetExtraStyle(wxWS_EX_VALIDATE_RECURSIVELY);
 		SetBackgroundStyle(wxBG_STYLE_CUSTOM);
 
@@ -229,7 +229,6 @@ ModelViewer::ModelViewer()
 		// Error check
 		if (!initDB) {
 			wxMessageBox(_T("Some DBC files could not be loaded.  These files are vital to being able to render models correctly.\nPlease make sure you are loading the 'Locale-xxxx.MPQ' file.\nFile list has been disabled until you are able to correct this problem."), _("DBC Error"));
-			fileControl->Disable();
 		}
 
 	} else {
@@ -468,7 +467,8 @@ void ModelViewer::InitObjects()
 {
 	wxLogMessage(_T("Initiating Objects..."));
 
-	fileControl = new FileControl(this, ID_FILELIST_FRAME);
+	FileList* file_list = new FileList;
+	file_list->show();
 
 	animControl = new AnimControl(this, ID_ANIM_FRAME);
 	charControl = new CharControl(this, ID_CHAR_FRAME);
@@ -479,12 +479,6 @@ void ModelViewer::InitObjects()
 	modelOpened = new ModelOpened(this, ID_MODELOPENED_FRAME);
 
 	canvas = new ModelCanvas(this);
-
-	if (video.secondPass) {
-		canvas->Destroy();
-		video.Release();
-		canvas = new ModelCanvas(this);
-	}
 
 	g_modelViewer = this;
 	g_animControl = animControl;
@@ -616,11 +610,6 @@ void ModelViewer::InitDocking()
 	interfaceManager.AddPane(canvas, wxAuiPaneInfo().
 				Name(wxT("canvas")).Caption(_("OpenGL Canvas")).
 				CenterPane());
-	
-	// Tree list control
-	interfaceManager.AddPane(fileControl, wxAuiPaneInfo().
-				Name(wxT("fileControl")).Caption(_("File List")).
-				BestSize(wxSize(170,700)).Left().Layer(2));
 
 	// Animation frame
     interfaceManager.AddPane(animControl, wxAuiPaneInfo().
@@ -659,7 +648,6 @@ void ModelViewer::InitDocking()
 
 void ModelViewer::ResetLayout()
 {
-	interfaceManager.DetachPane(fileControl);
 	interfaceManager.DetachPane(animControl);
 	interfaceManager.DetachPane(charControl);
 	interfaceManager.DetachPane(lightControl);
@@ -671,11 +659,6 @@ void ModelViewer::ResetLayout()
 	interfaceManager.AddPane(canvas, wxAuiPaneInfo().
 				Name(wxT("canvas")).Caption(_("OpenGL Canvas")).
 				CenterPane());
-	
-	// Tree list control
-	interfaceManager.AddPane(fileControl, wxAuiPaneInfo().
-				Name(wxT("fileControl")).Caption(_("File List")).
-				BestSize(wxSize(170,700)).Left().Layer(2));
 
 	// Animation frame
     interfaceManager.AddPane(animControl, wxAuiPaneInfo().
@@ -831,20 +814,20 @@ void ModelViewer::SaveLayout()
 }
 
 
-void ModelViewer::LoadModel(const wxString fn)
+void ModelViewer::LoadModel(const std::string& fn)
 {
-	if (!canvas || fn.IsEmpty())
+	if (!canvas || fn.empty())
 		return;
 
 	isModel = true;
 
 	// check if this is a character model
-	isChar = (fn.StartsWith(_T("Char"), false)) || (fn.StartsWith(_T("CHAR"), false));
+	isChar = boost::algorithm::starts_with(fn, "character");
 
 	Attachment *modelAtt = NULL;
 
 	if (isChar) {
-		modelAtt = canvas->LoadCharModel(fn.fn_str());
+		modelAtt = canvas->LoadCharModel(fn.c_str());
 
 		// error check
 		if (!modelAtt) {
@@ -855,7 +838,7 @@ void ModelViewer::LoadModel(const wxString fn)
 		canvas->model->modelType = MT_CHAR;
 
 	} else {
-		modelAtt = canvas->LoadCharModel(fn.fn_str()); //  change it from LoadModel, don't sure it's right or not.
+		modelAtt = canvas->LoadCharModel(fn.c_str()); //  change it from LoadModel, don't sure it's right or not.
 
 		// error check
 		if (!modelAtt) {
@@ -962,7 +945,7 @@ void ModelViewer::LoadNPC(unsigned int modelid)
 			name = name.BeforeLast('.');
 			name.Append(_T(".m2"));
 
-			LoadModel(name);
+			LoadModel(std::string(name.mb_str()));
 			canvas->model->modelType = MT_NORMAL;
 
 			TextureGroup grp;
@@ -1071,7 +1054,7 @@ void ModelViewer::LoadItem(unsigned int displayID)
 		for(int i=0; i<5; i++) {
 			fn = fns[i]+name;
 			if (MPQFile::getSize(fn.fn_str()) > 0) {
-				LoadModel(fn);
+				LoadModel(std::string(fn.fn_str()));
 				break;
 			}
 		}
@@ -1153,11 +1136,6 @@ ModelViewer::~ModelViewer()
 		canvas->Disable();
 		canvas->Destroy(); 
 		canvas = NULL;
-	}
-	
-	if (fileControl) {
-		fileControl->Destroy();
-		fileControl = NULL;
 	}
 
 	if (animControl) {
@@ -1308,8 +1286,6 @@ bool ModelViewer::Init()
 		return false;
 	}
 
-	fileControl->Init(this);
-
 	charControl->Init();
 
 	return true;
@@ -1321,9 +1297,7 @@ void ModelViewer::OnToggleDock(wxCommandEvent &event)
 	int id = event.GetId();
 
 	// wxAUI Stuff
-	if (id==ID_SHOW_FILE_LIST)
-		interfaceManager.GetPane(fileControl).Show(true);
-	else if (id==ID_SHOW_ANIM)
+	if (id==ID_SHOW_ANIM)
 		interfaceManager.GetPane(animControl).Show(true);
 	else if (id==ID_SHOW_CHAR && isChar)
 		interfaceManager.GetPane(charControl).Show(true);
@@ -1414,11 +1388,6 @@ void ModelViewer::OnToggleCommand(wxCommandEvent &event)
 		break;
 
 	case ID_IMPORT_CHAR:
-		{
-			wxTextEntryDialog dialog(this, _T("Please paste in the URL to the character you wish to import."), _T("Please enter text"), wxEmptyString, wxOK | wxCANCEL | wxCENTRE, wxDefaultPosition);
-			if (dialog.ShowModal() == wxID_OK)
-				ImportArmoury(dialog.GetValue());
-		}
 		break;
 
 	case ID_ZOOM_IN:
@@ -1840,7 +1809,7 @@ void ModelViewer::LoadChar(const char *fn)
 	}
 
 	// Load the model
-	LoadModel(wxString(modelname.c_str(), wxConvUTF8));
+	LoadModel(modelname);
 	canvas->model->modelType = MT_CHAR;
 
 	f >> charControl->cd.race >> charControl->cd.gender; // race and gender
@@ -1926,8 +1895,8 @@ void ModelViewer::OnLanguage(wxCommandEvent &event)
 void ModelViewer::OnAbout(wxCommandEvent &event)
 {
 	wxAboutDialogInfo info;
-    info.SetName(APP_TITLE);
-    info.SetVersion(APP_VERSION _T(" ") APP_PLATFORM APP_ISDEBUG);
+    info.SetName(_T("WoW View"));
+    info.SetVersion(_T("0.8.15"));
 	info.AddDeveloper(_T("Ufo_Z"));
 	info.AddDeveloper(_T("Darjk"));
 	info.AddDeveloper(_T("Chuanhsing"));
@@ -1963,47 +1932,6 @@ is (C)2006 Blizzard Entertainment(R). All rights reserved.")));
     // FIXME: Doesn't link on OSX
     wxAboutBox(info);
 #endif
-}
-
-void ModelViewer::OnCheckForUpdate(wxCommandEvent &event)
-{
-	wxURL url(_T("http://wowmodelviewer.googlecode.com/svn/trunk/latest.txt"));
-
-	if(url.GetError() == wxURL_NOERR)   {
-		wxInputStream *stream = url.GetInputStream();
-		
-		// here, just for example, I read 1024 bytes. You should read what you need...
-		char buffer[1024];
-		stream->Read(&buffer, 1024);
-		
-		// Sort the data
-		wxString data(wxString(buffer, wxConvUTF8));
-		wxString version = data.BeforeFirst(10);
-		wxString downloadURL = data.AfterLast(10);
-		int Compare = (int)version.find(wxString(APP_VERSION));
-#ifdef _DEBUG
-		wxLogMessage("Update Data:\nCurrent Version: \"%s\"\nRecorded Version \"%s\"\nURL Download: \"%s\"\nComparison Result: %i",wxString(APP_VERSION), version, downloadURL, Compare);
-#endif
-
-		if (Compare == 0) {
-			wxMessageBox(_T("You have the most up-to-date version."), _T("Update Check"));
-		} else {
-			wxString msg = _T("The most current version is: ");
-			msg.Append(version);
-			msg.Append(_T("\nWould you like to go to the download page?"));
-			int answer = wxMessageBox(msg, _("Update Check"), wxYES_NO, this);
-			if (answer == wxYES)
-				wxLaunchDefaultBrowser(wxString(downloadURL.ToUTF8(), wxConvUTF8));
-		}
-
-		// Create a string from the data that was received... (?)
-		//wxString webversion;
-		//wxMessageBox(wxString::Format("%s",buffer));
-
-		delete stream;
-	}else{
-		wxMessageBox(_T("Error retrieving update information.\nPlease try again later."),_T("Update Error"));
-	}
 }
 
 void ModelViewer::OnCanvasSize(wxCommandEvent &event)
@@ -2064,386 +1992,6 @@ void ModelViewer::OnCanvasSize(wxCommandEvent &event)
 	}
 }
 
-void ModelViewer::ModelInfo()
-{
-	if (!canvas->model)
-		return;
-	Model *m = canvas->model;
-	const char *fn="ModelInfo.xml";
-	ofstream xml(fn, ios_base::out | ios_base::trunc);
-
-	if (!xml.is_open()) {
-		wxLogMessage(_T("Error: Unable to open file '%s'. Could not export model."), fn);
-		return;
-	}
-
-	MPQFile f((char *)m->modelname.c_str());
-	if (f.isEof() || (f.getSize() < sizeof(ModelHeader))) {
-		wxLogMessage(_T("Error: Unable to load model: [%s]"), m->modelname.c_str());
-		// delete this; //?
-		xml.close();
-		f.close();
-		return;
-	}
-
-	MPQFile g((char *)m->lodname.c_str());
-	if (g.isEof() || (g.getSize() < sizeof(ModelView))) {
-		wxLogMessage(_T("Error: Unable to load Lod: [%s]"), m->lodname.c_str());
-		// delete this; //?
-		xml.close();
-		f.close();
-		g.close();
-		return;
-	}
-	ModelView *view = (ModelView*)(g.getBuffer());
-
-	xml << "<m2>" << endl;
-	xml << "  <info>" << endl;
-	xml << "    <fullname>" <<m->fullname.c_str()  << "</fullname>" << endl;
-	xml << "    <modelname>" <<m->modelname.c_str()  << "</modelname>" << endl;
-	xml << "  </info>" << endl;
-	xml << "  <header>" << endl;
-//	xml << "    <id>" << m->header.id << "</id>" << endl;
-	xml << "    <nameLength>" << m->header.nameLength << "</nameLength>" << endl;
-	xml << "    <nameOfs>" << m->header.nameOfs << "</nameOfs>" << endl;
-	xml << "    <name>" << f.getBuffer()+m->header.nameOfs << "</name>" << endl;
-	xml << "    <GlobalModelFlags>" << m->header.GlobalModelFlags << "</GlobalModelFlags>" << endl;
-	xml << "    <nGlobalSequences>" << m->header.nGlobalSequences << "</nGlobalSequences>" << endl;
-	xml << "    <ofsGlobalSequences>" << m->header.ofsGlobalSequences << "</ofsGlobalSequences>" << endl;
-	xml << "    <nAnimations>" << m->header.nAnimations << "</nAnimations>" << endl;
-	xml << "    <ofsAnimations>" << m->header.ofsAnimations << "</ofsAnimations>" << endl;
-	xml << "    <nAnimationLookup>" << m->header.nAnimationLookup << "</nAnimationLookup>" << endl;
-	xml << "    <ofsAnimationLookup>" << m->header.ofsAnimationLookup << "</ofsAnimationLookup>" << endl;
-	xml << "    <nBones>" << m->header.nBones << "</nBones>" << endl;
-	xml << "    <ofsBones>" << m->header.ofsBones << "</ofsBones>" << endl;
-	xml << "    <nKeyBoneLookup>" << m->header.nKeyBoneLookup << "</nKeyBoneLookup>" << endl;
-	xml << "    <ofsKeyBoneLookup>" << m->header.ofsKeyBoneLookup << "</ofsKeyBoneLookup>" << endl;
-	xml << "    <nVertices>" << m->header.nVertices << "</nVertices>" << endl;
-	xml << "    <ofsVertices>" << m->header.ofsVertices << "</ofsVertices>" << endl;
-	xml << "    <nViews>" << m->header.nViews << "</nViews>" << endl;
-	xml << "    <lodname>" <<m->lodname.c_str()  << "</lodname>" << endl;
-	xml << "    <nColors>" << m->header.nColors << "</nColors>" << endl;
-	xml << "    <ofsColors>" << m->header.ofsColors << "</ofsColors>" << endl;
-	xml << "    <nTextures>" << m->header.nTextures << "</nTextures>" << endl;
-	xml << "    <ofsTextures>" << m->header.ofsTextures << "</ofsTextures>" << endl;
-	xml << "    <nTransparency>" << m->header.nTransparency << "</nTransparency>" << endl;
-	xml << "    <ofsTransparency>" << m->header.ofsTransparency << "</ofsTransparency>" << endl;
-	xml << "    <nTexAnims>" << m->header.nTexAnims << "</nTexAnims>" << endl;
-	xml << "    <ofsTexAnims>" << m->header.ofsTexAnims << "</ofsTexAnims>" << endl;
-	xml << "    <nTexReplace>" << m->header.nTexReplace << "</nTexReplace>" << endl;
-	xml << "    <ofsTexReplace>" << m->header.ofsTexReplace << "</ofsTexReplace>" << endl;
-	xml << "    <nTexFlags>" << m->header.nTexFlags << "</nTexFlags>" << endl;
-	xml << "    <ofsTexFlags>" << m->header.ofsTexFlags << "</ofsTexFlags>" << endl;
-	xml << "    <nBoneLookup>" << m->header.nBoneLookup << "</nBoneLookup>" << endl;
-	xml << "    <ofsBoneLookup>" << m->header.ofsBoneLookup << "</ofsBoneLookup>" << endl;
-	xml << "    <nTexLookup>" << m->header.nTexLookup << "</nTexLookup>" << endl;
-	xml << "    <ofsTexLookup>" << m->header.ofsTexLookup << "</ofsTexLookup>" << endl;
-	xml << "    <nTexUnitLookup>" << m->header.nTexUnitLookup << "</nTexUnitLookup>" << endl;
-	xml << "    <ofsTexUnitLookup>" << m->header.ofsTexUnitLookup << "</ofsTexUnitLookup>" << endl;
-	xml << "    <nTransparencyLookup>" << m->header.nTransparencyLookup << "</nTransparencyLookup>" << endl;
-	xml << "    <ofsTransparencyLookup>" << m->header.ofsTransparencyLookup << "</ofsTransparencyLookup>" << endl;
-	xml << "    <nTexAnimLookup>" << m->header.nTexAnimLookup << "</nTexAnimLookup>" << endl;
-	xml << "    <ofsTexAnimLookup>" << m->header.ofsTexAnimLookup << "</ofsTexAnimLookup>" << endl;
-    xml << "    <PhysicsSettings>" << endl;
-	xml << "      <VertexBox0>" << m->header.ps.VertexBox[0] << "</VertexBox0>" <<  endl;
-	xml << "      <VertexBox1>" << m->header.ps.VertexBox[1] << "</VertexBox1>" <<  endl;
-	xml << "      <VertexRadius>" << m->header.ps.VertexRadius << "</VertexRadius>" << endl;
-	xml << "      <BoundingBox0>" << m->header.ps.BoundingBox[0] << "</BoundingBox0>" << endl;
-	xml << "      <BoundingBox1>" << m->header.ps.BoundingBox[1] << "</BoundingBox1>" << endl;
-	xml << "      <BoundingRadius>" << m->header.ps.BoundingRadius << "</BoundingRadius>" << endl;
-	xml << "    </PhysicsSettings>" << endl;
-	xml << "    <nBoundingTriangles>" << m->header.nBoundingTriangles << "</nBoundingTriangles>" << endl;
-	xml << "    <ofsBoundingTriangles>" << m->header.ofsBoundingTriangles << "</ofsBoundingTriangles>" << endl;
-	xml << "    <nBoundingVertices>" << m->header.nBoundingVertices << "</nBoundingVertices>" << endl;
-	xml << "    <ofsBoundingVertices>" << m->header.ofsBoundingVertices << "</ofsBoundingVertices>" << endl;
-	xml << "    <nBoundingNormals>" << m->header.nBoundingNormals << "</nBoundingNormals>" << endl;
-	xml << "    <ofsBoundingNormals>" << m->header.ofsBoundingNormals << "</ofsBoundingNormals>" << endl;
-	xml << "    <nAttachments>" << m->header.nAttachments << "</nAttachments>" << endl;
-	xml << "    <ofsAttachments>" << m->header.ofsAttachments << "</ofsAttachments>" << endl;
-	xml << "    <nAttachLookup>" << m->header.nAttachLookup << "</nAttachLookup>" << endl;
-	xml << "    <ofsAttachLookup>" << m->header.ofsAttachLookup << "</ofsAttachLookup>" << endl;
-	xml << "    <nEvents>" << m->header.nEvents << "</nEvents>" << endl;
-	xml << "    <ofsEvents>" << m->header.ofsEvents << "</ofsEvents>" << endl;
-	xml << "    <nLights>" << m->header.nLights << "</nLights>" << endl;
-	xml << "    <ofsLights>" << m->header.ofsLights << "</ofsLights>" << endl;
-	xml << "    <nCameras>" << m->header.nCameras << "</nCameras>" << endl;
-	xml << "    <ofsCameras>" << m->header.ofsCameras << "</ofsCameras>" << endl;
-	xml << "    <nCameraLookup>" << m->header.nCameraLookup << "</nCameraLookup>" << endl;
-	xml << "    <ofsCameraLookup>" << m->header.ofsCameraLookup << "</ofsCameraLookup>" << endl;
-	xml << "    <nRibbonEmitters>" << m->header.nRibbonEmitters << "</nRibbonEmitters>" << endl;
-	xml << "    <ofsRibbonEmitters>" << m->header.ofsRibbonEmitters << "</ofsRibbonEmitters>" << endl;
-	xml << "    <nParticleEmitters>" << m->header.nParticleEmitters << "</nParticleEmitters>" << endl;
-	xml << "    <ofsParticleEmitters>" << m->header.ofsParticleEmitters << "</ofsParticleEmitters>" << endl;
-	xml << "  </header>" << endl;
-
-	xml << "  <SkeletonAndAnimation>" << endl;
-
-	xml << "  <GlobalSequences>" << endl;
-	for(size_t i=0; i<m->header.nGlobalSequences; i++)
-		xml << "<Sequence>" << m->globalSequences[i] << "</Sequence>" << endl;
-	xml << "  </GlobalSequences>" << endl;
-
-	xml << "  <Animations>" << endl;
-	for(size_t i=0; i<m->header.nAnimations; i++) {
-		xml << "    <Animation id=\"" << i << "\">" << endl;
-		xml << "      <animID>"<< m->anims[i].animID << "</animID>" << endl;
-		// subAnimID
-		xml << "      <length>"<< m->anims[i].timeEnd << "</length>" << endl;
-		xml << "      <moveSpeed>"<< m->anims[i].moveSpeed << "</moveSpeed>" << endl;
-		xml << "      <flags>"<< m->anims[i].flags << "</flags>" << endl;
-		xml << "      <probability>"<< m->anims[i].probability << "</probability>" << endl;
-		xml << "      <d1>"<< m->anims[i].d1 << "</d1>" << endl;
-		xml << "      <d2>"<< m->anims[i].d2 << "</d2>" << endl;
-		xml << "      <playSpeed>"<< m->anims[i].playSpeed << "</playSpeed>" << endl;
-		xml << "      <boxA>"<< m->anims[i].boxA << "</boxA>" << endl;
-		xml << "      <boxB>"<< m->anims[i].boxB << "</boxB>" << endl;
-		xml << "      <rad>"<< m->anims[i].rad << "</rad>" << endl;
-		xml << "      <NextAnimation>"<< m->anims[i].NextAnimation << "</NextAnimation>" << endl;
-		xml << "      <Index>"<< m->anims[i].Index << "</Index>" << endl;
-		xml << "    </Animation>" << endl;
-
-	}
-	xml << "  </Animations>" << endl;
-
-	xml << "  <AnimationLookups>" << endl;
-	for(size_t i=0; i<m->header.nAnimationLookup; i++)
-		xml << "    <AnimationLookup id=\"" << i << "\">" << m->animLookups[i] << "</AnimationLookup>" << endl;
-	xml << "  </AnimationLookups>" << endl;
-
-	xml << "  <Bones>" << endl;
-	for(size_t i=0; i<m->header.nBones; i++) {
-		xml << "    <Bone id=\"" << i << "\">" << endl;
-		xml << "      <keyboneid>"<< m->bones[i].boneDef.keyboneid << "</keyboneid>" << endl;
-		xml << "      <billboard>"<< m->bones[i].billboard << "</billboard>" << endl;
-		xml << "      <parent>"<< m->bones[i].boneDef.parent << "</parent>" << endl;
-		xml << "      <geoid>"<< m->bones[i].boneDef.geoid << "</geoid>" << endl;
-		xml << "      <unknown>"<< m->bones[i].boneDef.unknown << "</unknown>" << endl;
-#if 0 // too huge
-		// AB translation
-		xml << "      <trans>" << endl;
-		xml << m->bones[i].trans;
-		xml << "      </trans>" << endl;
-		// AB rotation
-		xml << "      <rot>" << endl;
-		xml << m->bones[i].rot;
-		xml << "      </rot>" << endl;
-		// AB scaling
-		xml << "      <scale>" << endl;
-		xml << m->bones[i].scale;
-		xml << "      </scale>" << endl;
-#endif
-		xml << "      <pivot>"<< m->bones[i].boneDef.pivot << "</pivot>" << endl;
-		xml << "    </Bone>" << endl;
-	}
-	xml << "  </Bones>" << endl;
-
-	xml << "  <BoneLookups></BoneLookups>" << endl;
-
-	xml << "  <KeyBoneLookups>" << endl;
-	for(size_t i=0; i<m->header.nKeyBoneLookup; i++)
-		xml << "<KeyBoneLookup id=\"" << i << "\">" << m->keyBoneLookup[i] << "</KeyBoneLookup>" << endl;
-	xml << "  </KeyBoneLookups>" << endl;
-
-	xml << "  </SkeletonAndAnimation>" << endl;
-
-	xml << "  <GeometryAndRendering>" << endl;
-
-	xml << "  <Vertices>" << m->header.nVertices << "</Vertices>" << endl;
-	xml << "  <Views>" << endl;
-
-	xml << "  <Indices>" << view->nIndex << "</Indices>" << endl;
-	xml << "  <Triangles>" << view->nTris << "</Triangles>" << endl;
-	xml << "  <Properties>" << view->nProps << "</Properties>" << endl;
-	xml << "  <Subs>" << view->nSub << "</Subs>" << endl;
-	xml << "  <Texs>" << view->nTex << "</Texs>" << endl;
-
-	
-	xml << "	<RenderPasses>" << endl;
-	for (size_t i=0; i<m->passes.size(); i++) {
-		xml << "	  <RenderPass id=\"" << i << "\">" << endl;
-		ModelRenderPass &p = m->passes[i];
-		xml << "      <indexStart>" << p.indexStart << "</indexStart>" << endl;
-		xml << "      <indexCount>" << p.indexCount << "</indexCount>" << endl;
-		xml << "      <vertexStart>" << p.vertexStart << "</vertexStart>" << endl;
-		xml << "      <vertexEnd>" << p.vertexEnd << "</vertexEnd>" << endl;
-		xml << "      <tex>" << p.tex << "</tex>" << endl;
-		xml << "      <useTex2>" << p.useTex2 << "</useTex2>" << endl;
-		xml << "      <useEnvMap>" << p.useEnvMap << "</useEnvMap>" << endl;
-		xml << "      <cull>" << p.cull << "</cull>" << endl;
-		xml << "      <trans>" << p.trans << "</trans>" << endl;
-		xml << "      <unlit>" << p.unlit << "</unlit>" << endl;
-		xml << "      <noZWrite>" << p.noZWrite << "</noZWrite>" << endl;
-		xml << "      <billboard>" << p.billboard << "</billboard>" << endl;
-		xml << "      <p>" << p.p << "</p>" << endl;
-		xml << "      <texanim>" << p.texanim << "</texanim>" << endl;
-		xml << "      <color>" << p.color << "</color>" << endl;
-		xml << "      <opacity>" << p.opacity << "</opacity>" << endl;
-		xml << "      <blendmode>" << p.blendmode << "</blendmode>" << endl;
-		xml << "      <order>" << p.order << "</order>" << endl;
-		xml << "      <geoset>" << p.geoset << "</geoset>" << endl;
-		xml << "      <swrap>" << p.swrap << "</swrap>" << endl;
-		xml << "      <twrap>" << p.twrap << "</twrap>" << endl;
-		xml << "      <ocol>" << p.ocol << "</ocol>" << endl;
-		xml << "      <ecol>" << p.ecol << "</ecol>" << endl;
-		xml << "	  </RenderPass>" << endl;
-	}
-	xml << "	</RenderPasses>" << endl;
-
-	xml << "	<Geosets>" << endl;
-	for (size_t i=0; i<m->geosets.size(); i++) {
-		xml << "	  <Geoset id=\"" << i << "\">" << endl;
-		xml << "      <id>" << m->geosets[i].id << "</id>" << endl;
-		xml << "      <vstart>" << m->geosets[i].vstart << "</vstart>" << endl;
-		xml << "      <vcount>" << m->geosets[i].vcount << "</vcount>" << endl;
-		xml << "      <istart>" << m->geosets[i].istart << "</istart>" << endl;
-		xml << "      <icount>" << m->geosets[i].icount << "</icount>" << endl;
-		xml << "      <nBones>" << m->geosets[i].nBones << "</nBones>" << endl;
-		xml << "      <StartBones>" << m->geosets[i].StartBones << "</StartBones>" << endl;
-		xml << "      <BoundingBox>" << m->geosets[i].BoundingBox[0] << "</BoundingBox>" << endl;
-		xml << "      <BoundingBox>" << m->geosets[i].BoundingBox[1] << "</BoundingBox>" << endl;
-		xml << "      <radius>" << m->geosets[i].radius << "</radius>" << endl;
-		xml << "	  </Geoset>" << endl;
-	}
-	xml << "	</Geosets>" << endl;
-
-	ModelTexUnit *tex = (ModelTexUnit*)(g.getBuffer() + view->ofsTex);
-	xml << "	<TexUnits>" << endl;
-	for (size_t i=0; i<view->nTex; i++) {
-		xml << "	  <TexUnit id=\"" << i << "\">" << endl;
-		xml << "      <flags>" << tex[i].flags << "</flags>" << endl;
-		xml << "      <shading>" << tex[i].shading << "</shading>" << endl;
-		xml << "      <op>" << tex[i].op << "</op>" << endl;
-		xml << "      <op2>" << tex[i].op2 << "</op2>" << endl;
-		xml << "      <colorIndex>" << tex[i].colorIndex << "</colorIndex>" << endl;
-		xml << "      <flagsIndex>" << tex[i].flagsIndex << "</flagsIndex>" << endl;
-		xml << "      <texunit>" << tex[i].texunit << "</texunit>" << endl;
-		xml << "      <mode>" << tex[i].mode << "</mode>" << endl;
-		xml << "      <textureid>" << tex[i].textureid << "</textureid>" << endl;
-		xml << "      <texunit2>" << tex[i].texunit2 << "</texunit2>" << endl;
-		xml << "      <transid>" << tex[i].transid << "</transid>" << endl;
-		xml << "      <texanimid>" << tex[i].texanimid << "</texanimid>" << endl;
-		xml << "	  </TexUnit>" << endl;
-	}
-	xml << "	</TexUnits>" << endl;
-
-	xml << "  </Views>" << endl;
-
-	xml << "  <RenderFlags></RenderFlags>" << endl;
-
-	xml << "	<Colors>" << endl;
-	for(size_t i=0; i<m->header.nColors; i++) {
-		xml << "    <Color id=\"" << i << "\">" << endl;
-		// AB color
-		xml << "    <color>" << endl;
-		xml << m->colors[i].color;
-		xml << "    </color>" << endl;
-		// AB opacity
-		xml << "    <opacity>" << endl;
-		xml << m->colors[i].opacity;
-		xml << "    </opacity>" << endl;
-		xml << "    </Color>" << endl;
-	}
-	xml << "	</Colors>" << endl;
-
-	xml << "	<Transparency>" << endl;
-	for(size_t i=0; i<m->header.nTransparency; i++) {
-		xml << "    <Tran id=\"" << i << "\">" << endl;
-		// AB trans
-		xml << "    <trans>" << endl;
-		xml << m->transparency[i].trans;
-		xml << "    </trans>" << endl;
-		xml << "    </Tran>" << endl;
-	}
-	xml << "	</Transparency>" << endl;
-
-	xml << "  <TransparencyLookup></TransparencyLookup>" << endl;
-
-	ModelTextureDef *texdef = (ModelTextureDef*)(f.getBuffer() + m->header.ofsTextures);
-	xml << "	<Textures>" << endl;
-	for(size_t i=0; i<m->header.nTextures; i++) {
-		xml << "	  <Texture id=\"" << i << "\">" << endl;
-		xml << "      <type>" << texdef[i].type << "</type>" << endl;
-		xml << "      <flags>" << texdef[i].flags << "</flags>" << endl;
-		//xml << "      <nameLen>" << texdef[i].nameLen << "</nameLen>" << endl;
-		//xml << "      <nameOfs>" << texdef[i].nameOfs << "</nameOfs>" << endl;
-		if (texdef[i].type == TEXTURE_FILENAME)
-			xml << "		<name>" << f.getBuffer()+texdef[i].nameOfs  << "</name>" << endl;
-		xml << "	  </Texture>" << endl;
-	}
-	xml << "	</Textures>" << endl;
-
-	xml << "	<TextureLookup></TextureLookup>" << endl;
-	xml << "	<ReplacableTextureLookup></ReplacableTextureLookup>" << endl;
-
-	xml << "  </GeometryAndRendering>" << endl;
-
-	xml << "  <Effects>" << endl;
-
-	xml << "	<TexAnims>" << endl;
-	for(size_t i=0; i<m->header.nTexAnims; i++) {
-		xml << "	  <TexAnim id=\"" << i << "\">" << endl;
-		// AB trans
-		xml << "    <trans>" << endl;
-		xml << m->texAnims[i].trans;
-		xml << "    </trans>" << endl;
-		// AB rot
-		xml << "    <rot>" << endl;
-		xml << m->texAnims[i].rot;
-		xml << "    </rot>" << endl;
-		// AB scale
-		xml << "    <scale>" << endl;
-		xml << m->texAnims[i].scale;
-		xml << "    </scale>" << endl;
-		xml << "	  </TexAnim>" << endl;
-	}
-	xml << "	</TexAnims>" << endl;
-
-	xml << "	<RibbonEmitters></RibbonEmitters>" << endl;
-
-	xml << "	<Particles>" << endl;
-	for (size_t i=0; i<m->header.nParticleEmitters; i++) {
-		xml << "	  <Particle id=\"" << i << "\">" << endl;
-		xml << m->particleSystems[i];
-		xml << "	  </Particle>" << endl;
-	}
-	xml << "	</Particles>" << endl;
-
-	xml << "  </Effects>" << endl;
-
-	xml << "	<Miscellaneous>" << endl;
-
-	xml << "	<BoundingVolumes></BoundingVolumes>" << endl;
-	xml << "	<Lights></Lights>" << endl;
-	xml << "	<Cameras></Cameras>" << endl;
-
-	xml << "	<Attachments>" << endl;
-	for (size_t i=0; i<m->header.nAttachments; i++) {
-		xml << "	  <Attachment id=\"" << i << "\">" << endl;
-		xml << "      <id>" << m->atts[i].id << "</id>" << endl;
-		xml << "      <bone>" << m->atts[i].bone << "</bone>" << endl;
-		xml << "      <pos>" << m->atts[i].pos << "</pos>" << endl;
-		xml << "	  </Attachment>" << endl;
-	}
-	xml << "	</Attachments>" << endl;
-
-	xml << "	<Events>" << endl;
-	for (size_t i=0; i<m->header.nEvents; i++) {
-		xml << "	  <Event id=\"" << i << "\">" << endl;
-		xml << m->events[i];
-		xml << "	  </Event>" << endl;
-	}
-	xml << "	</Events>" << endl;
-
-
-	xml << "	</Miscellaneous>" << endl;
-
-//	xml << "    <>" << m->header. << "</>" << endl;
-	xml << "</m2>" << endl;
-	xml.close();
-	f.close();
-	g.close();
-}
-
 void DiscoveryNPC()
 {
 	wxString name, ret;
@@ -2499,7 +2047,7 @@ void DiscoveryItem()
 		}
 	}
 	// 3. from creaturedisplayinfoextra.dbc
-	int slots[11] = {1, 3, 4, 5, 6, 7, 8, 9, 10, 19, 16};
+	int slots_[11] = {1, 3, 4, 5, 6, 7, 8, 9, 10, 19, 16};
 	for (NPCDB::Iterator it = npcdb.begin(); it != npcdb.end(); ++it) {
 		for(size_t i=0; i<11; i++) {
 			int id = it->getUInt(NPCDB::HelmID+i);
@@ -2509,7 +2057,7 @@ void DiscoveryItem()
 				ItemDB::Record r = itemdb.getByDisplayId(id);
 			} catch (ItemDB::NotFound) {
 				if (!items.avaiable(id+ItemDB::MaxItem)) {
-					int type = slots[i];
+					int type = slots_[i];
 					name.Printf(_T("NPC%d"), it->getUInt(NPCDB::NPCID));
 					ret = items.addDiscoveryDisplayId(id, name, type);
 					if (f.is_open() && !ret.IsEmpty())
@@ -2531,9 +2079,7 @@ void DiscoveryItem()
 void ModelViewer::OnExportOther(wxCommandEvent &event)
 {
 	int id = event.GetId();
-	if (id == ID_FILE_MODEL_INFO) {
-		ModelInfo();
-	} else if (id == ID_FILE_DISCOVERY_ITEM) {
+	if (id == ID_FILE_DISCOVERY_ITEM) {
 		DiscoveryItem();
 		fileMenu->Enable(ID_FILE_DISCOVERY_ITEM, false);
 	} else if (id == ID_FILE_DISCOVERY_NPC) {
@@ -2579,162 +2125,3 @@ void ModelViewer::UpdateControls()
 	
 	modelControl->RefreshModel(canvas->root);
 }
-
-void ModelViewer::ImportArmoury(wxString strURL)
-{
-	// Format the URL
-	wxString strDomain = strURL.BeforeLast(_T('/')).AfterLast(_T('/')); // "armory.worldofwarcraft.com"
-	wxString strParam = strURL.AfterLast(_T('/'));
-	int pos = strParam.Find(_T("?r="));
-	wxString strFile = strParam.Mid(0, pos);
-	strParam = strParam.Mid(pos+3);
-	pos = strParam.Find(_T("&cn=")); // newer version change from 'n=' to 'cn='
-	wxString strRealm, strChar;
-	if (pos >= 0) {
-		strRealm = strParam.Mid(0, pos);
-		strChar = strParam.Mid(pos+4);
-	} else {
-		pos = strParam.Find(_T("&n="));
-		strRealm = strParam.Mid(0, pos);
-		strChar = strParam.Mid(pos+3);
-	}
-
-	// Char Name Corrections
-	// Done so names like Da�mh�ndr�s will get the proper page...
-	strChar = wxString(strChar.ToUTF8(), wxConvUTF8);
-
-	// Build Page file
-	// "/character-sheet.xml?r=%s&n=%s"
-	wxString strPage = _T('/') + strFile;
-	strPage.Append(_T("?r=")).Append(strRealm).Append(_T("&cn=")).Append(strChar);
-	//http://armory.wow-europe.com/character-sheet.xml?r=Spinebreaker&cn=Nostrum
-
-	wxLogMessage(_T("Attemping to access WoWArmory Page: %s"), wxString(strDomain + strPage).c_str());
-
-	// Get the page from the armoury website
-	wxHTTP http;
-
-	// set the headers
-	http.SetHeader(_T("User-Agent"), _T("Mozilla/5.0 (Windows;U;Windows NT 5.1;zh-TW;rv:1.8.1.2) Gecko/20070219 Firefox/2.0.0.12")); 
-	http.SetHeader(_T("Accept"), _T("text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5"));
-	http.SetHeader(_T("Accept-Language"), _T("en-us,en;q=0.5"));
-	http.SetHeader(_T("Accept-Charset"), _T("ISO-8859-1,utf-8;q=0.7,*;q=0.7"));
-	http.SetHeader(_T("Host"), strDomain);
-
-	if (http.Connect(strDomain))
-	{ 
-		// Success
-		wxInputStream *stream = http.GetInputStream(strPage); 
-		if (!stream || !stream->IsOk())
-			return;
-
-		// Make sure there was no error retrieving the page
-		if(http.GetError() == wxPROTO_NOERR) {
-			wxFileOutputStream output(_T("temp.xml"));
-            stream->Read(output); 
-			output.Close();
-			
-			wxXmlDocument xmlDoc;
-			if (!xmlDoc.Load(_T("temp.xml"), _T("UTF-8")))
-				return;
-			
-			// character-model.xml?r=Realm&cn=CharacterName
-			// Model Details, to be decoded later
-
-			// start processing the XML file
-			if (xmlDoc.GetRoot()->GetName() != wxT("page"))
-				return;
-
-			wxXmlNode *child = xmlDoc.GetRoot()->GetChildren(); // page->tabInfo
-			while(child) {
-				if (child->GetName() == _T("characterInfo"))
-					break;
-				child = child->GetNext(); // page->characterInfo
-			}
-
-			if (!child)
-				return;
-
-			child = child->GetChildren();
-
-			while (child) {
-
-				if (child->GetName() == _T("character")) { // page->characterInfo->character
-
-					// process text enclosed by <tag1></tag1>
-					//wxString content = child->GetNodeContent();
-
-					// process properties of <tag1>, raceId will better?
-					int raceId = wxAtoi(child->GetPropVal(_T("raceId"), _T("1")));
-					CharRacesDB::Record racer = racedb.getById(raceId);
-					wxString race;
-					if (gameVersion == 30100)
-						race = racer.getString(CharRacesDB::NameV310);
-					else
-						race = racer.getString(CharRacesDB::Name);
-					//race = race.MakeLower();
-					wxString gender = child->GetPropVal(_T("gender"), _T("Male"));
-					//gender = gender.MakeLower();
-
-					wxString strModel = _T("Character\\") + race + _T("\\") + gender + _T("\\") + race + gender + _T(".m2");
-
-					LoadModel(strModel);
-
-					if (!g_canvas->model)
-						return;
-
-				} else if (child->GetName() == _T("characterTab")) { // page->characterInfo->characterTab
-					child = child->GetChildren();
-
-				} else if (child->GetName() == _T("items")) { // page->characterInfo->characterTab->items
-
-					wxXmlNode *itemNode = child->GetChildren();
-					while (itemNode) { // // page->characterInfo->characterTab->items->item
-						if (itemNode->GetName() == _T("item")) {
-							wxString id = itemNode->GetPropVal(_T("id"), _T("0"));
-							wxString slot = itemNode->GetPropVal(_T("slot"), _T("0"));
-							
-							// Item ID
-							long itemID;
-							id.ToLong(&itemID);
-
-							// Equipment Slot
-							long slotID;
-							slot.ToLong(&slotID);
-
-							// Manual correction for slot ID values
-							if (slotID == 4) // Chest
-								slotID = CS_CHEST;
-							else if (slotID == 5) // Waist
-								slotID = CS_BELT;
-							else if (slotID == 7) // Feet
-								slotID = CS_BOOTS;
-							else if (slotID == 14) // Back
-								slotID = CS_CAPE;
-							else if (slotID == 15) // Right Hand
-								slotID = CS_HAND_RIGHT;
-							else if (slotID == 16) // Left Hand
-								slotID = CS_HAND_LEFT;
-
-							g_charControl->cd.equipment[slotID] = itemID;
-						}
-
-						itemNode = itemNode->GetNext();
-					}
-					
-					// Update the model
-					g_charControl->RefreshModel();
-					g_charControl->RefreshEquipment();
-					break;
-				}
-
-				child = child->GetNext();
-			}
-
-			//wxRemoveFile(_T("temp.xml"));
-		}
-		delete stream;
-	}
-}
-
-// --

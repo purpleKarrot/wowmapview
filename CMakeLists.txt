@@ -2,8 +2,10 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 project(wowmapview)
 
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMake)
+
 #set(CMAKE_BUILD_TYPE Debug)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 add_definitions(-DGL_GLEXT_PROTOTYPES)
 
@@ -24,6 +26,5 @@ file(COPY
     data/shaders
     data/ridable.csv
   DESTINATION
-    ${CMAKE_BINARY_DIR}/bin
+    ${CMAKE_BINARY_DIR}
   )
-

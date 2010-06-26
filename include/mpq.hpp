@@ -54,6 +54,11 @@ inline void flipcc(char *fcc)
 
 struct FileTreeItem
 {
+	FileTreeItem(std::string const& name, int color) :
+		file_name(name), color(color)
+	{
+	}
+
 	std::string file_name;
 	int color;
 
