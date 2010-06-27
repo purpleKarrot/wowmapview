@@ -106,29 +106,29 @@ public:
 
 	friend std::ostream& operator<<(std::ostream& out, ParticleSystem& v)
 	{
-		out << "        <colors>" << v.colors[0] << "</colors>" << endl;
-		out << "        <colors>" << v.colors[1] << "</colors>" << endl;
-		out << "        <colors>" << v.colors[2] << "</colors>" << endl;
-		out << "        <sizes>" << v.sizes[0] << "</sizes>" << endl;
-		out << "        <sizes>" << v.sizes[1] << "</sizes>" << endl;
-		out << "        <sizes>" << v.sizes[2] << "</sizes>" << endl;
-		out << "        <mid>" << v.mid << "</mid>" << endl;
-		out << "        <slowdown>" << v.slowdown << "</slowdown>" << endl;
-		out << "        <rotation>" << v.rotation << "</rotation>" << endl;
-		out << "        <pos>" << v.pos << "</pos>" << endl;
-		out << "        <texture>" << v.texture << "</texture>" << endl;
-		out << "        <blend>" << v.blend << "</blend>" << endl;
-		out << "        <order>" << v.order << "</order>" << endl;
-		out << "        <type>" << v.type << "</type>" << endl;
-		out << "        <manim>" << v.manim << "</manim>" << endl;
-		out << "        <mtime>" << v.mtime << "</mtime>" << endl;
-		out << "        <rows>" << v.rows << "</rows>" << endl;
-		out << "        <cols>" << v.cols << "</cols>" << endl;
-		out << "        <billboard>" << v.billboard << "</billboard>" << endl;
-		out << "        <rem>" << v.rem << "</rem>" << endl;
-		out << "        <flags>" << v.flags << "</flags>" << endl;
-		out << "        <pTypes>" << v.pType << "</pTypes>" << endl;
-		out << "        <tofs>" << v.tofs << "</tofs>" << endl;
+		out << "        <colors>" << v.colors[0] << "</colors>" << std::endl;
+		out << "        <colors>" << v.colors[1] << "</colors>" << std::endl;
+		out << "        <colors>" << v.colors[2] << "</colors>" << std::endl;
+		out << "        <sizes>" << v.sizes[0] << "</sizes>" << std::endl;
+		out << "        <sizes>" << v.sizes[1] << "</sizes>" << std::endl;
+		out << "        <sizes>" << v.sizes[2] << "</sizes>" << std::endl;
+		out << "        <mid>" << v.mid << "</mid>" << std::endl;
+		out << "        <slowdown>" << v.slowdown << "</slowdown>" << std::endl;
+		out << "        <rotation>" << v.rotation << "</rotation>" << std::endl;
+		out << "        <pos>" << v.pos << "</pos>" << std::endl;
+		out << "        <texture>" << v.texture << "</texture>" << std::endl;
+		out << "        <blend>" << v.blend << "</blend>" << std::endl;
+		out << "        <order>" << v.order << "</order>" << std::endl;
+		out << "        <type>" << v.type << "</type>" << std::endl;
+		out << "        <manim>" << v.manim << "</manim>" << std::endl;
+		out << "        <mtime>" << v.mtime << "</mtime>" << std::endl;
+		out << "        <rows>" << v.rows << "</rows>" << std::endl;
+		out << "        <cols>" << v.cols << "</cols>" << std::endl;
+		out << "        <billboard>" << v.billboard << "</billboard>" << std::endl;
+		out << "        <rem>" << v.rem << "</rem>" << std::endl;
+		out << "        <flags>" << v.flags << "</flags>" << std::endl;
+		out << "        <pTypes>" << v.pType << "</pTypes>" << std::endl;
+		out << "        <tofs>" << v.tofs << "</tofs>" << std::endl;
 		return out;
 	}
 };

@@ -404,7 +404,6 @@ enum {
 
 enum CharSlots {
 	CS_HEAD,
-	CS_NECK,
 	CS_SHOULDER,
 	CS_BOOTS,
 	CS_BELT,
@@ -418,6 +417,7 @@ enum CharSlots {
 	CS_CAPE,
 	CS_TABARD,
 	CS_QUIVER,
+	CS_MOUNT,
 	
 	NUM_CHAR_SLOTS
 };

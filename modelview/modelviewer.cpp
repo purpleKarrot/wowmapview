@@ -482,7 +482,6 @@ void ModelViewer::InitObjects()
 
 	g_modelViewer = this;
 	g_animControl = animControl;
-	g_charControl = charControl;
 	g_canvas = canvas;
 
 	modelControl->animControl = animControl;
@@ -1439,10 +1438,10 @@ void ModelViewer::OnLightMenu(wxCommandEvent &event)
 			if (dialog.ShowModal()==wxID_OK) {
 				wxString fn = dialog.GetFilename();
 
-				ofstream f(fn.fn_str(), ios_base::out|ios_base::trunc);
-				f << lightMenu->IsChecked(ID_LT_DIRECTION) << " " << lightMenu->IsChecked(ID_LT_TRUE) << " " << lightMenu->IsChecked(ID_LT_DIRECTIONAL) << " " << lightMenu->IsChecked(ID_LT_AMBIENT) << " " << lightMenu->IsChecked(ID_LT_MODEL) << endl;
+				std::ofstream f(fn.fn_str(), std::ios_base::out|std::ios_base::trunc);
+				f << lightMenu->IsChecked(ID_LT_DIRECTION) << " " << lightMenu->IsChecked(ID_LT_TRUE) << " " << lightMenu->IsChecked(ID_LT_DIRECTIONAL) << " " << lightMenu->IsChecked(ID_LT_AMBIENT) << " " << lightMenu->IsChecked(ID_LT_MODEL) << std::endl;
 				for (int i=0; i<MAX_LIGHTS; i++) {
-					f << lightControl->lights[i].ambience.x << " " << lightControl->lights[i].ambience.y << " " << lightControl->lights[i].ambience.z << " " << lightControl->lights[i].arc << " " << lightControl->lights[i].constant_int << " " << lightControl->lights[i].diffuse.x << " " << lightControl->lights[i].diffuse.y << " " << lightControl->lights[i].diffuse.z << " " << lightControl->lights[i].enabled << " " << lightControl->lights[i].linear_int << " " << lightControl->lights[i].pos.x << " " << lightControl->lights[i].pos.y << " " << lightControl->lights[i].pos.z << " " << lightControl->lights[i].quadradic_int << " " << lightControl->lights[i].relative << " " << lightControl->lights[i].specular.x << " " << lightControl->lights[i].specular.y << " " << lightControl->lights[i].specular.z << " " << lightControl->lights[i].target.x << " " << lightControl->lights[i].target.y << " " << lightControl->lights[i].target.z << " " << lightControl->lights[i].type << endl;
+					f << lightControl->lights[i].ambience.x << " " << lightControl->lights[i].ambience.y << " " << lightControl->lights[i].ambience.z << " " << lightControl->lights[i].arc << " " << lightControl->lights[i].constant_int << " " << lightControl->lights[i].diffuse.x << " " << lightControl->lights[i].diffuse.y << " " << lightControl->lights[i].diffuse.z << " " << lightControl->lights[i].enabled << " " << lightControl->lights[i].linear_int << " " << lightControl->lights[i].pos.x << " " << lightControl->lights[i].pos.y << " " << lightControl->lights[i].pos.z << " " << lightControl->lights[i].quadradic_int << " " << lightControl->lights[i].relative << " " << lightControl->lights[i].specular.x << " " << lightControl->lights[i].specular.y << " " << lightControl->lights[i].specular.z << " " << lightControl->lights[i].target.x << " " << lightControl->lights[i].target.y << " " << lightControl->lights[i].target.z << " " << lightControl->lights[i].type << std::endl;
 				}
 				f.close();
 			}
@@ -1454,7 +1453,7 @@ void ModelViewer::OnLightMenu(wxCommandEvent &event)
 			
 			if (dialog.ShowModal()==wxID_OK) {
 				wxString fn = dialog.GetFilename();
-				ifstream f(fn.fn_str());
+				std::ifstream f(fn.fn_str());
 				
 				bool lightObj, lightTrue, lightDir, lightAmb, lightModel;
 
@@ -1772,27 +1771,27 @@ void ModelViewer::OnBackground(wxCommandEvent &event)
 
 void ModelViewer::SaveChar(const char *fn)
 {
-	ofstream f(fn, ios_base::out|ios_base::trunc);
-	f << canvas->model->name << endl;
-	f << charControl->cd.race << " " << charControl->cd.gender << endl;
-	f << charControl->cd.skinColor << " " << charControl->cd.faceType << " " << charControl->cd.hairColor << " " << charControl->cd.hairStyle << " " << charControl->cd.facialHair << " " << charControl->cd.facialColor << endl;
+	std::ofstream f(fn, std::ios_base::out|std::ios_base::trunc);
+	f << canvas->model->name << std::endl;
+	f << charControl->cd.race << " " << charControl->cd.gender << std::endl;
+	f << charControl->cd.skinColor << " " << charControl->cd.faceType << " " << charControl->cd.hairColor << " " << charControl->cd.hairStyle << " " << charControl->cd.facialHair << " " << charControl->cd.hairColor << std::endl;
 	for (int i=0; i<NUM_CHAR_SLOTS; i++) {
-		f << charControl->cd.equipment[i] << endl;
+		f << charControl->cd.equipment[i] << std::endl;
 	}
 
 	// 5976 is the ID value for "Guild Tabard"
 	if (charControl->cd.equipment[CS_TABARD] == 5976) {
-		f << charControl->td.Background << " " << charControl->td.Border << " " << charControl->td.BorderColor << " " << charControl->td.Icon << " " << charControl->td.IconColor << endl;
+		f << charControl->td.Background << " " << charControl->td.Border << " " << charControl->td.BorderColor << " " << charControl->td.Icon << " " << charControl->td.IconColor << std::endl;
 	}
 
-	f << endl;
+	f << std::endl;
 	f.close();
 }
 
 void ModelViewer::LoadChar(const char *fn)
 {
 	std::string modelname;
-	ifstream f(fn);
+	std::ifstream f(fn);
 	
 	f >> modelname; // model name
 
@@ -1813,7 +1812,7 @@ void ModelViewer::LoadChar(const char *fn)
 	canvas->model->modelType = MT_CHAR;
 
 	f >> charControl->cd.race >> charControl->cd.gender; // race and gender
-	f >> charControl->cd.skinColor >> charControl->cd.faceType >> charControl->cd.hairColor >> charControl->cd.hairStyle >> charControl->cd.facialHair >> charControl->cd.facialColor;
+	f >> charControl->cd.skinColor >> charControl->cd.faceType >> charControl->cd.hairColor >> charControl->cd.hairStyle >> charControl->cd.facialHair >> charControl->cd.hairColor;
 
 	while (!f.eof()) {
 		for (int i=0; i<NUM_CHAR_SLOTS; i++) {
@@ -2013,7 +2012,7 @@ void DiscoveryItem()
 {
 	wxString name, ret;
 	items.cleanupDiscovery();
-	ofstream f("discoveryitems.csv", ios_base::out | ios_base::trunc);
+	std::ofstream f("discoveryitems.csv", std::ios_base::out | std::ios_base::trunc);
 
 	// 1. from itemsets.dbc
 	for (ItemSetDB::Iterator it = setsdb.begin(); it != setsdb.end(); ++it) {
@@ -2032,7 +2031,7 @@ void DiscoveryItem()
 					name.Printf(_T("Set%d"), it->getUInt(ItemSetDB::SetID));
 				ret = items.addDiscoveryId(id, name);
 				if (f.is_open() && !ret.IsEmpty())
-					f << ret.mb_str() << endl;
+					f << ret.mb_str() << std::endl;
 			}
 		}
 	}
@@ -2043,7 +2042,7 @@ void DiscoveryItem()
 			name.Printf(_T("Item%d"), id);
 			ret = items.addDiscoveryId(id, name);
 			if (f.is_open() && !ret.IsEmpty())
-				f << ret.mb_str() << endl;
+				f << ret.mb_str() << std::endl;
 		}
 	}
 	// 3. from creaturedisplayinfoextra.dbc
@@ -2061,7 +2060,7 @@ void DiscoveryItem()
 					name.Printf(_T("NPC%d"), it->getUInt(NPCDB::NPCID));
 					ret = items.addDiscoveryDisplayId(id, name, type);
 					if (f.is_open() && !ret.IsEmpty())
-						f << ret.mb_str() << endl;
+						f << ret.mb_str() << std::endl;
 				}
 			}
 		}

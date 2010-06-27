@@ -25,7 +25,7 @@ void SelectCreatureItem(int slot, int current, CharControl *cc, wxWindow *parent
 	cc->choices.Clear();
 
 	// collect all items for this slot, making note of the occurring subclasses
-	set<pair<int,int> > subclassesFound;
+	std::set<std::pair<int,int> > subclassesFound;
 
 	int sel=0, ord=0;
 	for (std::vector<ItemRecord>::iterator it = items.items.begin();  it != items.items.end();  ++it) {
@@ -38,7 +38,7 @@ void SelectCreatureItem(int slot, int current, CharControl *cc, wxWindow *parent
 			ord++;
 
 			if (it->itemclass > 0) 
-				subclassesFound.insert(pair<int,int>(it->itemclass, it->subclass));
+				subclassesFound.insert(std::pair<int,int>(it->itemclass, it->subclass));
 		}
 	}
 
@@ -46,13 +46,13 @@ void SelectCreatureItem(int slot, int current, CharControl *cc, wxWindow *parent
 	cc->cats.clear();
 	cc->catnames.clear();
 
-	map<pair<int,int>, int> subclasslookup;
+	std::map<std::pair<int,int>, int> subclasslookup;
 	for (ItemSubClassDB::Iterator it=subclassdb.begin(); it != subclassdb.end(); ++it) {
 		int cl = it->getInt(ItemSubClassDB::ClassID);
 		int scl = it->getInt(ItemSubClassDB::SubClassID);
 
 		// only add the subclass if it was found in the itemlist
-		if (cl>0 && subclassesFound.find(pair<int,int>(cl, scl)) != subclassesFound.end()) {
+		if (cl>0 && subclassesFound.find(std::pair<int,int>(cl, scl)) != subclassesFound.end()) {
 			wxString str;
 			if (gameVersion == 40000)
 				str = CSConv(it->getString(ItemSubClassDB::NameV400 + langOffset));
@@ -72,7 +72,7 @@ void SelectCreatureItem(int slot, int current, CharControl *cc, wxWindow *parent
 				//str.append(buf);
 			}
 			cc->catnames.Add(str.c_str());
-			subclasslookup[pair<int,int>(cl,scl)] = (int)cc->catnames.size()-1;
+			subclasslookup[std::pair<int,int>(cl,scl)] = (int)cc->catnames.size()-1;
 		}
 	}
 
@@ -80,7 +80,7 @@ void SelectCreatureItem(int slot, int current, CharControl *cc, wxWindow *parent
 		// build category list
 		for (size_t i=0; i<cc->numbers.size(); i++) {
 			ItemRecord r = items.getById(cc->numbers[i]);
-			cc->cats.push_back(subclasslookup[pair<int,int>(r.itemclass, r.subclass)]);
+			cc->cats.push_back(subclasslookup[std::pair<int,int>(r.itemclass, r.subclass)]);
 		}
 
 		cc->itemDialog = new CategoryChoiceDialog(cc, UPDATE_CREATURE_ITEM, parent, _("Choose an item"), _("Select a Weapon"), cc->choices, cc->cats, cc->catnames, 0);

@@ -15,6 +15,8 @@ add_definitions(-D_LINUX32)
 qt4_wrap_cpp(MOC_SOURCE
   app.h
   widgets/FileList.hpp
+  widgets/CharacterControl.hpp
+  widgets/EquipmentControl.hpp
   )
 
 file(GLOB WOWMV_SOURCES *.cpp)
@@ -24,6 +26,8 @@ add_executable(wowmodelview
   widgets/TreeItem.cpp
   widgets/FileList.cpp
   widgets/FileListModel.cpp
+  widgets/CharacterControl.cpp
+  widgets/EquipmentControl.cpp
   )
 
 target_link_libraries(wowmodelview

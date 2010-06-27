@@ -28,10 +28,10 @@ int WowModelViewApp::MainLoop()
 {
 	while (wxAppBase::Pending() || qt_running)
 	{
-		if(wxAppBase::Pending())
+		if (wxAppBase::Pending())
 			wxAppBase::Dispatch();
 
-		if(qt_running)
+		if (qt_running)
 			QApplication::processEvents();
 	}
 
@@ -40,6 +40,8 @@ int WowModelViewApp::MainLoop()
 
 bool WowModelViewApp::OnInit()
 {
+	wxLog::SetActiveTarget(new wxLogStream(&std::clog));
+
 	wxFileName fname(argv[0]);
 	wxString userPath = fname.GetPath(wxPATH_GET_VOLUME) + SLASH
 		+ wxT("userSettings");
@@ -66,7 +68,6 @@ bool WowModelViewApp::OnInit()
 	g_modelViewer = frame;
 	g_canvas = frame->canvas;
 	g_animControl = frame->animControl;
-	g_charControl = frame->charControl;
 
 	frame->interfaceManager.Update();
 

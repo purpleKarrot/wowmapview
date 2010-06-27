@@ -15,8 +15,8 @@ public:
 	~FileList();
 
 private slots:
-void filter(const QString& text);
-void select(const QModelIndex& index);
+	void filter(const QString& text);
+	void select(const QModelIndex& index);
 
 private:
 	QComboBox* combo_box;

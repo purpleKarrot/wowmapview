@@ -2,9 +2,6 @@
 #define ITEMSELECTION_H
 
 #include "wx/wxprec.h"
-#ifdef __BORLANDC__
-    #pragma hdrstop
-#endif
 #ifndef WX_PRECOMP
     #include "wx/wx.h"
 #endif
@@ -44,11 +41,11 @@ public:
 
 
 class FilteredChoiceDialog: public ChoiceDialog {
-protected:    
+protected:
     wxTextCtrl* m_pattern;
     const wxArrayString* m_choices;
     std::vector<int> m_indices; // filtered index -> orig inndex
-    
+
     DECLARE_EVENT_TABLE()
 
 	wxRegEx filter;
@@ -61,7 +58,7 @@ public:
     };
 
 	bool keepFirst;
-    
+
     FilteredChoiceDialog(CharControl *dest, int type,
 	                       wxWindow *parent,
                            const wxString& message,
@@ -69,7 +66,7 @@ public:
                            const wxArrayString& choices,
 						   const std::vector<int> *quality,
 						   bool keepfirst = true);
-    
+
     virtual void OnFilter(wxCommandEvent& event);
     virtual int GetSelection() const { return m_indices[m_selection]; }
 
@@ -79,29 +76,27 @@ public:
 };
 
 
-class CategoryChoiceDialog: public FilteredChoiceDialog {
+class CategoryChoiceDialog: public FilteredChoiceDialog
+{
 protected:
-	const std::vector<int> &m_cats;
+	const std::vector<int>& m_cats;
 
 	wxCheckListBox *m_catlist;
 	int numcats;
 
-    DECLARE_EVENT_TABLE()
+DECLARE_EVENT_TABLE()
+
 public:
-	enum {
+	enum
+	{
 		ID_CAT_LIST = 1100
 	};
 
-    CategoryChoiceDialog(CharControl *dest, int type,
-	                       wxWindow *parent,
-                           const wxString& message,
-                           const wxString& caption,
-                           const wxArrayString& choices,
-						   const std::vector<int> &cats,
-						   const wxArrayString& catnames,
-						   const std::vector<int> *quality,
-						   bool keepfirst = true,
-						   bool helpmsg = true);
+	CategoryChoiceDialog(CharControl *dest, int type, wxWindow *parent,
+		const wxString& message, const wxString& caption,
+		const wxArrayString& choices, const std::vector<int> &cats,
+		const wxArrayString& catnames, const std::vector<int> *quality,
+		bool keepfirst = true, bool helpmsg = true);
 
 	void Check(int index, bool state = true);
 	void OnCheck(wxCommandEvent &e);

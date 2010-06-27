@@ -7,7 +7,6 @@
 #include "shaders.h"
 #include <cassert>
 #include <algorithm>
-using namespace std;
 
 struct WaterTile
 {
@@ -405,12 +404,12 @@ MapTile::MapTile(wxString filename): topnode(0,0,16), nWMO(0), nMDX(0)
 			char *p=buf;
 			int t=0;
 			while (p<buf+size) {
-				string texpath(p);
+				std::string texpath(p);
 				p+=strlen(p)+1;
 				fixname(texpath);
 
 				if (video.supportShaders) {
-					string texshader = texpath;
+					std::string texshader = texpath;
 					// load the specular texture instead
 					texshader.insert(texshader.length()-4,"_s");
 					if (MPQFile::exists(texshader.c_str()))
@@ -771,7 +770,7 @@ MapTile::~MapTile()
 		}
 	}
 
-	for (vector<string>::iterator it = textures.begin(); it != textures.end(); ++it) {
+	for (std::vector<std::string>::iterator it = textures.begin(); it != textures.end(); ++it) {
 		texturemanager.delbyname(*it);
 	}
 

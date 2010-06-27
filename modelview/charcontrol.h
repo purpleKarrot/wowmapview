@@ -25,6 +25,8 @@
 // forward class declarations
 class ChoiceDialog;
 class ModelViewer;
+class CharacterControl;
+class EquipmentControl;
 
 bool slotHasModel(int i);
 bool correctType(int type, int slot);
@@ -103,16 +105,11 @@ struct TabardDetails
 
 struct CharDetails
 {
-	unsigned int skinColor;
-	unsigned int faceType;
-	unsigned int hairColor;
-	unsigned int hairStyle;
-	unsigned int facialHair;
-
-	unsigned int facialColor;
-	unsigned int maxFacialColor;
-
-	unsigned int maxHairStyle, maxHairColor, maxSkinColor, maxFaceType, maxFacialHair;
+	unsigned int skinColor, maxSkinColor;
+	unsigned int faceType, maxFaceType;
+	unsigned int hairColor, maxHairColor;
+	unsigned int hairStyle, maxHairStyle;
+	unsigned int facialHair, maxFacialHair;
 
 	unsigned int race, gender;
 
@@ -124,24 +121,27 @@ struct CharDetails
 	static const size_t NUM_GEOSETS = 16;
 	int geosets[NUM_GEOSETS];
 
-	// save + load equipment
-	void save(wxString fn, TabardDetails *td);
-	bool load(wxString fn, TabardDetails *td);
-
 	void loadSet(ItemSetDB &sets, ItemDatabase &items, int setid);
 	void loadStart(StartOutfitDB &start, ItemDatabase &items, int cls);
 
 	void reset();
+
+	void equip(ItemDatabase& items, int id);
 };
 
 
 class CharControl: public wxWindow
 {
+	CharacterControl* new_cc;
+	EquipmentControl* new_ec;
+
+	bool Show(bool show);
+
 	DECLARE_CLASS(CharControl)
     DECLARE_EVENT_TABLE()
 
-	wxSpinButton *spins[NUM_SPIN_BTNS];
-	wxStaticText *spinLabels[NUM_SPIN_BTNS];
+//	wxSpinButton *spins[NUM_SPIN_BTNS];
+//	wxStaticText *spinLabels[NUM_SPIN_BTNS];
 	wxSpinButton *tabardSpins[NUM_TABARD_BTNS];
 	wxButton *buttons[NUM_CHAR_SLOTS];
 	wxStaticText *labels[NUM_CHAR_SLOTS];
@@ -169,13 +169,11 @@ public:
 	void RefreshItem(int slot);
 	void RefreshCreatureItem(int slot);
 	void RefreshEquipment();
-	inline void RandomiseChar();
 
 	TextureID charTex, hairTex, furTex, capeTex, gobTex;
 
 	bool bSheathe;
 
-	void OnSpin(wxSpinEvent &event);
 	void OnTabardSpin(wxSpinEvent &event);
 	void OnCheck(wxCommandEvent &event);
 	void OnButton(wxCommandEvent &event);
@@ -198,8 +196,6 @@ public:
 	void selectStart();
 	void selectMount();
 	void selectNPC(int type);
-
-	const std::string selectCharModel();
 };
 
 

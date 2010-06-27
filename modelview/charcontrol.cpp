@@ -1,4 +1,6 @@
 // our headers
+#include "widgets/CharacterControl.hpp"
+#include "widgets/EquipmentControl.hpp"
 #include "util.h"
 #include "charcontrol.h"
 #include "modelviewer.h"
@@ -9,7 +11,7 @@
 int slotOrder[] = {	
 	CS_SHIRT,
 	CS_HEAD,
-	CS_NECK,
+//	CS_NECK,
 	CS_SHOULDER,
 	CS_PANTS,
 	CS_BOOTS,
@@ -27,7 +29,7 @@ int slotOrder[] = {
 int slotOrderWithRobe[] = {
 	CS_SHIRT,
 	CS_HEAD,
-	CS_NECK,
+//	CS_NECK,
 	CS_SHOULDER,
 	CS_BOOTS,
 	CS_PANTS,
@@ -45,13 +47,6 @@ int slotOrderWithRobe[] = {
 IMPLEMENT_CLASS(CharControl, wxWindow)
 
 BEGIN_EVENT_TABLE(CharControl, wxWindow)
-	EVT_SPIN(ID_SKIN_COLOR, CharControl::OnSpin)
-	EVT_SPIN(ID_FACE_TYPE, CharControl::OnSpin)
-	EVT_SPIN(ID_HAIR_COLOR, CharControl::OnSpin)
-	EVT_SPIN(ID_HAIR_STYLE, CharControl::OnSpin)
-	EVT_SPIN(ID_FACIAL_HAIR, CharControl::OnSpin)
-	EVT_SPIN(ID_FACIAL_COLOR, CharControl::OnSpin)
-
 	EVT_SPIN(ID_TABARD_ICON, CharControl::OnTabardSpin)
 	EVT_SPIN(ID_TABARD_ICONCOLOR, CharControl::OnTabardSpin)
 	EVT_SPIN(ID_TABARD_BORDER, CharControl::OnTabardSpin)
@@ -61,7 +56,7 @@ BEGIN_EVENT_TABLE(CharControl, wxWindow)
 	EVT_BUTTON(ID_MOUNT, CharControl::OnButton)
 
 	EVT_BUTTON(ID_EQUIPMENT + CS_HEAD, CharControl::OnButton)
-	EVT_BUTTON(ID_EQUIPMENT + CS_NECK, CharControl::OnButton)
+//	EVT_BUTTON(ID_EQUIPMENT + CS_NECK, CharControl::OnButton)
 	EVT_BUTTON(ID_EQUIPMENT + CS_SHOULDER, CharControl::OnButton)
 	
 	EVT_BUTTON(ID_EQUIPMENT + CS_SHIRT, CharControl::OnButton)
@@ -85,6 +80,9 @@ CharControl::CharControl(wxWindow* parent, wxWindowID id)
 {
 	wxLogMessage(_T("Creating Char Control..."));
 
+	new_cc = new CharacterControl(*this);
+	new_ec = new EquipmentControl(*this);
+
 	if(Create(parent, id, wxDefaultPosition, wxSize(100,700), 0, _T("CharControl")) == false) {
 		wxLogMessage(_T("GUI Error: Failed to create a window frame for the Character Control!"));
 		return;
@@ -95,18 +93,18 @@ CharControl::CharControl(wxWindow* parent, wxWindowID id)
 
 	wxFlexGridSizer *gs = new wxFlexGridSizer(3, 5, 4);
 
-	#define ADD_CONTROLS(type, id, caption) \
-	gs->Add(new wxStaticText(this, wxID_ANY, caption), wxSizerFlags().Align(wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL)); \
-	gs->Add(spins[type] = new wxSpinButton(this, id, wxDefaultPosition, wxSize(30,16), wxSP_HORIZONTAL|wxSP_WRAP), wxSizerFlags(1).Align(wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL)); \
-	gs->Add(spinLabels[type] = new wxStaticText(this, wxID_ANY, _T("0")), wxSizerFlags(2).Align(wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL));
-
-	ADD_CONTROLS(SPIN_SKIN_COLOR, ID_SKIN_COLOR, _("Skin color"))
-	ADD_CONTROLS(SPIN_FACE_TYPE, ID_FACE_TYPE, _("Face type"))
-	ADD_CONTROLS(SPIN_HAIR_COLOR, ID_HAIR_COLOR, _("Hair color"))
-	ADD_CONTROLS(SPIN_HAIR_STYLE, ID_HAIR_STYLE, _("Hair style"))
-	ADD_CONTROLS(SPIN_FACIAL_HAIR, ID_FACIAL_HAIR, _("Facial feature"))
-	ADD_CONTROLS(SPIN_FACIAL_COLOR, ID_FACIAL_COLOR, _("Facial color"))
-	#undef ADD_CONTROLS
+//	#define ADD_CONTROLS(type, id, caption) \
+//	gs->Add(new wxStaticText(this, wxID_ANY, caption), wxSizerFlags().Align(wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL)); \
+//	gs->Add(spins[type] = new wxSpinButton(this, id, wxDefaultPosition, wxSize(30,16), wxSP_HORIZONTAL|wxSP_WRAP), wxSizerFlags(1).Align(wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL)); \
+//	gs->Add(spinLabels[type] = new wxStaticText(this, wxID_ANY, _T("0")), wxSizerFlags(2).Align(wxALIGN_LEFT|wxALIGN_CENTER_VERTICAL));
+//
+//	ADD_CONTROLS(SPIN_SKIN_COLOR, ID_SKIN_COLOR, _("Skin color"))
+//	ADD_CONTROLS(SPIN_FACE_TYPE, ID_FACE_TYPE, _("Face type"))
+//	ADD_CONTROLS(SPIN_HAIR_COLOR, ID_HAIR_COLOR, _("Hair color"))
+//	ADD_CONTROLS(SPIN_HAIR_STYLE, ID_HAIR_STYLE, _("Hair style"))
+//	ADD_CONTROLS(SPIN_FACIAL_HAIR, ID_FACIAL_HAIR, _("Facial feature"))
+//	ADD_CONTROLS(SPIN_FACIAL_COLOR, ID_FACIAL_COLOR, _("Facial color"))
+//	#undef ADD_CONTROLS
 	
 	//gs->Add(new wxButton(this, ID_CHAR_RANDOMISE, _("Randomise"), wxDefaultPosition, wxDefaultSize), wxSizerFlags().Proportion(0).Expand());
 
@@ -126,7 +124,6 @@ CharControl::CharControl(wxWindow* parent, wxWindowID id)
 	gs2->Add(labels[type]=new wxStaticText(this, -1, _("---- None ----")), wxSizerFlags().Proportion(1).Expand().Align(wxALIGN_CENTER_VERTICAL).Border(wxRIGHT, 10));
 	
 	ADD_CONTROLS(CS_HEAD, _("Head"))
-	//ADD_CONTROLS(CS_NECK, _T("Neck"))
 	ADD_CONTROLS(CS_SHOULDER, _("Shoulder"))
 
 	ADD_CONTROLS(CS_SHIRT, _("Shirt"))
@@ -185,6 +182,13 @@ CharControl::~CharControl()
 	
 }
 
+bool CharControl::Show(bool show)
+{
+	new_cc->setVisible(show);
+	new_ec->setVisible(show);
+
+	return wxWindow::Show(show);
+}
 
 bool CharControl::Init()
 {
@@ -203,8 +207,6 @@ bool CharControl::Init()
 	cd.showFacialHair = true;
 	cd.showUnderwear = true;
 	
-	cd.facialColor = 0; // 2009.07.30 Alfred
-
 	// set max values for custom tabard
 	td.maxBackground = 50;
 	td.maxBorder = 9;
@@ -281,7 +283,6 @@ void CharControl::UpdateModel(Attachment *a)
 	cd.maxFaceType  = chardb.getSectionsFor(race, gender, CharSectionsDB::FaceType, 0, cd.useNPC);
 	cd.maxHairColor = chardb.getColorsFor(race, gender, CharSectionsDB::HairType, 0, 0);
 	cd.maxFacialHair = facialhairdb.getStylesFor(race, gender);
-	cd.maxFacialColor = cd.maxHairColor;
 
 #ifndef	WotLK
 	// Re-set the menu
@@ -315,12 +316,12 @@ void CharControl::UpdateModel(Attachment *a)
 	if (cd.maxHairColor==0) cd.maxHairColor = 1;
 	if (cd.maxHairStyle==0) cd.maxHairStyle = 1;
 	if (cd.maxFacialHair==0) cd.maxFacialHair = 1;
-	spins[0]->SetRange(0, cd.maxSkinColor-1);
-	spins[1]->SetRange(0, cd.maxFaceType-1);
-	spins[2]->SetRange(0, cd.maxHairColor-1);
-	spins[3]->SetRange(0, cd.maxHairStyle-1);
-	spins[4]->SetRange(0, cd.maxFacialHair-1);
-	spins[5]->SetRange(0, cd.maxHairColor-1);
+//	spins[0]->SetRange(0, cd.maxSkinColor-1);
+//	spins[1]->SetRange(0, cd.maxFaceType-1);
+//	spins[2]->SetRange(0, cd.maxHairColor-1);
+//	spins[3]->SetRange(0, cd.maxHairStyle-1);
+//	spins[4]->SetRange(0, cd.maxFacialHair-1);
+//	spins[5]->SetRange(0, cd.maxHairColor-1);
 
 	td.Icon = randint(0, td.maxIcon);
 	td.IconColor = randint(0, td.maxIconColor);
@@ -328,12 +329,12 @@ void CharControl::UpdateModel(Attachment *a)
 	td.BorderColor = 0;
 	td.Background = randint(0, td.maxBackground);
 
-	spins[SPIN_SKIN_COLOR]->SetValue(cd.skinColor);
-	spins[SPIN_FACE_TYPE]->SetValue(cd.faceType);
-	spins[SPIN_HAIR_COLOR]->SetValue(cd.hairColor);
-	spins[SPIN_HAIR_STYLE]->SetValue(cd.hairStyle);
-	spins[SPIN_FACIAL_HAIR]->SetValue(cd.facialHair);
-	spins[SPIN_FACIAL_COLOR]->SetValue(cd.facialColor);
+//	spins[SPIN_SKIN_COLOR]->SetValue(cd.skinColor);
+//	spins[SPIN_FACE_TYPE]->SetValue(cd.faceType);
+//	spins[SPIN_HAIR_COLOR]->SetValue(cd.hairColor);
+//	spins[SPIN_HAIR_STYLE]->SetValue(cd.hairStyle);
+//	spins[SPIN_FACIAL_HAIR]->SetValue(cd.facialHair);
+//	spins[SPIN_FACIAL_COLOR]->SetValue(cd.facialColor);
 
 	tabardSpins[SPIN_TABARD_ICON]->SetValue(td.Icon);
 	tabardSpins[SPIN_TABARD_ICONCOLOR]->SetValue(td.IconColor);
@@ -347,12 +348,12 @@ void CharControl::UpdateModel(Attachment *a)
 	tabardSpins[SPIN_TABARD_BORDERCOLOR]->SetRange(0, td.maxBorderColor);
 	tabardSpins[SPIN_TABARD_BACKGROUND]->SetRange(0, td.maxBackground);
 
-	for (int i=0; i<NUM_SPIN_BTNS; i++) 
-		spins[i]->Refresh(false);
+//	for (int i=0; i<NUM_SPIN_BTNS; i++)
+//		spins[i]->Refresh(false);
 	for (int i=0; i<NUM_TABARD_BTNS; i++) 
 		tabardSpins[i]->Refresh(false);
-	for (int i=0; i<NUM_SPIN_BTNS; i++)
-		spinLabels[i]->SetLabel(wxString::Format(_T("%i / %i"), spins[i]->GetValue(), spins[i]->GetMax()));
+//	for (int i=0; i<NUM_SPIN_BTNS; i++)
+//		spinLabels[i]->SetLabel(wxString::Format(_T("%i / %i"), spins[i]->GetValue(), spins[i]->GetMax()));
 
 	for (int i=0; i<NUM_CHAR_SLOTS; i++) {
 		if (labels[i]) {
@@ -360,9 +361,6 @@ void CharControl::UpdateModel(Attachment *a)
 			labels[i]->SetForegroundColour(*wxBLACK);
 		}
 	}
-
-	if (useRandomLooks)
-		RandomiseChar();
 
 	RefreshModel();
 }
@@ -434,7 +432,6 @@ void CharControl::UpdateNPCModel(Attachment *a, unsigned int id)
 		cd.hairColor = npcrec.getUInt(NPCDB::HairColor);
 		cd.hairStyle = npcrec.getUInt(NPCDB::HairStyle);
 		cd.facialHair = npcrec.getUInt(NPCDB::FacialHair);
-		cd.facialColor = cd.hairColor;
 	} catch (...) {
 		wxLogMessage(_T("Exception Error: %s : line #%i : %s"), __FILE__, __LINE__, __FUNCTION__);
 	}
@@ -444,19 +441,19 @@ void CharControl::UpdateNPCModel(Attachment *a, unsigned int id)
 	cd.maxHairColor = 0;
 	cd.maxHairStyle = 0;
 	cd.maxFacialHair = 0;
-	spins[0]->SetRange(0, cd.maxSkinColor-1);
-	spins[1]->SetRange(0, cd.maxFaceType-1);
-	spins[2]->SetRange(0, cd.maxHairColor-1);
-	spins[3]->SetRange(0, cd.maxHairStyle-1);
-	spins[4]->SetRange(0, cd.maxFacialHair-1);
-	spins[5]->SetRange(0, cd.maxHairColor-1);
+//	spins[0]->SetRange(0, cd.maxSkinColor-1);
+//	spins[1]->SetRange(0, cd.maxFaceType-1);
+//	spins[2]->SetRange(0, cd.maxHairColor-1);
+//	spins[3]->SetRange(0, cd.maxHairStyle-1);
+//	spins[4]->SetRange(0, cd.maxFacialHair-1);
+//	spins[5]->SetRange(0, cd.maxHairColor-1);
 
-	spins[SPIN_SKIN_COLOR]->SetValue(cd.skinColor);
-	spins[SPIN_FACE_TYPE]->SetValue(cd.faceType);
-	spins[SPIN_HAIR_COLOR]->SetValue(cd.hairColor);
-	spins[SPIN_HAIR_STYLE]->SetValue(cd.hairStyle);
-	spins[SPIN_FACIAL_HAIR]->SetValue(cd.facialHair);
-	spins[SPIN_FACIAL_COLOR]->SetValue(cd.facialColor);
+//	spins[SPIN_SKIN_COLOR]->SetValue(cd.skinColor);
+//	spins[SPIN_FACE_TYPE]->SetValue(cd.faceType);
+//	spins[SPIN_HAIR_COLOR]->SetValue(cd.hairColor);
+//	spins[SPIN_HAIR_STYLE]->SetValue(cd.hairStyle);
+//	spins[SPIN_FACIAL_HAIR]->SetValue(cd.facialHair);
+//	spins[SPIN_FACIAL_COLOR]->SetValue(cd.facialColor);
 
 	tabardSpins[SPIN_TABARD_ICON]->SetValue(td.Icon);
 	tabardSpins[SPIN_TABARD_ICONCOLOR]->SetValue(td.IconColor);
@@ -470,8 +467,8 @@ void CharControl::UpdateNPCModel(Attachment *a, unsigned int id)
 	tabardSpins[SPIN_TABARD_BORDERCOLOR]->SetRange(0, td.maxBorderColor);
 	tabardSpins[SPIN_TABARD_BACKGROUND]->SetRange(0, td.maxBackground);
 
-	for (int i=0; i<NUM_SPIN_BTNS; i++) 
-		spins[i]->Refresh(false);
+//	for (int i=0; i<NUM_SPIN_BTNS; i++)
+//		spins[i]->Refresh(false);
 	for (int i=0; i<NUM_TABARD_BTNS; i++) 
 		tabardSpins[i]->Refresh(false);
 
@@ -500,35 +497,6 @@ void CharControl::UpdateNPCModel(Attachment *a, unsigned int id)
 	}
 
 	RefreshNPCModel();
-}
-
-void CharControl::OnSpin(wxSpinEvent &event)
-{
-	if (!g_canvas)
-		return;
-
-	if (event.GetId()==ID_SKIN_COLOR) 
-		cd.skinColor = event.GetPosition();
-
-	if(g_canvas->model->modelType == MT_NPC)
-		return;
-
-	if (event.GetId()==ID_FACE_TYPE) 
-		cd.faceType = event.GetPosition();
-	else if (event.GetId()==ID_HAIR_COLOR) {
-		cd.hairColor = event.GetPosition();
-		cd.facialColor = event.GetPosition();
-	} else if (event.GetId()==ID_HAIR_STYLE) 
-		cd.hairStyle = event.GetPosition();
-	else if (event.GetId()==ID_FACIAL_HAIR) 
-		cd.facialHair = event.GetPosition();
-	else if (event.GetId()==ID_FACIAL_COLOR) 
-		cd.facialColor = event.GetPosition();
-
-	for (int i=0; i<NUM_SPIN_BTNS; i++)
-		spinLabels[i]->SetLabel(wxString::Format(_T("%i / %i"), spins[i]->GetValue(), spins[i]->GetMax()));
-
-	RefreshModel();
 }
 
 void CharControl::OnCheck(wxCommandEvent &event)
@@ -600,24 +568,6 @@ bool slotHasModel(int i)
 	return (i==CS_HEAD || i==CS_SHOULDER || i==CS_HAND_LEFT || i==CS_HAND_RIGHT || i==CS_QUIVER);
 }
 
-inline void CharControl::RandomiseChar()
-{
-	// Choose random values for the looks! ^_^
-	cd.skinColor = randint(0, cd.maxSkinColor-1);
-	cd.faceType = randint(0, cd.maxFaceType-1);
-	cd.hairColor = randint(0, cd.maxHairColor-1);
-	cd.hairStyle = randint(0, cd.maxHairStyle-1);
-	cd.facialHair = randint(0, cd.maxFacialHair-1);
-	cd.facialColor = cd.hairColor;
-
-	spins[SPIN_SKIN_COLOR]->SetValue(cd.skinColor);
-	spins[SPIN_FACE_TYPE]->SetValue(cd.faceType);
-	spins[SPIN_HAIR_COLOR]->SetValue(cd.hairColor);
-	spins[SPIN_HAIR_STYLE]->SetValue(cd.hairStyle);
-	spins[SPIN_FACIAL_HAIR]->SetValue(cd.facialHair);
-	spins[SPIN_FACIAL_COLOR]->SetValue(cd.facialColor);
-}
-
 void CharControl::RefreshEquipment()
 {
 	for (int i=0; i<NUM_CHAR_SLOTS; i++) {
@@ -638,43 +588,7 @@ void CharControl::OnButton(wxCommandEvent &event)
 	// This stores are equipment directory path in session
 	static wxString dir = cfgPath.BeforeLast('\\'); 
 
-	//if (dir.Last() != '\\')
-	//	dir.Append('\\');
-
-	if (event.GetId()==ID_CHAR_RANDOMISE) {
-		RandomiseChar();
-		
-	} else if (event.GetId()==ID_SAVE_EQUIPMENT) {
-		wxFileDialog dialog(this, _("Save equipment"), dir, wxEmptyString, _T("Equipment files (*.eq)|*.eq"), wxFD_SAVE|wxFD_OVERWRITE_PROMPT, wxDefaultPosition);
-		if (dialog.ShowModal()==wxID_OK) {
-			wxString s(dialog.GetPath());
-			cd.save(s, &td);
-
-			// Save directory path
-			dir = dialog.GetDirectory();
-		}
-
-	} else if (event.GetId()==ID_LOAD_EQUIPMENT) {
-		wxFileDialog dialog(this, _("Load equipment"), dir, wxEmptyString, _T("Equipment files (*.eq)|*.eq"), wxFD_OPEN|wxFD_FILE_MUST_EXIST, wxDefaultPosition);
-		if (dialog.ShowModal()==wxID_OK) {
-			wxString s(dialog.GetPath());
-			if (cd.load(s, &td)) {
-				spins[SPIN_SKIN_COLOR]->SetValue(cd.skinColor);
-				spins[SPIN_FACE_TYPE]->SetValue(cd.faceType);
-				spins[SPIN_HAIR_COLOR]->SetValue(cd.hairColor);
-				spins[SPIN_HAIR_STYLE]->SetValue(cd.hairStyle);
-				spins[SPIN_FACIAL_HAIR]->SetValue(cd.facialHair);
-				spins[SPIN_FACIAL_COLOR]->SetValue(cd.hairColor);
-				for (int i=0; i<NUM_SPIN_BTNS; i++) 
-					spins[i]->Refresh(false);
-			}
-			RefreshEquipment();
-
-			// Save directory path
-			dir = dialog.GetDirectory();
-		}
-
-	} else if (event.GetId()==ID_CLEAR_EQUIPMENT) {
+	if (event.GetId()==ID_CLEAR_EQUIPMENT) {
 		for (int i=0; i<NUM_CHAR_SLOTS; i++) 
 			cd.equipment[i] = 0;
 		RefreshEquipment();
@@ -841,7 +755,7 @@ void CharControl::RefreshModel()
 
 		// facial feature
 		try {
-			rec = chardb.getByParams(cd.race, cd.gender, CharSectionsDB::FacialHairType, cd.facialHair, cd.facialColor, 0);
+			rec = chardb.getByParams(cd.race, cd.gender, CharSectionsDB::FacialHairType, cd.facialHair, cd.hairColor, 0);
 			tex.addLayer(rec.getString(CharSectionsDB::Tex1), CR_FACE_LOWER, 2);
 			tex.addLayer(rec.getString(CharSectionsDB::Tex2), CR_FACE_UPPER, 2);
 		} catch (CharSectionsDB::NotFound) {
@@ -1035,15 +949,15 @@ void CharControl::RefreshModel()
 	*/
 
 	// Alfred 2009.07.18 show max value
-	for (int i=0; i<NUM_SPIN_BTNS; i++)
-		spinLabels[i]->SetLabel(wxString::Format(_T("%i / %i"), spins[i]->GetValue(), spins[i]->GetMax()));
+//	for (int i=0; i<NUM_SPIN_BTNS; i++)
+//		spinLabels[i]->SetLabel(wxString::Format(_T("%i / %i"), spins[i]->GetValue(), spins[i]->GetMax()));
 
-	spins[SPIN_SKIN_COLOR]->SetValue(cd.skinColor);
-	spins[SPIN_FACE_TYPE]->SetValue(cd.faceType);
-	spins[SPIN_HAIR_COLOR]->SetValue(cd.hairColor);
-	spins[SPIN_HAIR_STYLE]->SetValue(cd.hairStyle);
-	spins[SPIN_FACIAL_HAIR]->SetValue(cd.facialHair);
-	spins[SPIN_FACIAL_COLOR]->SetValue(cd.facialColor);
+//	spins[SPIN_SKIN_COLOR]->SetValue(cd.skinColor);
+//	spins[SPIN_FACE_TYPE]->SetValue(cd.faceType);
+//	spins[SPIN_HAIR_COLOR]->SetValue(cd.hairColor);
+//	spins[SPIN_HAIR_STYLE]->SetValue(cd.hairStyle);
+//	spins[SPIN_FACIAL_HAIR]->SetValue(cd.facialHair);
+//	spins[SPIN_FACIAL_COLOR]->SetValue(cd.facialColor);
 
 	// eyeglow for Scourge
 	if (cd.race == 5 && bKnightEyeGlow) {
@@ -1052,6 +966,9 @@ void CharControl::RefreshModel()
 		else if (cd.gender == 1 && model->passes.size() > 47 && model->showGeosets[45] == false && model->showGeosets[47] == false)
 			model->showGeosets[45] = true;
 	}
+
+	new_cc->setVisible(true);
+	new_ec->setVisible(true);
 }
 
 void CharControl::RefreshNPCModel()
@@ -1106,7 +1023,7 @@ void CharControl::RefreshNPCModel()
 			tex.addLayer(rec.getString(CharSectionsDB::Tex2), CR_FACE_UPPER, 1);
 
 			// facial hair
-			rec = chardb.getByParams(cd.race, cd.gender, CharSectionsDB::FacialHairType, cd.facialHair, cd.facialColor, 0);
+			rec = chardb.getByParams(cd.race, cd.gender, CharSectionsDB::FacialHairType, cd.facialHair, cd.hairColor, 0);
 			tex.addLayer(rec.getString(CharSectionsDB::Tex1), CR_FACE_LOWER, 2);
 			tex.addLayer(rec.getString(CharSectionsDB::Tex2), CR_FACE_UPPER, 2);
 		} 
@@ -1815,7 +1732,7 @@ bool correctType(int type, int slot)
 
 	switch (slot) {
 	case CS_HEAD:		return (type == IT_HEAD);
-	case CS_NECK:		return (type == IT_NECK);
+//	case CS_NECK:		return (type == IT_NECK);
 	case CS_SHOULDER:	return (type == IT_SHOULDER);
 	case CS_SHIRT:		return (type == IT_SHIRT);
 	case CS_CHEST:		return (type == IT_CHEST || type == IT_ROBE);
@@ -2059,7 +1976,7 @@ void CharControl::selectMount()
 		} else {
 			wxLogMessage(_T("Can't Initiate ridable.csv ..."));
 		}
-		
+
 		for (std::set<FileTreeItem>::iterator it = filelist.begin(); it != filelist.end(); ++it) {
 			wxString str((*it).file_name.c_str(), wxConvUTF8);
 			str.MakeLower();
@@ -2077,8 +1994,6 @@ void CharControl::selectMount()
 		cats.push_back(ridablelist[i]?0:1);
 	}
 
-	// TODO: obtain a list of "known ridable" models, and filter the list into two categories
-	itemDialog = new FilteredChoiceDialog(this, UPDATE_MOUNT, g_modelViewer, _("Choose a mount"), _("Creatures"), choices, 0);
 	CategoryChoiceDialog *itemDialog = new CategoryChoiceDialog(this, UPDATE_MOUNT, g_modelViewer, _("Choose a mount"), _("Creatures"), choices, cats, catnames, 0);
 	itemDialog->Move(itemDialog->GetParent()->GetPosition() + wxPoint(4,64));
 	itemDialog->Check(1, false);
@@ -2470,18 +2385,18 @@ void CharControl::OnTabardSpin(wxSpinEvent &event)
 	RefreshModel();
 }
 
-string TabardDetails::GetBackgroundTex(int slot)
+std::string TabardDetails::GetBackgroundTex(int slot)
 {
-	ostringstream tmpStream;
+	std::ostringstream tmpStream;
 
-	string tmpU = "textures\\GuildEmblems\\Background_";
+	std::string tmpU = "textures\\GuildEmblems\\Background_";
 	if (Background < 10)
 		tmpU += "0";
 	tmpStream << Background;
 	tmpU += tmpStream.str();
 	tmpU += "_TU_U.blp";
 	
-	string tmpL = tmpU;
+	std::string tmpL = tmpU;
 	tmpL[37] = 'L';
 
 	if (slot == CR_TORSO_UPPER)
@@ -2490,11 +2405,11 @@ string TabardDetails::GetBackgroundTex(int slot)
 		return tmpL;
 }
 
-string TabardDetails::GetBorderTex(int slot)
+std::string TabardDetails::GetBorderTex(int slot)
 {
-	ostringstream tmpStream;
+	std::ostringstream tmpStream;
 
-	string tmpU = "textures\\GuildEmblems\\Border_";
+	std::string tmpU = "textures\\GuildEmblems\\Border_";
 
 	if (Border < 10)
 		tmpU += "0";
@@ -2510,7 +2425,7 @@ string TabardDetails::GetBorderTex(int slot)
 
 	tmpU += "_TU_U.blp";
 	
-	string tmpL = tmpU;
+	std::string tmpL = tmpU;
 	tmpL[36] = 'L';
 
 	if (slot == CR_TORSO_UPPER)
@@ -2519,11 +2434,11 @@ string TabardDetails::GetBorderTex(int slot)
 		return tmpL;
 }
 
-string TabardDetails::GetIconTex(int slot)
+std::string TabardDetails::GetIconTex(int slot)
 {
-	ostringstream tmpStream;
+	std::ostringstream tmpStream;
 
-	string tmpU = "textures\\GuildEmblems\\Emblem_";
+	std::string tmpU = "textures\\GuildEmblems\\Emblem_";
 
 	if(Icon < 10)
 		tmpU += "0";
@@ -2539,7 +2454,7 @@ string TabardDetails::GetIconTex(int slot)
 
 	tmpU += "_TU_U.blp";
 	
-	string tmpL = tmpU;
+	std::string tmpL = tmpU;
 	tmpL[tmpU.length() - 7] = 'L';
 
 	if(slot == CR_TORSO_UPPER)
@@ -2548,113 +2463,53 @@ string TabardDetails::GetIconTex(int slot)
 		return tmpL;
 }
 
-void CharDetails::save(wxString fn, TabardDetails *td)
-{
-	// TODO: save/load as xml?
-	// wx/xml/xml.h says the api will change, do not use etc etc.
-	ofstream f(fn.fn_str(), ios_base::out|ios_base::trunc);
-	f << race << " " << gender << endl;
-	f << skinColor << " " << faceType << " " << hairColor << " " << hairStyle << " " << facialHair << " " << facialColor << endl;
-	for (int i=0; i<NUM_CHAR_SLOTS; i++) {
-		f << equipment[i] << endl;
-	}
-
-	// 5976 is the ID value for "Guild Tabard"
-	if (equipment[CS_TABARD] == 5976) {
-		f << td->Background << " " << td->Border << " " << td->BorderColor << " " << td->Icon << " " << td->IconColor << endl;
-	}
-	f.close();
-}
-
-bool CharDetails::load(wxString fn, TabardDetails *td)
-{
-	unsigned int r, g;
-	int tmp;
-	bool same = false;
-
-	// for (int i=0; i<NUM_CHAR_SLOTS; i++) 
-			// equipment[i] = 0;
-
-	ifstream f(fn.fn_str());
-	f >> r >> g;
-
-	if (r==race && g==gender) {
-		f >> skinColor >> faceType >> hairColor >> hairStyle >> facialHair >> facialColor;
-		same = true;
-	} else {
-		int dummy;
-		for (int i=0; i<6; i++) f >> dummy;
-	}
-
-	for (int i=0; i<NUM_CHAR_SLOTS; i++) {
-		f >> tmp;
-
-		// 
-		if (tmp > 0)
-			equipment[i] = tmp;
-	}
-
-	// 5976 is the ID value for "Guild Tabard"
-	if (equipment[CS_TABARD] == 5976 && !f.eof()) {
-		f >> td->Background >> td->Border >> td->BorderColor >> td->Icon >> td->IconColor;
-		td->showCustom = true;
-	}
-
-	f.close();
-	return same;
-}
 
 void CharDetails::loadSet(ItemSetDB &sets, ItemDatabase &items, int setid)
 {
-	try {
-		ItemSetDB::Record rec = sets.getById(setid);
-		for (size_t i=0; i<ItemSetDB::NumItems; i++) {
-			int id;
-			if (gameVersion == 40000)
-				id = rec.getInt(ItemSetDB::ItemIDBaseV400 + i);
-			else
-				id = rec.getInt(ItemSetDB::ItemIDBase + i);
-			//if (id==0)
-			//	continue;
+	ItemSetDB::Record rec = sets.getById(setid);
 
-			const ItemRecord &r = items.getById(id);
-			if (r.type > 0) {
-				// find a slot for it
-				for (int s=0; s<NUM_CHAR_SLOTS; s++) {
-					if (correctType(r.type, s)) {
-						equipment[s] = id;
-						break;
-					}
-				}
+	for (size_t i = 0; i < ItemSetDB::NumItems; i++)
+	{
+		int id;
+		if (gameVersion == 40000)
+			id = rec.getInt(ItemSetDB::ItemIDBaseV400 + i);
+		else
+			id = rec.getInt(ItemSetDB::ItemIDBase + i);
+
+		equip(items, id);
+	}
+}
+
+void CharDetails::loadStart(StartOutfitDB &start, ItemDatabase &items,
+	int setid)
+{
+	StartOutfitDB::Record rec = start.getById(setid);
+
+	for (size_t i = 0; i < StartOutfitDB::NumItems; i++)
+	{
+		int id = rec.getInt(StartOutfitDB::ItemIDBase + i);
+
+		if (id == 0)
+			continue;
+
+		equip(items, id);
+	}
+}
+
+void CharDetails::equip(ItemDatabase& items, int id)
+{
+	const ItemRecord &r = items.getById(id);
+
+	if (r.type > 0)
+	{
+		// find a slot for it
+		for (int s = 0; s < NUM_CHAR_SLOTS; s++)
+		{
+			if (correctType(r.type, s))
+			{
+				equipment[s] = id;
+				break;
 			}
 		}
-	} catch (ItemSetDB::NotFound) {}
+	}
 }
-
-void CharDetails::loadStart(StartOutfitDB &start, ItemDatabase &items, int setid)
-{
-	try {
-		StartOutfitDB::Record rec = start.getById(setid);
-		for (size_t i=0; i<StartOutfitDB::NumItems; i++) {
-			int id = rec.getInt(StartOutfitDB::ItemIDBase + i);
-			if (id==0) continue;
-			const ItemRecord &r = items.getById(id);
-			if (r.type > 0) {
-				// find a slot for it
-				for (int s=0; s<NUM_CHAR_SLOTS; s++) {
-					if (correctType(r.type, s)) {
-						equipment[s] = id;
-						break;
-					}
-				}
-			}
-		}
-	} catch (ItemSetDB::NotFound) {}
-}
-
-const std::string CharControl::selectCharModel()
-{
-	return "";
-}
-
-

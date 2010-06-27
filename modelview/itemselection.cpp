@@ -56,8 +56,8 @@ ChoiceDialog::ChoiceDialog(CharControl *dest, int type,
 	// Objective is to change over from a wxListBox to a wxListCtrl
 	// which supports different text colours
 	wxCArrayString chs(choices);
-	m_listctrl = new wxListView(this, wxID_LISTCTRL, wxDefaultPosition, wxSize(200,200), wxLC_REPORT|wxLC_SINGLE_SEL|wxLC_NO_HEADER); 
-	
+	m_listctrl = new wxListView(this, wxID_LISTCTRL, wxDefaultPosition, wxSize(200,200), wxLC_REPORT|wxLC_SINGLE_SEL|wxLC_NO_HEADER);
+
 	m_listctrl->InsertColumn(0, _T("Item"), wxLIST_FORMAT_LEFT, 195);
 	//m_listctrl->SetColumnWidth(0, wxLIST_AUTOSIZE);
 
@@ -107,7 +107,7 @@ ChoiceDialog::ChoiceDialog(CharControl *dest, int type,
 
 		m_listbox->Show(false);
 	}
-#endif	
+#endif
 }
 
 void ChoiceDialog::OnClick(wxCommandEvent &event)

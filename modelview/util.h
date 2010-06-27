@@ -32,8 +32,6 @@
 // Our other utility headers
 #include "vec3d.h"
 
-using namespace std;
-
 #ifdef _WINDOWS
 	#define snprintf sprintf_s
 #endif 
@@ -95,9 +93,9 @@ float randfloat(float lower, float upper);
 int randint(int lower, int upper);
 
 template <class T>
-bool from_string(T& t, const string& s, ios_base& (*f)(ios_base&))
+bool from_string(T& t, const std::string& s, std::ios_base& (*f)(std::ios_base&))
 {
-  istringstream iss(s);
+	std::istringstream iss(s);
   return !(iss >> f >> t).fail();
 }
 
