@@ -47,23 +47,36 @@ int main(int argc, char* argv[])
 		for (std::vector<dbc::field>::iterator i = schema.fields.begin(); i
 			!= schema.fields.end(); ++i)
 		{
+			const char* type = type_names[i->type];
+			std::string name = i->name;
+			const char* arg = i->type == dbc::ft_loc ? "int locale = 0"
+				: i->array ? "int idx" : "";
+
+			std::cout << "\n\t" << type << ' ' << name << '(' << arg
+				<< ") const\n\t{\n\t\t";
+
+			if (i->type == dbc::ft_loc)
+				std::cout << "assert(locale >= 0 && locale < 8);\n\t\t";
+			else if (i->array)
+				std::cout << "assert(idx >= 0 && idx < " << i->array.get()
+					<< ");\n\t\t";
+
+			std::cout << "return get<" << type << "> (" << record_size;
+
+			if (i->type == dbc::ft_loc)
+				std::cout << " + locale * 4";
+			else if (i->array)
+				std::cout << " + idx * " << field_size[i->type];
+
+			std::cout << ");\n\t}\n";
+
 			if (!i->array)
 			{
-				std::cout << "\n\t" << type_names[i->type] << ' ' << i->name
-					<< "() const\n\t{\n\t\treturn get<" << type_names[i->type]
-					<< "> (" << record_size << ");\n\t}\n";
-
 				field_count += 1;
 				record_size += field_size[i->type];
 			}
 			else
 			{
-				std::cout << "\n\t" << type_names[i->type] << ' ' << i->name
-					<< "(int idx) const\n\t{\n\t\tassert(idx >= 0 && idx < "
-					<< i->array.get() << ");\n\t\treturn get<"
-					<< type_names[i->type] << "> (" << record_size
-					<< " + idx * " << field_size[i->type] << ");\n\t}\n";
-
 				field_count += i->array.get();
 				record_size += field_size[i->type] * i->array.get();
 			}
@@ -74,8 +87,8 @@ int main(int argc, char* argv[])
 			"\tvoid open()\n"
 			"\t{\n"
 			"\t\tload(\"" << schema.file << "\");\n"
-			"\t\tassert(field_count() == " << field_count << ");\n"
-			"\t\tassert(record_size() == " << record_size << ");\n"
+			"\t\tcheck_field_count(" << field_count << ");\n"
+			"\t\tcheck_record_size(" << record_size << ");\n"
 			"\t}\n"
 			"};\n" << std::flush;
 	}

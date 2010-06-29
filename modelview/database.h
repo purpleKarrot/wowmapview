@@ -34,6 +34,8 @@
 #include "util.h"
 
 #include "CharStartOutfit.hpp"
+#include "CreatureModelData.hpp"
+#include "ItemDisplayInfo.hpp"
 
 // 
 class AnimDB;
@@ -342,13 +344,8 @@ class ItemDatabase;
 
 extern const char* ItemTypeNames[NUM_ITEM_TYPES];
 
-class ItemDisplayDB: public DBCFile
+struct ItemDisplayDB:   ItemDisplayInfo
 {
-public:
-	ItemDisplayDB(): DBCFile("DBFilesClient\\ItemDisplayInfo.dbc") {}
-	~ItemDisplayDB() {}
-
-	/// Fields
 	static const size_t ItemDisplayID = 0;	// uint
 	static const size_t Model = 1;			// string
 	static const size_t Model2 = 2;			// string
@@ -373,13 +370,8 @@ public:
 	static const size_t TexLegLower = 21;	// string
 	static const size_t TexFeet = 22;		// string
 	static const size_t Visuals = 23;		// uint
-	// uint
 
-//	Record getById(unsigned int id);
 	bool hasId(unsigned int id);
-
-private:
-
 };
 
 
@@ -579,22 +571,10 @@ public:
 
 // ===============================================
 
-class CreatureModelDB: public DBCFile
+struct CreatureModelDB: CreatureModelData
 {
-public:
-	CreatureModelDB(): DBCFile("DBFilesClient\\CreatureModelData.dbc") {}
-	~CreatureModelDB() {}
-
-	/// Fields
-	static const size_t ModelID = 0;		// uint
-	static const size_t Type = 1;			// uint
-	static const size_t Filename = 2;		// string
-
-	// filenames need to end in mdx though ;(
 	Record getByFilename(wxString fn);
 	Record getByID(unsigned int id);
-private:
-
 };
 
 class CreatureSkinDB: public DBCFile

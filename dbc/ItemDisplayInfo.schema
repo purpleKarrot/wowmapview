@@ -1,0 +1,26 @@
+
+schema ItemDisplayInfo("DBFilesClient\\ItemDisplayInfo.dbc")
+{
+	uint	id;
+	string	model[2];
+	string	skin[2];
+	string	icon;
+	string	texture;
+	uint	glove_geoset_flags;
+	uint	bracer_geoset_flags;
+	uint	robe_geoset_flags;
+	uint	boots_geoset_flags;
+	uint	unknown;
+	uint	item_ground_sounds;
+	uint	helmet_geoset_vis_data[2];
+	string	upper_arm_texture;
+	string  lower_arm_texture;
+	string	hands_texture;
+	string	upper_torso_texture;
+	string	lower_torso_texture;
+	string	upper_leg_texture;
+	string	lower_leg_texture;
+	string	foot_texture;
+	uint	visuals;
+	uint	unknown2;
+}

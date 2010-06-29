@@ -9,7 +9,8 @@ foreach(INPUT ${DBC_SCHEMA})
   set(OUTPUT ${SCHEMA_WE}.hpp)
 
   add_custom_command(OUTPUT ${OUTPUT}
-    COMMAND schema_generator ${INPUT} > ${OUTPUT})
+    COMMAND schema_generator ${INPUT} > ${OUTPUT}
+    DEPENDS ${INPUT})
 
   list(APPEND SCHEMA_LIST ${OUTPUT})
 endforeach(INPUT ${DBC_SCHEMA})

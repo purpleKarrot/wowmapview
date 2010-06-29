@@ -127,8 +127,7 @@ public:
 	void OnAbout(wxCommandEvent &event);
 	void OnCanvasSize(wxCommandEvent &event);
 	void OnTest(wxCommandEvent &event);
-	void OnExportOther(wxCommandEvent &event);
-	
+
 	void UpdateControls();
    
 	Vec3D DoSetColor(const Vec3D &defColor);

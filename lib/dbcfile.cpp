@@ -1,5 +1,6 @@
 #include "dbcfile.h"
 #include "mpq.hpp"
+#include <iostream>
 
 void DBCFileBase::load(const char* filename)
 {
@@ -20,10 +21,28 @@ void DBCFileBase::load(const char* filename)
 	recordCount = na;
 	fieldCount = nb;
 	stringSize = ss;
-//	assert(fieldCount*4 == recordSize);
+	//	assert(fieldCount*4 == recordSize);
 
 	data = new char[recordSize * recordCount + stringSize];
 	stringTable = data + recordSize * recordCount;
 	f.read(data, recordSize * recordCount + stringSize);
 	f.close();
+}
+
+void DBCFileBase::check_field_count(std::size_t expected)
+{
+	if (field_count() == expected)
+		return;
+
+	std::cout << "WARNING: field count does not match "
+		"(is " << field_count() << ", expected " << expected << ").\n";
+}
+
+void DBCFileBase::check_record_size(std::size_t expected)
+{
+	if (record_size() == expected)
+		return;
+
+	std::cout << "ERROR: record size does not match "
+		"(is " << record_size() << ", expected " << expected << ").\n";
 }

@@ -80,7 +80,6 @@ ModelCanvas::ModelCanvas(wxWindow *parent, VideoCaps *caps)
 	wmo = 0;			// world map object model
 	adt = 0;			// ADT
 	animControl = 0;
-	gifExporter = 0;
 	curAtt = 0;			// Current Attachment
 	root = 0;
 	sky = 0;

@@ -22,21 +22,6 @@ bool bKnightEyeGlow = true;
 bool bShowParticle = true;
 bool bZeroParticle = true;
 
-// Model Export Options
-// General Options
-bool modelExportInitOnly = true;
-bool modelExport_PreserveDir = true;
-bool modelExport_UseWMVPosRot = false;
-
-// Lightwave Options
-bool modelExport_LW_PreserveDir = true;
-bool modelExport_LW_ExportLights = true;
-bool modelExport_LW_ExportDoodads = true;
-int modelExport_LW_DoodadsAs = 0;
-// X3D Options
-bool modelExport_X3D_ExportAnimation = false;
-bool modelExport_X3D_CenterModel = true;
-
 long langID = -1;
 long langOffset = -1;
 long interfaceID = -1;

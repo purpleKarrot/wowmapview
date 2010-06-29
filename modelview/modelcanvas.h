@@ -43,7 +43,6 @@
 
 // custom objects
 class AnimControl;
-class GifExporter;
 class LightControl;
 
 class ModelViewer;
@@ -118,7 +117,6 @@ public:
 
 	// GUI Control Panels
 	AnimControl *animControl;
-	GifExporter *gifExporter;
 
 	CCamera camera;
 

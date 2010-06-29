@@ -332,9 +332,9 @@ bool AnimControl::UpdateCreatureModel(Model *m)
 	try {
 		CreatureModelDB::Record rec = modeldb.getByFilename(fn);
 		// for character models, don't use skins
-		if (rec.Get<unsigned int>(CreatureModelDB::Type) != 4) {
+		if (rec.flags() != 4) {
 			//TextureSet skins;
-			unsigned int modelid = rec.Get<unsigned int>(CreatureModelDB::ModelID);
+			unsigned int modelid = rec.id();
 
 			for (CreatureSkinDB::Iterator it = skindb.begin();  it!=skindb.end();  ++it) {
 				if (it->Get<unsigned int>(CreatureSkinDB::ModelID) == modelid) {
@@ -711,22 +711,22 @@ bool AnimControl::UpdateItemModel(Model *m)
 	TextureSet skins;
 
 	for (ItemDisplayDB::Iterator it=itemdisplaydb.begin(); it!=itemdisplaydb.end(); ++it) {
-		if (fn.IsSameAs(wxString(it->getString(ItemDisplayDB::Model),wxConvUTF8), false)) {
+		if (fn.IsSameAs(wxString(it->model(0),wxConvUTF8), false)) {
             TextureGroup grp;
 			grp.base = 2;
 			grp.count = 1;
-			wxString skin ( it->getString(ItemDisplayDB::Skin),wxConvUTF8);
+			wxString skin ( it->skin(0),wxConvUTF8);
 			grp.tex[0] = skin.mb_str();
 			if (grp.tex[0].length() > 0) 
 				skins.insert(grp);
 		}
 		
 		//if (!strcmp(it->getString(ItemDisplayDB::Model2), fn.c_str())) {
-		if (fn.IsSameAs(wxString(it->getString(ItemDisplayDB::Model2),wxConvUTF8), false)) {
+		if (fn.IsSameAs(wxString(it->model(1),wxConvUTF8), false)) {
             TextureGroup grp;
 			grp.base = 2;
 			grp.count = 1;
-			wxString skin ( it->getString(ItemDisplayDB::Skin2),wxConvUTF8);
+			wxString skin ( it->skin(1),wxConvUTF8);
 			grp.tex[0] = skin.mb_str();
 			if (grp.tex[0].length() > 0) 
 				skins.insert(grp);

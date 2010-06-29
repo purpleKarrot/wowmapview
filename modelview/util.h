@@ -48,17 +48,6 @@ extern bool bHideHelmet;
 extern bool bKnightEyeGlow;
 extern bool bShowParticle;
 extern bool bZeroParticle;
-extern bool modelExportInitOnly;
-extern bool modelExport_PreserveDir;
-extern bool modelExport_UseWMVPosRot;
-extern bool modelExport_LW_PreserveDir;
-extern bool modelExport_LW_ExportLights;
-extern bool modelExport_LW_ExportDoodads;
-extern int modelExport_LW_DoodadsAs;
-extern bool modelExport_X3D_ExportAnimation;
-extern bool modelExport_X3D_CenterModel;
-
-//extern bool hasBeta;
 
 extern wxArrayString mpqArchives;
 

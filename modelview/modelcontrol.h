@@ -80,7 +80,7 @@ class ModelOpened: public wxWindow
 	DECLARE_EVENT_TABLE()
 
 	wxComboBox *openedList;
-	wxButton *btnExport, *btnExportAll, *btnView, *btnExportAllPNG, *btnExportAllTGA;
+	wxButton *btnView;
 	wxArrayString opened_files;
 	wxCheckBox *chkPathPreserved;
 	bool bPathPreserved;
@@ -95,7 +95,6 @@ public:
 	void OnCheck(wxCommandEvent &event);
 	void Add(wxString str);
 	void Clear();
-	void Export(wxString val);
 };
 
 #endif

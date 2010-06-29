@@ -25,19 +25,6 @@ BEGIN_EVENT_TABLE(ModelViewer, wxFrame)
 	EVT_MENU(ID_VIEW_ITEM, ModelViewer::OnCharToggle)
 	EVT_MENU(ID_FILE_SCREENSHOT, ModelViewer::OnSave)
 	EVT_MENU(ID_FILE_SCREENSHOTCONFIG, ModelViewer::OnSave)
-	EVT_MENU(ID_FILE_EXPORTGIF, ModelViewer::OnSave)
-	EVT_MENU(ID_FILE_EXPORTAVI, ModelViewer::OnSave)
-	// --
-	//EVT_MENU(ID_FILE_TEXIMPORT, ModelViewer::OnTex)
-	EVT_MENU(ID_FILE_MODEL_INFO, ModelViewer::OnExportOther)
-	EVT_MENU(ID_FILE_DISCOVERY_ITEM, ModelViewer::OnExportOther)
-	EVT_MENU(ID_FILE_DISCOVERY_NPC, ModelViewer::OnExportOther)
-	//--
-	// Export Menu
-	// To add your new exporter, simply copy the bottom line, and add your unique ID (specified in enums.h) as seen below.
-	// Make sure to use this ID for your export command in the ModelViewer::OnExport function!
-	EVT_MENU(ID_MODELEXPORT_OPTIONS, ModelViewer::OnToggleDock)
-	EVT_MENU(ID_MODELEXPORT_INIT, ModelViewer::OnToggleCommand)
 	// --
 	EVT_MENU(ID_FILE_RESETLAYOUT, ModelViewer::OnToggleCommand)
 	// --
@@ -243,12 +230,8 @@ void ModelViewer::InitMenu()
 	
 	// MENU
 	fileMenu = new wxMenu;
-	fileMenu->Append(ID_MODELEXPORT_BASE, _("Save File..."));
-	fileMenu->Enable(ID_MODELEXPORT_BASE, false);
 	fileMenu->Append(ID_FILE_SCREENSHOT, _("Save Screenshot\tF12"));
 	fileMenu->Append(ID_FILE_SCREENSHOTCONFIG, _("Save Sized Screenshot\tCTRL+S"));
-	fileMenu->Append(ID_FILE_EXPORTGIF, _("GIF/Sequence Export"));
-	fileMenu->Append(ID_FILE_EXPORTAVI, _("Export AVI"));
 
 	// --== Continue regular menu ==--
 	fileMenu->AppendSeparator();
@@ -256,8 +239,6 @@ void ModelViewer::InitMenu()
 	if (wxFileExists(_T("discoveryitems.csv")))
 		fileMenu->Enable(ID_FILE_DISCOVERY_ITEM, false);
 	fileMenu->Append(ID_FILE_DISCOVERY_NPC, _("Discovery NPC"));
-	fileMenu->AppendSeparator();
-	fileMenu->Append(ID_FILE_MODEL_INFO, _("Export ModelInfo.xml"));
 
 	fileMenu->AppendSeparator();
 	fileMenu->Append(ID_FILE_RESETLAYOUT, _("Reset Layout"));
@@ -400,7 +381,6 @@ void ModelViewer::InitMenu()
 		optMenu->AppendCheckItem(ID_DEFAULT_DOODADS, _("Always show default doodads in WMOs"));
 		optMenu->Check(ID_DEFAULT_DOODADS, true);
 		optMenu->AppendSeparator();
-		optMenu->Append(ID_MODELEXPORT_OPTIONS, _("Export Options..."));
 		optMenu->Append(ID_SHOW_SETTINGS, _("Settings..."));
 
 
@@ -891,7 +871,7 @@ void ModelViewer::LoadNPC(unsigned int modelid)
 			unsigned int modelID = modelRec.Get<unsigned int>(CreatureSkinDB::ModelID);
 			CreatureModelDB::Record creatureModelRec = modeldb.getByID(modelID);
 			
-			wxString name(creatureModelRec.getString(CreatureModelDB::Filename),wxConvUTF8);
+			wxString name(creatureModelRec.model_path(),wxConvUTF8);
 			name = name.BeforeLast('.');
 			name.Append(_T(".m2"));
 
@@ -989,8 +969,8 @@ void ModelViewer::LoadItem(unsigned int displayID)
 	isWMO = false;
 
 	try {
-		ItemDisplayDB::Record modelRec = getByID(itemdisplaydb,displayID);
-		wxString name ( modelRec.getString(ItemDisplayDB::Model),wxConvUTF8);
+		ItemDisplayDB::Record modelRec = get_by_ID(itemdisplaydb,displayID);
+		wxString name ( modelRec.model(0),wxConvUTF8);
 		name = name.BeforeLast('.');
 		name.Append(_T(".M2"));
 		//wxLogMessage(_T("LoadItem %d %s"), displayID, name.c_str());
@@ -1260,7 +1240,6 @@ void ModelViewer::OnToggleDock(wxCommandEvent &event)
 		settingsControl->Open();
 	} else if (id==ID_SHOW_MODELOPENED) {
 		interfaceManager.GetPane(modelOpened).Show(true);
-	}else if(id==ID_MODELEXPORT_OPTIONS){
 	}
 	interfaceManager.Update();
 }
@@ -1371,8 +1350,6 @@ void ModelViewer::OnToggleCommand(wxCommandEvent &event)
 		break;
 	case ID_LOAD_TEMP4:
 		canvas->LoadSceneState(4);
-		break;
-	case ID_MODELEXPORT_INIT:
 		break;
 	}
 }
@@ -1939,102 +1916,6 @@ void ModelViewer::OnCanvasSize(wxCommandEvent &event)
 			GetClientSize(&curx, &cury);
 			SetSize((curx + difx), (cury + dify));
 		//}
-	}
-}
-
-void DiscoveryNPC()
-{
-	wxString name, ret;
-	// 1. from creaturedisplayinfo.dbc
-	for (CreatureSkinDB::Iterator it = skindb.begin(); it != skindb.end(); ++it) {
-		int npcid = it->Get<unsigned int>(CreatureSkinDB::NPCID);
-		int id = it->Get<unsigned int>(CreatureSkinDB::SkinID);
-		if (npcid == 0)
-			continue;
-		if (!npcs.avaiable(id)) {
-			name.Printf(_T("Skin%d"), id);
-			ret = npcs.addDiscoveryId(id, name);
-		}
-	}
-	// 2. from creaturedisplayinfoextra.dbc
-}
-
-void DiscoveryItem()
-{
-	wxString name, ret;
-	items.cleanupDiscovery();
-	std::ofstream f("discoveryitems.csv", std::ios_base::out | std::ios_base::trunc);
-
-	// 1. from itemsets.dbc
-	for (ItemSetDB::Iterator it = setsdb.begin(); it != setsdb.end(); ++it) {
-		for(size_t i=0; i<ItemSetDB::NumItems; i++) {
-			int id;
-			if (gameVersion == 40000)
-				id = it->Get<unsigned int>(ItemSetDB::ItemIDBaseV400+i);
-			else
-				id = it->Get<unsigned int>(ItemSetDB::ItemIDBase+i);
-			if (id == 0)
-				continue;
-			if (!items.avaiable(id)) {
-				if (langID == 0)
-					name = wxString(it->getString(ItemSetDB::Name),wxConvUTF8);
-				else
-					name.Printf(_T("Set%d"), it->Get<unsigned int>(ItemSetDB::SetID));
-				ret = items.addDiscoveryId(id, name);
-				if (f.is_open() && !ret.IsEmpty())
-					f << ret.mb_str() << std::endl;
-			}
-		}
-	}
-	// 2. from item.dbc
-	for (ItemDB::Iterator it = itemdb.begin(); it != itemdb.end(); ++it) {
-		int id = it->Get<unsigned int>(ItemDB::ID);
-		if (!items.avaiable(id)) {
-			name.Printf(_T("Item%d"), id);
-			ret = items.addDiscoveryId(id, name);
-			if (f.is_open() && !ret.IsEmpty())
-				f << ret.mb_str() << std::endl;
-		}
-	}
-	// 3. from creaturedisplayinfoextra.dbc
-	int slots_[11] = {1, 3, 4, 5, 6, 7, 8, 9, 10, 19, 16};
-	for (NPCDB::Iterator it = npcdb.begin(); it != npcdb.end(); ++it) {
-		for(size_t i=0; i<11; i++) {
-			int id = it->Get<unsigned int>(NPCDB::HelmID+i);
-			if (id == 0)
-				continue;
-			try {
-				ItemDB::Record r = itemdb.getByDisplayId(id);
-			} catch (std::exception&) {
-				if (!items.avaiable(id+ItemDB::MaxItem)) {
-					int type = slots_[i];
-					name.Printf(_T("NPC%d"), it->Get<unsigned int>(NPCDB::NPCID));
-					ret = items.addDiscoveryDisplayId(id, name, type);
-					if (f.is_open() && !ret.IsEmpty())
-						f << ret.mb_str() << std::endl;
-				}
-			}
-		}
-	}
-	// 4. from model dir
-	// 5. from blp dir
-	wxLogMessage(_T("Discovery done."));
-	if (f.is_open())
-		f.close();
-	items.cleanup(itemdisplaydb);
-}
-
-
-// Other things to export...
-void ModelViewer::OnExportOther(wxCommandEvent &event)
-{
-	int id = event.GetId();
-	if (id == ID_FILE_DISCOVERY_ITEM) {
-		DiscoveryItem();
-		fileMenu->Enable(ID_FILE_DISCOVERY_ITEM, false);
-	} else if (id == ID_FILE_DISCOVERY_NPC) {
-		DiscoveryNPC();
-		fileMenu->Enable(ID_FILE_DISCOVERY_NPC, false);
 	}
 }
 

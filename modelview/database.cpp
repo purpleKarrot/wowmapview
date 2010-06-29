@@ -276,23 +276,23 @@ CreatureModelDB::Record CreatureModelDB::getByFilename(wxString fn)
 	/// Brute force search for now
 	for(Iterator i=begin(); i!=end(); ++i)
 	{
-		wxString str(i->getString(Filename),wxConvUTF8);
+		wxString str(i->model_path(),wxConvUTF8);
 		if(str.IsSameAs(fn, false) == true)
 			return (*i);
 	}
 
-	throw NotFound();
+	throw DBCFile::NotFound();
 }
 
 CreatureModelDB::Record CreatureModelDB::getByID(unsigned int id)
 {
 	for(Iterator i=begin(); i!=end(); ++i)
 	{
-		if (i->Get<unsigned int>(ModelID)==id)
+		if (i->id()==id)
 			return (*i);
 	}
 
-	throw NotFound();
+	throw DBCFile::NotFound();
 }
 
 CreatureSkinDB::Record CreatureSkinDB::getByModelID(unsigned int id)
@@ -536,7 +536,7 @@ void ItemDatabase::cleanup(ItemDisplayDB &l_itemdisplaydb)
 {
 	std::set<unsigned int> itemset;
 	for (ItemDisplayDB::Iterator it = l_itemdisplaydb.begin(); it != l_itemdisplaydb.end(); ++it) {
-		itemset.insert(it->Get<unsigned int>(ItemDisplayDB::ItemDisplayID));
+		itemset.insert(it->id());
 	}
 	for (unsigned int i=0; i<items.size(); ) {
 		bool keepItem = (items[i].type==0) || (itemset.find(items[i].model)!=itemset.end());

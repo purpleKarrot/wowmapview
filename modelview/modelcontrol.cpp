@@ -374,12 +374,7 @@ IMPLEMENT_CLASS(ModelOpened, wxWindow)
 
 BEGIN_EVENT_TABLE(ModelOpened, wxWindow)
 	EVT_COMBOBOX(ID_MODELOPENED_COMBOBOX, ModelOpened::OnCombo)
-
-	EVT_BUTTON(ID_MODELOPENED_EXPORT, ModelOpened::OnButton)
-	EVT_BUTTON(ID_MODELOPENED_EXPORTALL, ModelOpened::OnButton)
 	EVT_BUTTON(ID_MODELOPENED_VIEW, ModelOpened::OnButton)
-	EVT_BUTTON(ID_MODELOPENED_EXPORTALLPNG, ModelOpened::OnButton)
-	EVT_BUTTON(ID_MODELOPENED_EXPORTALLTGA, ModelOpened::OnButton)
 	EVT_CHECKBOX(ID_MODELOPENED_PATHPRESERVED, ModelOpened::OnCheck)
 END_EVENT_TABLE()
 
@@ -392,12 +387,8 @@ ModelOpened::ModelOpened(wxWindow* parent, wxWindowID id)
 	}
 
 	openedList = new wxComboBox(this, ID_MODELOPENED_COMBOBOX, _("Opened"), wxPoint(10,10), wxSize(500,16), 0, NULL, wxCB_READONLY, wxDefaultValidator, _("Opened")); //|wxCB_SORT); //wxPoint(66,10)
-	btnExport = new wxButton(this, ID_MODELOPENED_EXPORT, _("Export"), wxPoint(10, 40), wxSize(46,20));
-	btnExportAll = new wxButton(this, ID_MODELOPENED_EXPORTALL, _("Export All"), wxPoint(10+46+10, 40), wxSize(66,20));
 	btnView = new wxButton(this, ID_MODELOPENED_VIEW, _("View In PNG"), wxPoint(10+46+10+66+10, 40), wxSize(86,20));
 	btnView->Enable(false);
-	btnExportAllPNG = new wxButton(this, ID_MODELOPENED_EXPORTALLPNG, _("Export All To PNG"), wxPoint(10+46+10+66+10+86+10, 40), wxSize(106,20));
-	btnExportAllTGA = new wxButton(this, ID_MODELOPENED_EXPORTALLTGA, _("Export All To TGA"), wxPoint(10+46+10+66+10+86+10+106+10, 40), wxSize(106,20));
 	chkPathPreserved = new wxCheckBox(this, ID_MODELOPENED_PATHPRESERVED, _("Path Preserved"), wxPoint(10+46+10+66+10+86+10+106+10+106+10, 40), wxDefaultSize, 0);
 	chkPathPreserved->SetValue(false);
 	bPathPreserved = false;
@@ -407,37 +398,7 @@ ModelOpened::~ModelOpened()
 {
 	openedList->Clear();
 	openedList->Destroy();
-
-	btnExport->Destroy();
-	btnExportAll->Destroy();
 	btnView->Destroy();
-	btnExportAllPNG->Destroy();
-	btnExportAllTGA->Destroy();
-}
-
-void ModelOpened::Export(wxString val)
-{
-	if (val == wxEmptyString)
-		return;
-	MPQFile f(val.mb_str());
-	if (f.isEof()) {
-		wxLogMessage(_T("Error: Could not extract %s\n"), val.c_str());
-		f.close();
-		return;
-	}
-	wxFileName fn(val);
-	FILE *hFile = NULL;
-	if (bPathPreserved) {
-		wxFileName::Mkdir(wxGetCwd()+SLASH+wxT("Export")+SLASH+fn.GetPath(), 0755, wxPATH_MKDIR_FULL);
-		hFile = fopen((wxGetCwd()+SLASH+wxT("Export")+SLASH+val).mb_str(), "wb");
-	} else {
-		hFile = fopen((wxGetCwd()+SLASH+wxT("Export")+SLASH+fn.GetFullName()).mb_str(), "wb");
-	}
-	if (hFile) {
-		fwrite(f.getBuffer(), 1, f.getSize(), hFile);
-		fclose(hFile);
-	}
-	f.close();
 }
 
 void ModelOpened::OnButton(wxCommandEvent &event)
@@ -445,14 +406,7 @@ void ModelOpened::OnButton(wxCommandEvent &event)
 	bool dialOK = true;
 	int id = event.GetId();
 	wxFileName::Mkdir(wxGetCwd()+SLASH+wxT("Export"), 0755, wxPATH_MKDIR_FULL);
-	if (id == ID_MODELOPENED_EXPORT) {
-		wxString val = openedList->GetValue();
-		Export(val);
-	} else if (id == ID_MODELOPENED_EXPORTALL) {
-		for (unsigned int i = 0; i < opened_files.GetCount(); i++) {
-			Export(opened_files[i]);
-		}
-	} else if (id == ID_MODELOPENED_VIEW) {
+	if (id == ID_MODELOPENED_VIEW) {
 		wxString val = openedList->GetValue();
 		wxFileName fn(val);
 		wxString temp;
@@ -463,12 +417,6 @@ void ModelOpened::OnButton(wxCommandEvent &event)
 	    ScrWindow *sw = new ScrWindow(temp);
 	    sw->Show(true);
 		dialOK = false;
-	} else if (id == ID_MODELOPENED_EXPORTALLPNG) {
-		for (unsigned int i = 0; i < opened_files.GetCount(); i++) {
-		}
-	} else if (id == ID_MODELOPENED_EXPORTALLTGA) {
-		for (unsigned int i = 0; i < opened_files.GetCount(); i++) {
-		}
 	}
 
 	if (dialOK) {

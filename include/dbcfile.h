@@ -21,6 +21,9 @@ public:
 	void load(const char* filename);
 
 protected:
+	void check_field_count(std::size_t expected);
+	void check_record_size(std::size_t expected);
+
 	std::size_t field_count() const
 	{
 		return fieldCount;

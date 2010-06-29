@@ -1,0 +1,29 @@
+
+schema CreatureModelData("DBFilesClient\\CreatureModelData.dbc")
+{
+	uint	id;
+	uint	flags;
+	string	model_path;
+	string	alternate_model;
+	int		unknown;
+	float	scale;
+	int		blood_level;
+	int 	footprint;
+	int		footprint_width;
+	int		footprint_length;
+	int		footprint_depth;
+	int		unknown1;
+	int		ground_shake;
+	int		unknown2;
+	int		sound_data;
+	float	collision_width;
+	float	collision_height;
+	float	unknown3;
+	float	min_vert_x;
+	float	min_vert_y;
+	float	min_vert_z;
+	float	max_vert_x;
+	float	max_vert_y;
+	float	max_vert_z;
+	float	unknown4[4];
+}
