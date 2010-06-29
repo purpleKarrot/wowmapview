@@ -18,9 +18,6 @@ FileList::FileList()
 	tree_view = new QTreeView(this);
 	tree_view->header()->hide();
 
-	//	file_list_model = new FileListModel(this);
-	//	tree_view->setModel(file_list_model);
-
 	connect(tree_view, SIGNAL(doubleClicked(const QModelIndex&)), //
 		this, SLOT(select(const QModelIndex&)));
 

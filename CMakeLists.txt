@@ -16,6 +16,10 @@ include(${QT_USE_FILE})
 
 include_directories(include)
 
+add_subdirectory(dbc)
+include_directories(${CMAKE_BINARY_DIR}/dbc)
+
+
 add_subdirectory(lib)
 add_subdirectory(mapview)
 add_subdirectory(modelview)

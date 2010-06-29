@@ -100,6 +100,7 @@ bool from_string(T& t, const std::string& s, std::ios_base& (*f)(std::ios_base&)
 }
 
 wxString CSConv(wxString str);
+
 void fixname(std::string &name);
 void fixnamen(char *name, uint32 len);
 wxString Vec3DToString(Vec3D vec);

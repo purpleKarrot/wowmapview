@@ -13,6 +13,9 @@ public:
 	EquipmentControl(CharControl& old);
 	~EquipmentControl();
 
+private slots:
+	void choose_mount();
+
 private:
 	CharControl& old;
 	QPushButton* buttons[NUM_CHAR_SLOTS];

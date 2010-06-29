@@ -14,7 +14,6 @@ add_executable(wowmapview
   widgets/MainWindow.cpp
   widgets/RenderWidget.cpp
   areadb.cpp
-  dbcfile.cpp
   frustum.cpp
   liquid.cpp
   maptile.cpp

@@ -62,11 +62,10 @@ wxString CSConvStr;
 
 wxString CSConv(wxString str)
 {
-	if (langID <= 0) // || langCSConv[langID].IsEmpty())
+	if (langID <= 0)
 		return str;
-	return wxConvLocal.cWC2WX(wxConvUTF8.cMB2WC(str.mb_str())); // from private.h
-	//CSConvStr = wxCSConv(langCSConv[langID]).cWC2WX(wxConvUTF8.cMB2WC(str));
-	//return CSConvStr;
+
+	return wxConvLocal.cWC2WX(wxConvUTF8.cMB2WC(str.mb_str()));
 }
 
 float frand()

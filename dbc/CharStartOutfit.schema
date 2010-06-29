@@ -1,0 +1,12 @@
+
+schema CharStartOutfit("DBFilesClient\\CharStartOutfit.dbc")
+{
+	int		id;
+	byte	race;
+	byte	cclass;
+	byte	gender;
+	byte	padding;
+	int		items[24];
+	int		display_info[24];
+	int		inventory_type[24];
+}

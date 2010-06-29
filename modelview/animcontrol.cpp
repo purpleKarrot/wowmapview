@@ -191,8 +191,8 @@ void AnimControl::UpdateModel(Model *m)
 		for (unsigned int i=0; i<g_selModel->header.nAnimations; i++) {			
 			try {
 				AnimDB::Record rec = animdb.getByAnimID(g_selModel->anims[i].animID);
-				strName = rec.getString(AnimDB::Name);
-			} catch (AnimDB::NotFound) {
+				strName = wxString(rec.getString(AnimDB::Name),wxConvUTF8);
+			} catch (std::exception&) {
 				strName = _T("???");
 			}
 			
@@ -332,15 +332,15 @@ bool AnimControl::UpdateCreatureModel(Model *m)
 	try {
 		CreatureModelDB::Record rec = modeldb.getByFilename(fn);
 		// for character models, don't use skins
-		if (rec.getUInt(CreatureModelDB::Type) != 4) {
+		if (rec.Get<unsigned int>(CreatureModelDB::Type) != 4) {
 			//TextureSet skins;
-			unsigned int modelid = rec.getUInt(CreatureModelDB::ModelID);
+			unsigned int modelid = rec.Get<unsigned int>(CreatureModelDB::ModelID);
 
 			for (CreatureSkinDB::Iterator it = skindb.begin();  it!=skindb.end();  ++it) {
-				if (it->getUInt(CreatureSkinDB::ModelID) == modelid) {
+				if (it->Get<unsigned int>(CreatureSkinDB::ModelID) == modelid) {
 					TextureGroup grp;
 					for (int i=0; i<TextureGroup::num; i++) {
-						wxString skin(it->getString(CreatureSkinDB::Skin + i));
+						wxString skin(it->getString(CreatureSkinDB::Skin + i),wxConvUTF8);
 						
 						grp.tex[i] = skin.mb_str();
 					}
@@ -534,7 +534,7 @@ bool AnimControl::UpdateCreatureModel(Model *m)
 				} 
 			}
 		}
-	} catch (CreatureModelDB::NotFound) {
+	} catch (std::exception&) {
 		// Try hardcoding some fixes for missing model info from the DBC
 		if(fn == _T("Creature\\Dwarfmalewarriorlight\\dwarfmalewarriorlight_ghost.mdx")) {
 			TextureGroup grp;
@@ -711,22 +711,22 @@ bool AnimControl::UpdateItemModel(Model *m)
 	TextureSet skins;
 
 	for (ItemDisplayDB::Iterator it=itemdisplaydb.begin(); it!=itemdisplaydb.end(); ++it) {
-		if (fn.IsSameAs(it->getString(ItemDisplayDB::Model), false)) {
+		if (fn.IsSameAs(wxString(it->getString(ItemDisplayDB::Model),wxConvUTF8), false)) {
             TextureGroup grp;
 			grp.base = 2;
 			grp.count = 1;
-			wxString skin = it->getString(ItemDisplayDB::Skin);
+			wxString skin ( it->getString(ItemDisplayDB::Skin),wxConvUTF8);
 			grp.tex[0] = skin.mb_str();
 			if (grp.tex[0].length() > 0) 
 				skins.insert(grp);
 		}
 		
 		//if (!strcmp(it->getString(ItemDisplayDB::Model2), fn.c_str())) {
-		if (fn.IsSameAs(it->getString(ItemDisplayDB::Model2), false)) {
+		if (fn.IsSameAs(wxString(it->getString(ItemDisplayDB::Model2),wxConvUTF8), false)) {
             TextureGroup grp;
 			grp.base = 2;
 			grp.count = 1;
-			wxString skin = it->getString(ItemDisplayDB::Skin2);
+			wxString skin ( it->getString(ItemDisplayDB::Skin2),wxConvUTF8);
 			grp.tex[0] = skin.mb_str();
 			if (grp.tex[0].length() > 0) 
 				skins.insert(grp);

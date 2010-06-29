@@ -36,3 +36,5 @@ target_link_libraries(wowmodelview
   Storm wowview
   ${GLEW_LIBRARIES}
   )
+
+add_dependencies(wowmodelview dbc_schema)

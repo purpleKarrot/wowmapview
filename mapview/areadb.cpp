@@ -33,9 +33,9 @@ std::string AreaDB::getAreaName( int pAreaID )
 	std::string areaName = "";
 	try 
 	{
-		AreaDB::Record rec = gAreaDB.getByID( pAreaID );
+		AreaDB::Record rec = getByID(gAreaDB, pAreaID );
 		areaName = rec.getLocalizedString( AreaDB::Name );
-		regionID = rec.getUInt( AreaDB::Region );
+		regionID = rec.Get<unsigned int>( AreaDB::Region );
 	} 
 	catch(AreaDB::NotFound)
 	{
@@ -45,7 +45,7 @@ std::string AreaDB::getAreaName( int pAreaID )
 	{
 		try 
 		{
-			AreaDB::Record rec = gAreaDB.getByID( regionID );
+			AreaDB::Record rec = getByID(gAreaDB, regionID );
 			areaName = std::string(rec.getLocalizedString( AreaDB::Name )) + std::string(": ") + areaName;
 		} 
 		catch(AreaDB::NotFound)

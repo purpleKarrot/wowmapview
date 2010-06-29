@@ -494,10 +494,8 @@ void ModelViewer::InitDatabase()
 	wxLogMessage(_T("Initiating Databases..."));
 	initDB = true;
 
-	if (!itemdb.open()) {
-		initDB = false;
-		wxLogMessage(_T("Error: Could not open the Item DB."));
-	}
+	itemdb.open();
+
 	wxString filename = locales[langID]+SLASH+_T("items.csv");
 	if (!wxFile::Exists(filename))
 		filename = locales[0]+SLASH+_T("items.csv");
@@ -507,73 +505,28 @@ void ModelViewer::InitDatabase()
 		wxLogMessage(_T("Error: Could not find items.csv to load an item list from."));
 	}
 
-	if (!skyboxdb.open()) {
-		initDB = false;
-		wxLogMessage(_T("Error: Could not open the SkyBox DB."));
-	}
-	if (!spellitemenchantmentdb.open()) {
-		initDB = false;
-		wxLogMessage(_T("Error: Could not open the SkyBox DB."));
-	}
-	if (!itemvisualsdb.open()) {
-		initDB = false;
-		wxLogMessage(_T("Error: Could not open the SkyBox DB."));
-	}
-	if (!animdb.open()) {
-		initDB = false;
-		wxLogMessage(_T("Error: Could not open the Animation DB."));
-	}
-	if (!modeldb.open()) {
-		initDB = false;
-		wxLogMessage(_T("Error: Could not open the Creatures DB."));
-	}
-	if (!skindb.open()) {
-		initDB = false;
-		wxLogMessage(_T("Error: Could not open the CreatureDisplayInfo DB."));
-	}
-	if(!hairdb.open()) {
-		initDB = false;
-		wxLogMessage(_T("Error: Could not open the Hair Geoset DB."));
-	}
-	if(!chardb.open()) {
-		initDB = false;
-		wxLogMessage(_T("Error: Could not open the Character DB."));
-	}
-	if(!racedb.open()) {
-		initDB = false;
-		wxLogMessage(_T("Error: Could not open the Char Races DB."));
-	}
-	if(!classdb.open()) {
-		initDB = false;
-		wxLogMessage(_T("Error: Could not open the Char Classes DB."));
-	}
-	if(!facialhairdb.open()) {
-		initDB = false;
-		wxLogMessage(_T("Error: Could not open the Char Facial Hair DB."));
-	}
-	if(!visualdb.open())
-		wxLogMessage(_T("Error: Could not open the ItemVisuals DB."));
-	if(!effectdb.open())
-		wxLogMessage(_T("Error: Could not open the ItemVisualEffects DB."));
-	if(!subclassdb.open())
-		wxLogMessage(_T("Error: Could not open the Item Subclasses DB."));
-	if(!startdb.open())
-		wxLogMessage(_T("Error: Could not open the Start Outfit Sets DB."));
-	//if(!helmetdb.open()) return false;
-	if(!npcdb.open()) 
-		wxLogMessage(_T("Error: Could not open the Start Outfit NPC DB."));
-	if(!npctypedb.open())
-		wxLogMessage(_T("Error: Could not open the Creature Type DB."));
+	skyboxdb.open();
+	spellitemenchantmentdb.open();
+	itemvisualsdb.open();
+	animdb.open();
+	modeldb.open();
+	skindb.open();
+	hairdb.open();
+	chardb.open();
+	racedb.open();
+	classdb.open();
+	facialhairdb.open();
+	visualdb.open();
+	effectdb.open();
+	subclassdb.open();
+	startdb.open();
+	npcdb.open();
+	npctypedb.open();
+	itemdisplaydb.open();
+	items.cleanup(itemdisplaydb);
 
-	if(!itemdisplaydb.open())
-		wxLogMessage(_T("Error: Could not open the ItemDisplayInfo DB."));
-	else
-		items.cleanup(itemdisplaydb);
-
-	if(!setsdb.open())
-		wxLogMessage(_T("Error: Could not open the Item Sets DB."));
-	else
-		setsdb.cleanup(items);
+	setsdb.open();
+	setsdb.cleanup(items);
 
 //	char filename[20];
 	filename = locales[langID]+SLASH+_T("npcs.csv");
@@ -589,10 +542,8 @@ void ModelViewer::InitDatabase()
 		wxLogMessage(_T("Error: Could not find npcs.csv, unable to create NPC list."));
 	}
 
-	if(spelleffectsdb.open())
-		GetSpellEffects();
-	else
-		wxLogMessage(_T("Error: Could not open the SpellVisualEffects DB."));
+	spelleffectsdb.open();
+	GetSpellEffects();
 
 	wxLogMessage(_T("Finished initiating database files."));
 }
@@ -932,15 +883,15 @@ void ModelViewer::LoadNPC(unsigned int modelid)
 
 	try {
 		CreatureSkinDB::Record modelRec = skindb.getBySkinID(modelid);
-		int displayID = modelRec.getUInt(CreatureSkinDB::NPCID);
+		int displayID = modelRec.Get<unsigned int>(CreatureSkinDB::NPCID);
 
 		// if the creature ID ISN'T a "NPC",  then load the creature model and skin it.
 		if (displayID == 0) {
 			
-			unsigned int modelID = modelRec.getUInt(CreatureSkinDB::ModelID);
+			unsigned int modelID = modelRec.Get<unsigned int>(CreatureSkinDB::ModelID);
 			CreatureModelDB::Record creatureModelRec = modeldb.getByID(modelID);
 			
-			wxString name(creatureModelRec.getString(CreatureModelDB::Filename));
+			wxString name(creatureModelRec.getString(CreatureModelDB::Filename),wxConvUTF8);
 			name = name.BeforeLast('.');
 			name.Append(_T(".m2"));
 
@@ -950,7 +901,7 @@ void ModelViewer::LoadNPC(unsigned int modelid)
 			TextureGroup grp;
 			int count = 0;
 			for (int i=0; i<TextureGroup::num; i++) {
-				wxString skin(modelRec.getString(CreatureSkinDB::Skin + i));
+				wxString skin(modelRec.getString(CreatureSkinDB::Skin + i),wxConvUTF8);
 				
 				grp.tex[i] = skin.mb_str();
 				if (skin.length() > 0)
@@ -964,33 +915,33 @@ void ModelViewer::LoadNPC(unsigned int modelid)
 		} else {
 			isChar = true;
 			NPCDB::Record rec = npcdb.getByNPCID(displayID);
-			CharRacesDB::Record rec2 = racedb.getById(rec.getUInt(NPCDB::RaceID));
+			CharRacesDB::Record rec2 = getByID(racedb,rec.Get<unsigned int>(NPCDB::RaceID));
 			
-			wxString retval = rec.getString(NPCDB::Gender);
+			wxString retval ( rec.getString(NPCDB::Gender),wxConvUTF8);
 			wxString strModel = _T("Character\\");
 
 			if (gameVersion == 30100) {
 				if (!retval.IsEmpty()) {
-					strModel.append(rec2.getString(CharRacesDB::NameV310));
+					strModel.append(wxString(rec2.getString(CharRacesDB::NameV310),wxConvUTF8));
 					strModel.append(_T("\\Female\\"));
-					strModel.append(rec2.getString(CharRacesDB::NameV310));
+					strModel.append(wxString(rec2.getString(CharRacesDB::NameV310),wxConvUTF8));
 					strModel.append(_T("Female.m2"));
 				} else {
-					strModel.append(rec2.getString(CharRacesDB::NameV310));
+					strModel.append(wxString(rec2.getString(CharRacesDB::NameV310),wxConvUTF8));
 					strModel.append(_T("\\Male\\"));
-					strModel.append(rec2.getString(CharRacesDB::NameV310));
+					strModel.append(wxString(rec2.getString(CharRacesDB::NameV310),wxConvUTF8));
 					strModel.append(_T("Male.m2"));
 				}
 			} else {
 				if (!retval.IsEmpty()) {
-					strModel.append(rec2.getString(CharRacesDB::Name));
+					strModel.append(wxString(rec2.getString(CharRacesDB::Name),wxConvUTF8));
 					strModel.append(_T("\\Female\\"));
-					strModel.append(rec2.getString(CharRacesDB::Name));
+					strModel.append(wxString(rec2.getString(CharRacesDB::Name),wxConvUTF8));
 					strModel.append(_T("Female.m2"));
 				} else {
-					strModel.append(rec2.getString(CharRacesDB::Name));
+					strModel.append(wxString(rec2.getString(CharRacesDB::Name),wxConvUTF8));
 					strModel.append(_T("\\Male\\"));
-					strModel.append(rec2.getString(CharRacesDB::Name));
+					strModel.append(wxString(rec2.getString(CharRacesDB::Name),wxConvUTF8));
 					strModel.append(_T("Male.m2"));
 				}
 			}
@@ -1002,11 +953,11 @@ void ModelViewer::LoadNPC(unsigned int modelid)
 			canvas->model->modelType = MT_NPC;
 
 			wxString fn(_T("Textures\\Bakednpctextures\\"));
-			fn.Append(rec.getString(NPCDB::Filename));
+			fn.Append(wxString(rec.getString(NPCDB::Filename),wxConvUTF8));
 			charControl->UpdateNPCModel(modelAtt, displayID);
 			charControl->customSkin = fn;
 
-			charControl->RefreshNPCModel(); // rec.getUInt(NPCDB::NPCID
+			charControl->RefreshNPCModel(); // rec.Get<unsigned int>(NPCDB::NPCID
 			charControl->RefreshEquipment();
 
 			menuBar->EnableTop(2, true);
@@ -1038,8 +989,8 @@ void ModelViewer::LoadItem(unsigned int displayID)
 	isWMO = false;
 
 	try {
-		ItemDisplayDB::Record modelRec = itemdisplaydb.getById(displayID);
-		wxString name = modelRec.getString(ItemDisplayDB::Model);
+		ItemDisplayDB::Record modelRec = getByID(itemdisplaydb,displayID);
+		wxString name ( modelRec.getString(ItemDisplayDB::Model),wxConvUTF8);
 		name = name.BeforeLast('.');
 		name.Append(_T(".M2"));
 		//wxLogMessage(_T("LoadItem %d %s"), displayID, name.c_str());
@@ -1747,7 +1698,7 @@ void ModelViewer::OnBackground(wxCommandEvent &event)
 			wxArrayString skyboxes;
 
 			for (LightSkyBoxDB::Iterator it=skyboxdb.begin();  it!=skyboxdb.end(); ++it) {
-				wxString str(it->getString(LightSkyBoxDB::Name));
+				wxString str(it->getString(LightSkyBoxDB::Name),wxConvUTF8);
 				str = str.BeforeLast('.');
 				str.Append(_T(".m2"));
 
@@ -1996,8 +1947,8 @@ void DiscoveryNPC()
 	wxString name, ret;
 	// 1. from creaturedisplayinfo.dbc
 	for (CreatureSkinDB::Iterator it = skindb.begin(); it != skindb.end(); ++it) {
-		int npcid = it->getUInt(CreatureSkinDB::NPCID);
-		int id = it->getUInt(CreatureSkinDB::SkinID);
+		int npcid = it->Get<unsigned int>(CreatureSkinDB::NPCID);
+		int id = it->Get<unsigned int>(CreatureSkinDB::SkinID);
 		if (npcid == 0)
 			continue;
 		if (!npcs.avaiable(id)) {
@@ -2019,16 +1970,16 @@ void DiscoveryItem()
 		for(size_t i=0; i<ItemSetDB::NumItems; i++) {
 			int id;
 			if (gameVersion == 40000)
-				id = it->getUInt(ItemSetDB::ItemIDBaseV400+i);
+				id = it->Get<unsigned int>(ItemSetDB::ItemIDBaseV400+i);
 			else
-				id = it->getUInt(ItemSetDB::ItemIDBase+i);
+				id = it->Get<unsigned int>(ItemSetDB::ItemIDBase+i);
 			if (id == 0)
 				continue;
 			if (!items.avaiable(id)) {
 				if (langID == 0)
-					name = it->getString(ItemSetDB::Name);
+					name = wxString(it->getString(ItemSetDB::Name),wxConvUTF8);
 				else
-					name.Printf(_T("Set%d"), it->getUInt(ItemSetDB::SetID));
+					name.Printf(_T("Set%d"), it->Get<unsigned int>(ItemSetDB::SetID));
 				ret = items.addDiscoveryId(id, name);
 				if (f.is_open() && !ret.IsEmpty())
 					f << ret.mb_str() << std::endl;
@@ -2037,7 +1988,7 @@ void DiscoveryItem()
 	}
 	// 2. from item.dbc
 	for (ItemDB::Iterator it = itemdb.begin(); it != itemdb.end(); ++it) {
-		int id = it->getUInt(ItemDB::ID);
+		int id = it->Get<unsigned int>(ItemDB::ID);
 		if (!items.avaiable(id)) {
 			name.Printf(_T("Item%d"), id);
 			ret = items.addDiscoveryId(id, name);
@@ -2049,15 +2000,15 @@ void DiscoveryItem()
 	int slots_[11] = {1, 3, 4, 5, 6, 7, 8, 9, 10, 19, 16};
 	for (NPCDB::Iterator it = npcdb.begin(); it != npcdb.end(); ++it) {
 		for(size_t i=0; i<11; i++) {
-			int id = it->getUInt(NPCDB::HelmID+i);
+			int id = it->Get<unsigned int>(NPCDB::HelmID+i);
 			if (id == 0)
 				continue;
 			try {
 				ItemDB::Record r = itemdb.getByDisplayId(id);
-			} catch (ItemDB::NotFound) {
+			} catch (std::exception&) {
 				if (!items.avaiable(id+ItemDB::MaxItem)) {
 					int type = slots_[i];
-					name.Printf(_T("NPC%d"), it->getUInt(NPCDB::NPCID));
+					name.Printf(_T("NPC%d"), it->Get<unsigned int>(NPCDB::NPCID));
 					ret = items.addDiscoveryDisplayId(id, name, type);
 					if (f.is_open() && !ret.IsEmpty())
 						f << ret.mb_str() << std::endl;

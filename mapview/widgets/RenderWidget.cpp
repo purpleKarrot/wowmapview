@@ -81,25 +81,25 @@ void RenderWidget::initializeGL()
 	time = 0;
 
 	initShaders();
-//	video.xres = width();
-//	video.yres = height();
+	//	video.xres = width();
+	//	video.yres = height();
 
 	glViewport(0, 0, width(), height());
-	glMatrixMode(GL_PROJECTION);
+	glMatrixMode( GL_PROJECTION);
 	glLoadIdentity();
 	gluPerspective(45.0f, GLfloat(width()) / GLfloat(height()), 1.0f, 1024.0f);
 
 	// hmmm...
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_NORMAL_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	glEnableClientState( GL_VERTEX_ARRAY);
+	glEnableClientState( GL_NORMAL_ARRAY);
+	glEnableClientState( GL_TEXTURE_COORD_ARRAY);
 }
 
 void RenderWidget::resizeGL(int width, int height)
 {
 	glViewport(0, 0, (GLint) width, (GLint) height);
-//	video.xres = width;
-//	video.yres = height;
+	//	video.xres = width;
+	//	video.yres = height;
 }
 
 void RenderWidget::paintGL()
@@ -318,7 +318,7 @@ void RenderWidget::mouseclick(int x, int y, bool down)
 
 	gWorld->lookat = gWorld->camera + Vec3D(0, 0, -1.0f);
 	gWorld->enterTile(cx, cz);
-	mapmode =false;
+	mapmode = false;
 }
 
 void RenderWidget::tick(float t, float dt)
@@ -326,45 +326,48 @@ void RenderWidget::tick(float t, float dt)
 	if (!gWorld)
 		return;
 
-	Vec3D dir(1,0,0);
-	rotate(0,0, &dir.x,&dir.y, av*PI/180.0f);
-    rotate(0,0, &dir.x,&dir.z, ah*PI/180.0f);
+	Vec3D dir(1, 0, 0);
+	rotate(0, 0, &dir.x, &dir.y, av * PI / 180.0f);
+	rotate(0, 0, &dir.x, &dir.z, ah * PI / 180.0f);
 
-	if (moving != 0) gWorld->camera += dir * dt * movespd * moving;
-	if (strafing != 0) {
-		Vec3D right = dir % Vec3D(0,1,0);
+	if (moving != 0)
+		gWorld->camera += dir * dt * movespd * moving;
+	if (strafing != 0)
+	{
+		Vec3D right = dir % Vec3D(0, 1, 0);
 		right.normalize();
 		gWorld->camera += right * dt * movespd * strafing;
 	}
-	if (updown != 0) gWorld->camera += Vec3D(0, dt * movespd * updown, 0);
+	if (updown != 0)
+		gWorld->camera += Vec3D(0, dt * movespd * updown, 0);
 	gWorld->lookat = gWorld->camera + dir;
 
-	gWorld->time += (gV * /*360.0f*/ 90.0f * dt);
+	gWorld->time += (gV * /*360.0f*/90.0f * dt);
 	gWorld->animtime += dt * 1000.0f;
-	globalTime = (int)gWorld->animtime;
+	globalTime = (int) gWorld->animtime;
 
 	gWorld->tick(dt);
 }
 
 void RenderWidget::drawMinimap()
 {
-	glDisable(GL_FOG);
+	glDisable( GL_FOG);
 
-	glMatrixMode(GL_PROJECTION);
+	glMatrixMode( GL_PROJECTION);
 	glLoadIdentity();
 	glOrtho(0, width(), height(), 0, -1.0, 1.0);
-	glMatrixMode(GL_MODELVIEW);
+	glMatrixMode( GL_MODELVIEW);
 	glLoadIdentity();
 
-	glEnable(GL_BLEND);
+	glEnable( GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_LIGHTING);
+	glDisable( GL_DEPTH_TEST);
+	glDisable( GL_CULL_FACE);
+	glDisable( GL_LIGHTING);
 
 	glColor4f(1, 1, 1, 1);
 
-	glEnable(GL_TEXTURE_2D);
+	glEnable( GL_TEXTURE_2D);
 
 	int basex = 200;
 	int basey = 0;
@@ -376,7 +379,7 @@ void RenderWidget::drawMinimap()
 		const int len = 768;
 		glColor4f(1, 1, 1, 1);
 		glBindTexture(GL_TEXTURE_2D, gWorld->minimap);
-		glBegin(GL_QUADS);
+		glBegin( GL_QUADS);
 		glTexCoord2f(0, 0);
 		glVertex2i(basex, basey);
 		glTexCoord2f(1, 0);
@@ -396,7 +399,7 @@ void RenderWidget::drawMinimap()
 			if (gWorld->maps[j][i])
 			{
 				glColor4f(0.7f, 0.9f, 0.8f, 0.2f);
-				glBegin(GL_QUADS);
+				glBegin( GL_QUADS);
 				glVertex2i(basex + i * tilesize, basey + j * tilesize);
 				glVertex2i(basex + (i + 1) * tilesize, basey + j * tilesize);
 				glVertex2i(basex + (i + 1) * tilesize, basey + (j + 1)
@@ -407,13 +410,14 @@ void RenderWidget::drawMinimap()
 		}
 	}
 
-	glBegin(GL_LINES);
+	glBegin( GL_LINES);
 	float fx, fz;
 	fx = basex + gWorld->camera.x / TILESIZE * 12.0f;
 	fz = basey + gWorld->camera.z / TILESIZE * 12.0f;
 	glVertex2f(fx, fz);
-	glColor4f(1,1,1,0);
-	glVertex2f(fx + 10.0f*cosf(ah/180.0f*PI), fz + 10.0f*sinf(ah/180.0f*PI));
+	glColor4f(1, 1, 1, 0);
+	glVertex2f(fx + 10.0f * cosf(ah / 180.0f * PI), fz + 10.0f * sinf(ah
+		/ 180.0f * PI));
 	glEnd();
 
 	glEnable(GL_TEXTURE_2D);
@@ -430,10 +434,10 @@ void RenderWidget::display(float t, float dt)
 		return;
 	}
 
-	glMatrixMode(GL_PROJECTION);
+	glMatrixMode( GL_PROJECTION);
 	glLoadIdentity();
 	gluPerspective(45.0f, GLfloat(width()) / GLfloat(height()), 1.0f, 1024.0f);
-	glMatrixMode(GL_MODELVIEW);
+	glMatrixMode( GL_MODELVIEW);
 	glLoadIdentity();
 
 	gWorld->draw();
@@ -446,9 +450,9 @@ void RenderWidget::display(float t, float dt)
 	/// Look up area
 	try
 	{
-		AreaDB::Record rec = gAreaDB.getByID(areaID);
+		AreaDB::Record rec = getByID(gAreaDB, areaID);
 		std::string areaName = rec.getString(AreaDB::Name);
-		regionID = rec.getUInt(AreaDB::Region);
+		regionID = rec.Get<unsigned int> (AreaDB::Region);
 		status << areaName;
 	}
 	catch (AreaDB::NotFound)

@@ -1,5 +1,5 @@
 #include "MapItemModel.hpp"
-#include "../dbcfile.h"
+#include "dbcfile.h"
 
 MapItemModel::MapItemModel(QObject* parent) :
 	QAbstractListModel(parent)
@@ -10,7 +10,7 @@ MapItemModel::MapItemModel(QObject* parent) :
 	for (DBCFile::Iterator i = f.begin(); i != f.end(); ++i)
 	{
 		MapEntry e;
-		e.id = i->getInt(0);
+		e.id = i->Get<int>(0);
 		e.name = i->getString(1);
 		e.description = i->getString(3);
 		if (e.description == "")

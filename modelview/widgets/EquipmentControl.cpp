@@ -32,6 +32,7 @@ EquipmentControl::EquipmentControl(CharControl& old) :
 	ADD_CONTROLS(CS_TABARD, "Tabard")
 
 	ADD_CONTROLS(CS_MOUNT, "Mount")
+	connect(buttons[CS_MOUNT],SIGNAL(clicked()),this,SLOT(choose_mount()));
 
 #undef ADD_CONTROLS
 
@@ -40,4 +41,9 @@ EquipmentControl::EquipmentControl(CharControl& old) :
 
 EquipmentControl::~EquipmentControl()
 {
+}
+
+void EquipmentControl::choose_mount()
+{
+	old.selectMount();
 }

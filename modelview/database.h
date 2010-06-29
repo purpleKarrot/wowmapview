@@ -33,6 +33,8 @@
 #include "enums.h"
 #include "util.h"
 
+#include "CharStartOutfit.hpp"
+
 // 
 class AnimDB;
 class CharClassesDB;
@@ -68,7 +70,7 @@ extern CreatureModelDB modeldb;
 extern NPCDatabase npcs;
 extern ItemSetDB setsdb;
 extern CreatureSkinDB skindb;
-extern StartOutfitDB startdb;
+extern CharStartOutfit startdb;
 extern ItemSubClassDB subclassdb;
 extern ItemVisualDB visualdb;
 extern CharHairGeosetsDB hairdb;
@@ -102,7 +104,7 @@ public:
 	static const size_t InventorySlot = 6;	// unit
 	static const size_t Sheath = 7;	// unit
 
-	Record getById(unsigned int id);
+	Record getByID(unsigned int id);
 	Record getByDisplayId(unsigned int id);
 };
 
@@ -256,7 +258,7 @@ public:
 	//static const size_t GeoType3V400 = 19;
 
 	Record getByName(wxString name);
-	Record getById(unsigned int id);
+//	Record getById(unsigned int id);
 };
 
 
@@ -305,7 +307,7 @@ public:
 	static const size_t Name = 4;		// string, localization - english name
 	//static const size_t RawName = 14;	// string
 
-	Record getById(unsigned int id);
+//	Record getById(unsigned int id);
 	
 	static const size_t NameV400 = 3;	// string, localization - english name
 };
@@ -373,7 +375,7 @@ public:
 	static const size_t Visuals = 23;		// uint
 	// uint
 
-	Record getById(unsigned int id);
+//	Record getById(unsigned int id);
 	bool hasId(unsigned int id);
 
 private:
@@ -395,7 +397,7 @@ public:
 	//static const size_t Effect4 = 4;	// uint
 	//static const size_t Effect5 = 5;	// uint
 
-	Record getById(unsigned int id);
+//	Record getById(unsigned int id);
 };
 
 class ItemVisualEffectDB: public DBCFile
@@ -408,7 +410,7 @@ public:
 	static const size_t EffectID = 0;	// uint
 	static const size_t Model = 1;		// string
 
-	Record getById(unsigned int id);
+//	Record getById(unsigned int id);
 };
 
 
@@ -427,31 +429,11 @@ public:
 	static const size_t Name = 1;	// string, Localization
 	static const size_t ItemIDBase = 18; // 10 * uint
 
-	Record getById(unsigned int id);
+//	Record getById(unsigned int id);
 	void cleanup(ItemDatabase &l_itemdb);
 	bool available(unsigned int id);
 	
 	static const size_t ItemIDBaseV400 = 2; // 10 * uint
-};
-
-class StartOutfitDB: public DBCFile
-{
-public:
-	StartOutfitDB(): DBCFile("DBFilesClient\\CharStartOutfit.dbc") {}
-	~StartOutfitDB() {}
-
-	static const size_t NumItems = 24;
-
-	/// Fields
-	static const size_t StartOutfitID = 0;	// uint
-	static const size_t Race = 4;	// byte offset
-	static const size_t Class = 5;	// byte offset
-	static const size_t Gender = 6;	// byte offset
-	static const size_t ItemIDBase = 2; // 24 * uint
-//	static const size_t ItemDisplayIDBase = 26; // 24 * uint
-//	static const size_t ItemTypeBase = 50; // 24 * uint
-
-	Record getById(unsigned int id);
 };
 
 struct ItemRecord {
@@ -491,7 +473,7 @@ public:
 	void cleanup(ItemDisplayDB &l_itemdb);	
 	void open(wxString filename);
 
-	const ItemRecord& getById(int id);
+	const ItemRecord& getByID(int id);
 	const ItemRecord& getByPos(int id);
 	int getItemIDByModel(int id);
 	bool avaiable(int id);
@@ -530,7 +512,7 @@ public:
 	static const size_t Hands = 9;		// int
 	static const size_t Name = 10;		// string
 
-	Record getById(int id, int subid);
+//	Record getById(int id, int subid);
 
 	static const size_t HandsV400 = 10;		// int
 	static const size_t NameV400 = 11;		// string

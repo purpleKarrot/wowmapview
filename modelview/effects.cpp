@@ -9,7 +9,7 @@ SpellEffectsDB spelleffectsdb;
 
 void GetSpellEffects(){
 	for (SpellEffectsDB::Iterator it=spelleffectsdb.begin(); it!=spelleffectsdb.end(); ++it) {
-		wxString temp(it->getString(SpellEffectsDB::EffectName));
+		wxString temp(it->getString(SpellEffectsDB::EffectName),wxConvUTF8);
 		if (temp.StartsWith(_T("zzOLD")))
 			spelleffects.Insert(temp, 0);
 	}
@@ -48,22 +48,22 @@ void SelectCreatureItem(int slot, int current, CharControl *cc, wxWindow *parent
 
 	std::map<std::pair<int,int>, int> subclasslookup;
 	for (ItemSubClassDB::Iterator it=subclassdb.begin(); it != subclassdb.end(); ++it) {
-		int cl = it->getInt(ItemSubClassDB::ClassID);
-		int scl = it->getInt(ItemSubClassDB::SubClassID);
+		int cl = it->Get<int>(ItemSubClassDB::ClassID);
+		int scl = it->Get<int>(ItemSubClassDB::SubClassID);
 
 		// only add the subclass if it was found in the itemlist
 		if (cl>0 && subclassesFound.find(std::pair<int,int>(cl, scl)) != subclassesFound.end()) {
 			wxString str;
 			if (gameVersion == 40000)
-				str = CSConv(it->getString(ItemSubClassDB::NameV400 + langOffset));
+				str = CSConv(wxString(it->getString(ItemSubClassDB::NameV400 + langOffset),wxConvUTF8));
 			else
-				str = CSConv(it->getString(ItemSubClassDB::Name + langOffset));
+				str = CSConv(wxString(it->getString(ItemSubClassDB::Name + langOffset),wxConvUTF8));
 
 			int hands;
 			if (gameVersion == 40000)
-				hands = it->getInt(ItemSubClassDB::HandsV400);
+				hands = it->Get<int>(ItemSubClassDB::HandsV400);
 			else
-				hands = it->getInt(ItemSubClassDB::Hands);
+				hands = it->Get<int>(ItemSubClassDB::Hands);
 			if (hands > 0) {
 				str << wxT(" (") << hands << wxT("-handed)");
 
@@ -79,7 +79,7 @@ void SelectCreatureItem(int slot, int current, CharControl *cc, wxWindow *parent
 	if (subclassesFound.size() > 1) {
 		// build category list
 		for (size_t i=0; i<cc->numbers.size(); i++) {
-			ItemRecord r = items.getById(cc->numbers[i]);
+			ItemRecord r = items.getByID(cc->numbers[i]);
 			cc->cats.push_back(subclasslookup[std::pair<int,int>(r.itemclass, r.subclass)]);
 		}
 
@@ -173,8 +173,8 @@ void EnchantsDialog::OnClick(wxCommandEvent &event)
 
 						for (int k=0; k<5; k++) {
 							if ((it->index[k] > 0) && (m->attLookup[k]>=0)) {
-								ItemVisualEffectDB::Record rec = effectdb.getById(it->index[k]);
-								att->addChild(rec.getString(ItemVisualEffectDB::Model).mb_str(), k, -1);
+								ItemVisualEffectDB::Record rec = getByID(effectdb,it->index[k]);
+								att->addChild(rec.getString(ItemVisualEffectDB::Model), k, -1);
 							}
 						}
 						break;
@@ -246,17 +246,17 @@ void EnchantsDialog::InitEnchants()
 	for (SpellItemEnchantmentDB::Iterator it=spellitemenchantmentdb.begin();  it!=spellitemenchantmentdb.end(); ++it) {
 		int visualid;
 		if (gameVersion == 40000)
-			visualid = it->getInt(SpellItemEnchantmentDB::VisualIDV400);
+			visualid = it->Get<int>(SpellItemEnchantmentDB::VisualIDV400);
 		else
-			visualid = it->getInt(SpellItemEnchantmentDB::VisualID);
+			visualid = it->Get<int>(SpellItemEnchantmentDB::VisualID);
 		if (visualid < 1)
 			continue;
 		for (ItemVisualsDB::Iterator it2=itemvisualsdb.begin();  it2!=itemvisualsdb.end(); ++it2) {
-			if (it2->getInt(ItemVisualsDB::VisualID) == visualid) {
+			if (it2->Get<int>(ItemVisualsDB::VisualID) == visualid) {
 				temp.id = visualid;
 				for(size_t i=0; i<5; i++)
-					temp.index[i] = it2->getInt(ItemVisualsDB::VisualID+1+i);
-				temp.name = CSConv(it->getString(SpellItemEnchantmentDB::Name + langOffset)).mb_str();
+					temp.index[i] = it2->Get<int>(ItemVisualsDB::VisualID+1+i);
+				temp.name = it->getString(SpellItemEnchantmentDB::Name + langOffset);
 				enchants.push_back(temp);
 				break;
 			}

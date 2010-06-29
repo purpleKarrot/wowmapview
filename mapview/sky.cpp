@@ -17,9 +17,9 @@ SkyColor::SkyColor( int t, int col )
 
 Sky::Sky( DBCFile::Iterator data )
 {
-	pos = Vec3D( data->getFloat( LightDB::PositionX ) / skymul, data->getFloat( LightDB::PositionY ) / skymul, data->getFloat( LightDB::PositionZ ) / skymul );
-	r1 = data->getFloat( LightDB::RadiusInner ) / skymul;
-	r2 = data->getFloat( LightDB::RadiusOuter ) / skymul;
+	pos = Vec3D( data->Get<float>( LightDB::PositionX ) / skymul, data->Get<float>( LightDB::PositionY ) / skymul, data->Get<float>( LightDB::PositionZ ) / skymul );
+	r1 = data->Get<float>( LightDB::RadiusInner ) / skymul;
+	r2 = data->Get<float>( LightDB::RadiusOuter ) / skymul;
 	//gLog( "New sky (%i) at (%f,%f,%f) with (%f > %f).\n", data->getInt( LightDB::ID ), pos.x, pos.y, pos.z, r1, r2 );
 
 	for (int i=0; i<36; i++) 
@@ -27,22 +27,22 @@ Sky::Sky( DBCFile::Iterator data )
 
 	global = ( pos.x == 0.0f && pos.y == 0.0f && pos.z == 0.0f );
 
-	int FirstId = data->getInt( LightDB::DataIDs ) * 18;
+	int FirstId = data->Get<int>( LightDB::DataIDs ) * 18;
 
 	for( int i = 0; i < 18; i++ ) 
 	{
 		try {
-			DBCFile::Record rec = gLightIntBandDB.getByID( FirstId + i );
-			int entries = rec.getInt( LightIntBandDB::Entries );
+			DBCFile::Record rec = getByID(gLightIntBandDB, FirstId + i );
+			int entries = rec.Get<int>( LightIntBandDB::Entries );
 
 			if ( entries == 0 ) 
 				mmin[i] = -1;
 			else 
 			{
-				mmin[i] = rec.getInt( LightIntBandDB::Times );
+				mmin[i] = rec.Get<int>( LightIntBandDB::Times );
 				for( int l = 0; l < entries; l++ ) 
 				{
-					SkyColor sc( rec.getInt( LightIntBandDB::Times + l ), rec.getInt( LightIntBandDB::Values + l ) );
+					SkyColor sc( rec.Get<int>( LightIntBandDB::Times + l ), rec.Get<int>( LightIntBandDB::Values + l ) );
 					colorRows[i].push_back( sc );
 				}
 			}
@@ -135,7 +135,7 @@ Skies::Skies( int mapid )
 
 	for( DBCFile::Iterator i = gLightDB.begin(); i != gLightDB.end(); ++i )
 	{
-		if( mapid == i->getUInt( LightDB::Map ) )
+		if( mapid == i->Get<unsigned int>( LightDB::Map ) )
 		{
 			Sky s( i );
 			skies.push_back( s );

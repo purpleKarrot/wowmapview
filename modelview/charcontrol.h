@@ -122,7 +122,7 @@ struct CharDetails
 	int geosets[NUM_GEOSETS];
 
 	void loadSet(ItemSetDB &sets, ItemDatabase &items, int setid);
-	void loadStart(StartOutfitDB &start, ItemDatabase &items, int cls);
+	void loadStart(CharStartOutfit& start, ItemDatabase &items, int cls);
 
 	void reset();
 

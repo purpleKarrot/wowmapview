@@ -1,5 +1,5 @@
 #include "FileListModel.hpp"
-#include "../dbcfile.h"
+#include "dbcfile.h"
 #include <vector>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
