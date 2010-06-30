@@ -45,36 +45,6 @@ void MPQFile::openFile(const char* filename)
 	eof = true;
 }
 
-MPQFile::MPQFile(const char* filename) :
-	eof(false), pointer(0)
-{
-	openFile(filename);
-}
-
-MPQFile::~MPQFile()
-{
-	close();
-}
-
-bool MPQFile::exists(const char* filename)
-{
-	ArchiveSet& gOpenArchives = FS().archives;
-	for (ArchiveSet::iterator i = gOpenArchives.begin(); i
-		!= gOpenArchives.end(); ++i)
-	{
-		HANDLE mpq_a = i->second;
-
-		if (SFileHasFile(mpq_a, filename))
-			return true;
-	}
-
-	return false;
-}
-
-void MPQFile::save(const char* filename)
-{
-}
-
 size_t MPQFile::read(void* dest, size_t bytes)
 {
 	if (eof)
@@ -122,26 +92,6 @@ size_t MPQFile::getSize()
 	return buffer.size();
 }
 
-int MPQFile::getSize(const char* filename)
-{
-	ArchiveSet& gOpenArchives = FS().archives;
-	for (ArchiveSet::iterator i = gOpenArchives.begin(); i
-		!= gOpenArchives.end(); ++i)
-	{
-		HANDLE mpq_a = i->second;
-		HANDLE fh;
-
-		if (!SFileOpenFileEx(mpq_a, filename, 0, &fh))
-			continue;
-
-		DWORD filesize = SFileGetFileSize(fh);
-		SFileCloseFile(fh);
-		return filesize;
-	}
-
-	return 0;
-}
-
 size_t MPQFile::getPos()
 {
 	return pointer;
@@ -180,6 +130,37 @@ void Filesystem::add(const std::string& filename)
 	std::cout << "Added " << filename << " to file system." << std::endl;
 
 	archives.push_back(std::pair<std::string, void*>(filename, handle));
+}
+
+bool Filesystem::exists(const char* filename)
+{
+	for (ArchiveSet::iterator i = archives.begin(); i != archives.end(); ++i)
+	{
+		HANDLE mpq_a = i->second;
+
+		if (SFileHasFile(mpq_a, filename))
+			return true;
+	}
+
+	return false;
+}
+
+int Filesystem::getSize(const char* filename)
+{
+	for (ArchiveSet::iterator i = archives.begin(); i != archives.end(); ++i)
+	{
+		HANDLE mpq_a = i->second;
+		HANDLE fh;
+
+		if (!SFileOpenFileEx(mpq_a, filename, 0, &fh))
+			continue;
+
+		DWORD filesize = SFileGetFileSize(fh);
+		SFileCloseFile(fh);
+		return filesize;
+	}
+
+	return 0;
 }
 
 void Filesystem::getFileLists(std::set<FileTreeItem> &dest, //

@@ -323,7 +323,7 @@ MapTile::MapTile(int x0, int z0, char* filename, bool bigAlpha): x(x0), z(z0), t
 					std::string texshader = texpath;
 					// load the specular texture instead
 					texshader.insert(texshader.length()-4,"_s");
-					if (MPQFile::exists(texshader.c_str()))
+					if (FS().exists(texshader.c_str()))
 						texpath = texshader;
 
 				textures.push_back(wow::Texture(texpath.c_str()));

@@ -1014,7 +1014,7 @@ void Model::initAnimated(MPQFile &f)
 			anims[i].Index = animsWotLK.Index;
 
 			sprintf(tempname, "%s%04d-%02d.anim", (char *)fullname.c_str(), anims[i].animID, animsWotLK.subAnimID);
-			if (MPQFile::getSize(tempname) > 0) {
+			if (FS().getSize(tempname) > 0) {
 				animfiles[i].openFile(tempname);
 				g_modelViewer->modelOpened->Add(wxString(tempname, wxConvUTF8));
 			}

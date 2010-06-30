@@ -1,45 +1,14 @@
 #ifndef MPQ_H
 #define MPQ_H
 
+#include <SDL/SDL_rwops.h>
+#include <boost/shared_ptr.hpp>
+
 // C++ files
 #include <string>
 #include <set>
 #include <vector>
 #include <algorithm>
-
-class MPQFile
-{
-public:
-	MPQFile() :
-		eof(false), pointer(0)
-	{
-	}
-	MPQFile(const char* filename); // filenames are not case sensitive
-	void openFile(const char* filename);
-	~MPQFile();
-	size_t read(void* dest, size_t bytes);
-	size_t getSize();
-	size_t getPos();
-	unsigned char* getBuffer();
-	unsigned char* getPointer();
-	bool isEof();
-	void seek(int offset);
-	void seekRelative(int offset);
-	void close();
-	void save(const char* filename);
-
-	static bool exists(const char* filename);
-	static int getSize(const char* filename); // Used to do a quick check to see if a file is corrupted
-
-private:
-	bool eof;
-	std::vector<unsigned char> buffer;
-	std::size_t pointer;
-
-	// disable copying
-	MPQFile(const MPQFile &f);
-	void operator=(const MPQFile &f);
-};
 
 inline void flipcc(char *fcc)
 {
@@ -74,7 +43,14 @@ public:
 	Filesystem();
 	~Filesystem();
 
+	typedef boost::shared_ptr<SDL_RWops> File;
+
+	File open(const char* filename);
+
 	void add(const std::string& filename);
+
+	bool exists(const char* filename);
+	int getSize(const char* filename);
 
 	static bool defaultFilterFunc(std::string const&)
 	{
@@ -86,9 +62,53 @@ public:
 
 private:
 	friend class MPQFile;
-	std::vector<std::pair<std::string, void*> > archives;
+	typedef std::vector<std::pair<std::string, void*> > ArchiveSet;
+	ArchiveSet archives;
 };
 
 Filesystem& FS();
+
+class MPQFile
+{
+public:
+	MPQFile() :
+		eof(false), pointer(0)
+	{
+	}
+
+	MPQFile(const char* filename) :
+		eof(false), pointer(0)
+	{
+		openFile(filename);
+	}
+
+	~MPQFile()
+	{
+		close();
+	}
+
+	void openFile(const char* filename);
+
+	size_t read(void* dest, size_t bytes);
+	size_t getSize();
+	size_t getPos();
+	unsigned char* getBuffer();
+	unsigned char* getPointer();
+	bool isEof();
+	void seek(int offset);
+	void seekRelative(int offset);
+	void close();
+
+private:
+	Filesystem::File file;
+
+	bool eof;
+	std::vector<unsigned char> buffer;
+	std::size_t pointer;
+
+	// disable copying
+	MPQFile(const MPQFile &f);
+	void operator=(const MPQFile &f);
+};
 
 #endif

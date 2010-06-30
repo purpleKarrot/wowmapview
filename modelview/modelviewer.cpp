@@ -983,7 +983,7 @@ void ModelViewer::LoadItem(unsigned int displayID)
 		wxString fn;
 		for(int i=0; i<5; i++) {
 			fn = fns[i]+name;
-			if (MPQFile::getSize(fn.fn_str()) > 0) {
+			if (FS().getSize(fn.fn_str()) > 0) {
 				LoadModel(std::string(fn.fn_str()));
 				break;
 			}
@@ -1157,25 +1157,6 @@ bool ModelViewer::InitMPQArchives()
 		gameVersion = 30300;
 	}
 
-	const char *component = "component.wow-data.txt";
-	MPQFile f2(component);
-	if (!f2.isEof()) {
-		f2.save(component);
-		f2.close();
-		
-		wxXmlDocument xmlDoc;
-		if (xmlDoc.Load(wxString(component, wxConvUTF8), _T("UTF-8"))) {
-			wxXmlNode *child = xmlDoc.GetRoot()->GetChildren(); // componentinfo->component.version
-			if (child && child->GetName() == _T("component")) {
-				wxString version = child->GetPropVal(_T("version"), _T("0"));
-				if (version != _T("0")) {
-					wxLogMessage(_T("Loaded Content Version: %s"), version.c_str());
-				}
-			}
-		}
-		
-		wxRemoveFile(wxString(component, wxConvUTF8));
-	}
 	return true;
 }
 

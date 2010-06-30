@@ -412,7 +412,7 @@ MapTile::MapTile(wxString filename): topnode(0,0,16), nWMO(0), nMDX(0)
 					std::string texshader = texpath;
 					// load the specular texture instead
 					texshader.insert(texshader.length()-4,"_s");
-					if (MPQFile::exists(texshader.c_str()))
+					if (FS().exists(texshader.c_str()))
 						texpath = texshader;
 				}
 

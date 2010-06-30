@@ -436,7 +436,7 @@ void Model::initAnimated(MPQFile &f)
 		char tempname[256];
 		for(size_t i=0; i<header.nAnimations; i++) {
 			sprintf(tempname, "%s%04d-%02d.anim", fullname.c_str(), anims[i].animID, anims[i].subAnimID);
-			if (MPQFile::getSize(tempname) > 0) {
+			if (FS().getSize(tempname) > 0) {
 				animfiles[i].openFile(tempname);
 			}
 		}
