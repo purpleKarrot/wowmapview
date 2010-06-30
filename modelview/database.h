@@ -72,7 +72,7 @@ extern CreatureModelDB modeldb;
 extern NPCDatabase npcs;
 extern ItemSetDB setsdb;
 extern CreatureSkinDB skindb;
-extern CharStartOutfit startdb;
+extern dbc::CharStartOutfit startdb;
 extern ItemSubClassDB subclassdb;
 extern ItemVisualDB visualdb;
 extern CharHairGeosetsDB hairdb;
@@ -344,33 +344,8 @@ class ItemDatabase;
 
 extern const char* ItemTypeNames[NUM_ITEM_TYPES];
 
-struct ItemDisplayDB:   ItemDisplayInfo
+struct ItemDisplayDB:   dbc::ItemDisplayInfo
 {
-	static const size_t ItemDisplayID = 0;	// uint
-	static const size_t Model = 1;			// string
-	static const size_t Model2 = 2;			// string
-	static const size_t Skin = 3;			// string
-	static const size_t Skin2 = 4;			// string
-	static const size_t Icon = 5;			// string
-	static const size_t Texture = 6;			// string
-	static const size_t GloveGeosetFlags = 7;		// uint
-	static const size_t BracerGeosetFlags = 8;		// uint
-	static const size_t RobeGeosetFlags = 9;		// uint
-	static const size_t BootsGeosetFlags = 10;		// uint
-	static const size_t Unknown = 11;		// uint
-	static const size_t ItemGroupSounds = 12;			// uint
-	static const size_t GeosetVisID1 = 13;	// uint
-	static const size_t GeosetVisID2 = 14;	// uint
-	static const size_t TexArmUpper = 15;	// string
-	static const size_t TexArmLower = 16;	// string
-	static const size_t TexHands = 17;		// string
-	static const size_t TexChestUpper = 18;	// string
-	static const size_t TexChestLower = 19;	// string
-	static const size_t TexLegUpper = 20;	// string
-	static const size_t TexLegLower = 21;	// string
-	static const size_t TexFeet = 22;		// string
-	static const size_t Visuals = 23;		// uint
-
 	bool hasId(unsigned int id);
 };
 
@@ -571,7 +546,7 @@ public:
 
 // ===============================================
 
-struct CreatureModelDB: CreatureModelData
+struct CreatureModelDB: dbc::CreatureModelData
 {
 	Record getByFilename(wxString fn);
 	Record getByID(unsigned int id);

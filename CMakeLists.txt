@@ -14,6 +14,11 @@ find_package(Qt4 REQUIRED)
 include(${QT_USE_FILE})
 
 
+find_package(SDL       REQUIRED)
+find_package(SDL_mixer REQUIRED)
+include_directories(${SDL_INCLUDE_DIR} ${SDLMIXER_INCLUDE_DIR})
+
+
 include_directories(include)
 
 add_subdirectory(dbc)

@@ -1,0 +1,17 @@
+
+schema Light("DBFilesClient\\Light.dbc")
+{
+	uint	id;
+	uint	map;
+	float	pos_x;
+	float	pos_y;
+	float	pos_z;
+	float	inner_radius;
+	float	outer_radius;
+	uint	sky_n_fog;
+	uint	water_settings;
+	uint	sunset_params;
+	uint	other_params;
+	uint	death_params;
+	uint	unknown[3];
+}

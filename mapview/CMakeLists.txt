@@ -30,3 +30,5 @@ target_link_libraries(wowmapview
   ${QT_LIBRARIES}
   Storm wowview
   )
+
+add_dependencies(wowmapview dbc_schema)

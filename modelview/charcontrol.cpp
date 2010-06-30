@@ -1898,7 +1898,7 @@ void CharControl::selectStart()
 	numbers.clear();
 	choices.Clear();
 
-	for (CharStartOutfit::Iterator it = startdb.begin(); it != startdb.end(); ++it) {
+	for (dbc::CharStartOutfit::Iterator it = startdb.begin(); it != startdb.end(); ++it) {
 		if ((it->race() == cd.race) && (it->gender() == cd.gender)) {
 			try {
 				CharClassesDB::Record r = getByID(classdb,it->cclass());
@@ -2463,10 +2463,10 @@ void CharDetails::loadSet(ItemSetDB &sets, ItemDatabase &items, int setid)
 	}
 }
 
-void CharDetails::loadStart(CharStartOutfit& start, ItemDatabase &items,
+void CharDetails::loadStart(dbc::CharStartOutfit& start, ItemDatabase &items,
 	int setid)
 {
-	CharStartOutfit::Record rec = get_by_ID(start, setid);
+	dbc::CharStartOutfit::Record rec = get_by_ID(start, setid);
 
 	for (size_t i = 0; i < 24; i++)
 	{

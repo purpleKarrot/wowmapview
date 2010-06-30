@@ -8,7 +8,7 @@ NPCDatabase			npcs;
 HelmGeosetDB		helmetdb;
 ItemVisualEffectDB	effectdb;
 ItemDisplayDB		itemdisplaydb;
-CharStartOutfit		startdb;
+dbc::CharStartOutfit		startdb;
 ItemSubClassDB		subclassdb;
 ItemVisualDB		visualdb;
 ItemSetDB			setsdb;

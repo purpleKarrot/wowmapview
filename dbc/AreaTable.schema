@@ -1,0 +1,21 @@
+
+schema AreaTable("DBFilesClient\\AreaTable.dbc")
+{
+	uint	id;
+	uint	continent;
+	uint	parent;
+	uint	explore_flags;
+	uint	flags;
+	uint	sound_preferences;
+	uint	unknown;
+	uint	sound_ambience;
+	uint	zone_music;
+	uint	zone_intro_music_table;
+	int		area_level;
+	string	name;
+	loc		name_loc;
+	uint	faction_group;
+	uint	unknown[4];
+	float	unknown2[2];
+	uint	unknown3;
+}

@@ -10,7 +10,7 @@ foreach(INPUT ${DBC_SCHEMA})
 
   add_custom_command(OUTPUT ${OUTPUT}
     COMMAND schema_generator ${INPUT} > ${OUTPUT}
-    DEPENDS ${INPUT})
+    DEPENDS schema_generator ${INPUT})
 
   list(APPEND SCHEMA_LIST ${OUTPUT})
 endforeach(INPUT ${DBC_SCHEMA})

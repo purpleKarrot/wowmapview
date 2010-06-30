@@ -1,0 +1,21 @@
+
+schema Map("DBFilesClient\\Map.dbc")
+{
+	uint	id;
+	string	internal_name;
+	uint	area_type;
+	uint	is_battleground;
+	loc		name;
+	uint	AreaTable;
+	loc		alliance_description;
+	loc		horde_description;
+	uint	loading_screen;
+	float	battlefield_world_map_icon_scale;
+	uint	parent;
+	float	start_x;
+	float	start_y;
+	uint	time_of_day_override;
+	uint	expansion_id;
+	uint	reset_time_override;
+	uint	number_of_players;
+}

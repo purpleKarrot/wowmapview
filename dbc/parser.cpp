@@ -2,8 +2,21 @@
 #include <iterator>
 #include <iostream>
 #include <fstream>
+#include <sstream>
+#include <boost/crc.hpp>
 
-int field_size[] = { 1, 4, 4, 4, 4, 4, 32 };
+std::string checksum(const std::string& input)
+{
+	boost::crc_32_type crc;
+	crc.process_bytes(input.c_str(), input.length());
+
+	std::stringstream stream;
+	stream << std::hex << std::uppercase << crc.checksum();
+
+	return stream.str();
+}
+
+int field_size[] = { 1, 4, 4, 4, 4, 4, 16 * 4 };
 
 //ft_char, ft_int, ft_uint, ft_float, ft_bool, ft_string, ft_loc,
 
@@ -32,10 +45,17 @@ int main(int argc, char* argv[])
 	dbc::parser<iterator> parser;
 	dbc::schema schema;
 
+	std::string include_guard = "DBC_" + checksum(input);
+
 	std::cout << "#include \"dbcfile.h\"\n\n";
+	std::cout << "#ifndef " << include_guard << "\n";
+	std::cout << "#define " << include_guard << "\n\n";
+	std::cout << "#include \"dbcfile.h\"\n\n";
+	std::cout << "namespace dbc\n{\n\n";
 
 	while (phrase_parse(begin, end, parser, schema, boost::spirit::ascii::space))
 	{
+		std::cout << "namespace detail\n{\n\n";
 		std::cout << "struct " << schema.name << "Record: RecordBase\n{\n\t"
 			<< schema.name
 			<< "Record(const char* offset, const char* string) :\n"
@@ -70,7 +90,12 @@ int main(int argc, char* argv[])
 
 			std::cout << ");\n\t}\n";
 
-			if (!i->array)
+			if (i->type == dbc::ft_loc)
+			{
+				field_count += 16;
+				record_size += 16 * 4;
+			}
+			else if (!i->array)
 			{
 				field_count += 1;
 				record_size += field_size[i->type];
@@ -82,7 +107,9 @@ int main(int argc, char* argv[])
 			}
 		}
 
-		std::cout << "};\n\nstruct " << schema.name << ": DBCFileTemplate<"
+		std::cout << "};\n\n} // namespace detail\n\n";
+
+		std::cout << "struct " << schema.name << ": DBCFileTemplate<detail::"
 			<< schema.name << "Record>\n{\n"
 			"\tvoid open()\n"
 			"\t{\n"
@@ -90,8 +117,11 @@ int main(int argc, char* argv[])
 			"\t\tcheck_field_count(" << field_count << ");\n"
 			"\t\tcheck_record_size(" << record_size << ");\n"
 			"\t}\n"
-			"};\n" << std::flush;
+			"};\n";
 	}
+
+	std::cout << "\n} // namespace dbc\n\n";
+	std::cout << "#endif\n" << std::flush;
 
 	return 0;
 }
