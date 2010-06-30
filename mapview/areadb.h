@@ -1,41 +1,13 @@
 #ifndef AREADB_H
 #define AREADB_H
-#include "dbcfile.h"
+#include "AreaTable.hpp"
+#include "Map.hpp"
+#include "Light.hpp"
 #include <string>
 
-class AreaDB: public DBCFile
+struct AreaDB:   dbc::AreaTable
 {
-public:
-	AreaDB():
-		DBCFile("DBFilesClient\\AreaTable.dbc")
-	{ }
-
-	/// Fields
-	static const size_t AreaID = 0;		// uint
-	static const size_t Continent = 1;	// uint
-	static const size_t Region = 2;		// uint [AreaID]
-	static const size_t Flags = 4;		// bit field
-	static const size_t Name = 11;		// localisation string
-
 	static std::string getAreaName( int pAreaID );
-};
-
-class MapDB: public DBCFile
-{
-public:
-	MapDB():
-		DBCFile("DBFilesClient\\Map.dbc")
-	{ }
-
-	/// Fields
-	static const size_t MapID = 0;				// uint
-	static const size_t InternalName = 1;		// string
-	static const size_t AreaType = 2;			// uint
-	static const size_t IsBattleground = 3;		// uint
-	static const size_t Name = 4;				// loc
-	static const size_t LoadingScreen = 56;		// uint [LoadingScreen]
-	static const size_t CoordinateX = 110;		// float
-	static const size_t CoordinateY = 111;		// float
 };
 
 class LoadingScreensDB: public DBCFile
@@ -49,24 +21,6 @@ public:
 	static const size_t ID = 0;				// uint
 	static const size_t Name = 1;			// string
 	static const size_t Path = 2;			// string
-};
-
-class LightDB: public DBCFile
-{
-public:
-	LightDB():
-		DBCFile("DBFilesClient\\Light.dbc")
-	{ }
-
-	/// Fields
-	static const size_t ID = 0;				// uint
-	static const size_t Map = 1;			// uint
-	static const size_t PositionX = 2;		// float
-	static const size_t PositionY = 3;		// float
-	static const size_t PositionZ = 4;		// float
-	static const size_t RadiusInner = 5;	// float
-	static const size_t RadiusOuter = 6;	// float
-	static const size_t DataIDs = 7;		// uint[8]
 };
 
 class LightSkyboxDB: public DBCFile
@@ -154,9 +108,9 @@ public:
 void OpenDBs();
 
 extern AreaDB gAreaDB;
-extern MapDB gMapDB;
+extern dbc::Map gMapDB;
 extern LoadingScreensDB gLoadingScreensDB;
-extern LightDB gLightDB;
+extern dbc::Light gLightDB;
 extern LightSkyboxDB gLightSkyboxDB;
 extern LightIntBandDB gLightIntBandDB;
 extern LightFloatBandDB gLightFloatBandDB;

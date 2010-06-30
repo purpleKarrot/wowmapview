@@ -450,12 +450,12 @@ void RenderWidget::display(float t, float dt)
 	/// Look up area
 	try
 	{
-		AreaDB::Record rec = getByID(gAreaDB, areaID);
-		std::string areaName = rec.getString(AreaDB::Name);
-		regionID = rec.Get<unsigned int> (AreaDB::Region);
+		AreaDB::Record rec = get_by_ID(gAreaDB, areaID);
+		std::string areaName = rec.name();
+		regionID = rec.parent();
 		status << areaName;
 	}
-	catch (AreaDB::NotFound)
+	catch (DBCFile::NotFound)
 	{
 	}
 
@@ -469,7 +469,7 @@ void RenderWidget::display(float t, float dt)
 			std::string regionName = gAreaDB.getAreaName(regionID);
 			status << regionName;
 		}
-		catch (AreaDB::NotFound)
+		catch (DBCFile::NotFound)
 		{
 		}
 	}

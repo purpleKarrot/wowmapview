@@ -15,11 +15,11 @@ SkyColor::SkyColor( int t, int col )
 	color.x = ((col & 0xff0000) >> 16) / 255.0f;
 }
 
-Sky::Sky( DBCFile::Iterator data )
+Sky::Sky(const dbc::Light::Record& data)
 {
-	pos = Vec3D( data->Get<float>( LightDB::PositionX ) / skymul, data->Get<float>( LightDB::PositionY ) / skymul, data->Get<float>( LightDB::PositionZ ) / skymul );
-	r1 = data->Get<float>( LightDB::RadiusInner ) / skymul;
-	r2 = data->Get<float>( LightDB::RadiusOuter ) / skymul;
+	pos = Vec3D( data.pos_x() / skymul, data.pos_y() / skymul, data.pos_z() / skymul );
+	r1 = data.inner_radius() / skymul;
+	r2 = data.outer_radius() / skymul;
 	//gLog( "New sky (%i) at (%f,%f,%f) with (%f > %f).\n", data->getInt( LightDB::ID ), pos.x, pos.y, pos.z, r1, r2 );
 
 	for (int i=0; i<36; i++) 
@@ -27,7 +27,7 @@ Sky::Sky( DBCFile::Iterator data )
 
 	global = ( pos.x == 0.0f && pos.y == 0.0f && pos.z == 0.0f );
 
-	int FirstId = data->Get<int>( LightDB::DataIDs ) * 18;
+	int FirstId = data.sky_n_fog() * 18;
 
 	for( int i = 0; i < 18; i++ ) 
 	{
@@ -133,12 +133,11 @@ Skies::Skies( int mapid )
 	cs = -1;
 	stars = 0;
 
-	for( DBCFile::Iterator i = gLightDB.begin(); i != gLightDB.end(); ++i )
+	for(dbc::Light::Iterator i = gLightDB.begin(); i != gLightDB.end(); ++i )
 	{
-		if( mapid == i->Get<unsigned int>( LightDB::Map ) )
+		if( mapid == i->map() )
 		{
-			Sky s( i );
-			skies.push_back( s );
+			skies.push_back( Sky(*i) );
 			numSkies++;
 		}
 	}

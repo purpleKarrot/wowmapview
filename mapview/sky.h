@@ -4,7 +4,7 @@
 #include "model.h"
 #include "mpq.hpp"
 #include <vector>
-#include "dbcfile.h"
+#include "Light.hpp"
 
 struct SkyColor {
 	Vec3D color;
@@ -18,7 +18,7 @@ public:
 	Vec3D pos;
 	float r1, r2;
 
-	Sky( DBCFile::Iterator data );
+	Sky(const dbc::Light::Record& data);
 
 	std::vector<SkyColor> colorRows[36];
 	int mmin[36];

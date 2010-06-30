@@ -2,9 +2,9 @@
 #include <string>
 
 AreaDB gAreaDB;
-MapDB gMapDB;
+dbc::Map gMapDB;
 LoadingScreensDB gLoadingScreensDB;
-LightDB gLightDB;
+dbc::Light gLightDB;
 LightSkyboxDB gLightSkyboxDB;
 LightIntBandDB gLightIntBandDB;
 LightFloatBandDB gLightFloatBandDB;
@@ -33,11 +33,11 @@ std::string AreaDB::getAreaName( int pAreaID )
 	std::string areaName = "";
 	try 
 	{
-		AreaDB::Record rec = getByID(gAreaDB, pAreaID );
-		areaName = rec.getLocalizedString( AreaDB::Name );
-		regionID = rec.Get<unsigned int>( AreaDB::Region );
+		AreaDB::Record rec = get_by_ID(gAreaDB, pAreaID );
+		areaName = rec.name();
+		regionID = rec.parent();
 	} 
-	catch(AreaDB::NotFound)
+	catch(DBCFile::NotFound)
 	{
 		areaName = "Unknown location";
 	}
@@ -45,10 +45,10 @@ std::string AreaDB::getAreaName( int pAreaID )
 	{
 		try 
 		{
-			AreaDB::Record rec = getByID(gAreaDB, regionID );
-			areaName = std::string(rec.getLocalizedString( AreaDB::Name )) + std::string(": ") + areaName;
+			AreaDB::Record rec = get_by_ID(gAreaDB, regionID );
+			areaName = std::string(rec.name()) + std::string(": ") + areaName;
 		} 
-		catch(AreaDB::NotFound)
+		catch(DBCFile::NotFound)
 		{
 			areaName = "Unknown location";
 		}
