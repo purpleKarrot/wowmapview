@@ -5,11 +5,11 @@
 
 extern bool supportShaders;
 
-extern PFNGLPROGRAMSTRINGARBPROC glProgramStringARB;
-extern PFNGLBINDPROGRAMARBPROC glBindProgramARB;
-extern PFNGLDELETEPROGRAMSARBPROC glDeleteProgramsARB;
-extern PFNGLGENPROGRAMSARBPROC glGenProgramsARB;
-extern PFNGLPROGRAMLOCALPARAMETER4FARBPROC glProgramLocalParameter4fARB;
+//extern PFNGLPROGRAMSTRINGARBPROC glProgramStringARB;
+//extern PFNGLBINDPROGRAMARBPROC glBindProgramARB;
+//extern PFNGLDELETEPROGRAMSARBPROC glDeleteProgramsARB;
+//extern PFNGLGENPROGRAMSARBPROC glGenProgramsARB;
+//extern PFNGLPROGRAMLOCALPARAMETER4FARBPROC glProgramLocalParameter4fARB;
 
 void OldinitShaders();
 void OldreloadShaders();

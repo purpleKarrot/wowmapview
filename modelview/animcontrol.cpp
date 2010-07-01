@@ -1,3 +1,4 @@
+#include <GL/glew.h>
 #include "animcontrol.h"
 #include "util.h"
 #include "globalvars.h"

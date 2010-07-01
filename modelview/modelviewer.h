@@ -56,7 +56,6 @@ public:
 	ModelCanvas *canvas;
 	CharControl *charControl;
 	EnchantsDialog *enchants;
-	LightControl *lightControl;
 	ModelControl *modelControl;
 	ArrowControl *arrowControl;
 	ImageControl *imageControl;
@@ -86,9 +85,6 @@ public:
 	void InitDatabase();
 	bool InitMPQArchives();
 
-	// Save and load various settings between sessions
-	void LoadSession();
-	void SaveSession();
 	// Save and load the GUI layout
 	void LoadLayout();
 	void SaveLayout();
@@ -111,9 +107,7 @@ public:
     // menu commands
 	void OnToggleDock(wxCommandEvent &event);
 	void OnToggleCommand(wxCommandEvent &event);
-	void OnSetColor(wxCommandEvent &event);
 	void OnEffects(wxCommandEvent &event);
-	void OnLightMenu(wxCommandEvent &event);
 	void OnCamMenu(wxCommandEvent &event);
 
 	// Wrapper function for character stuff (forwards events to charcontrol)
@@ -122,8 +116,6 @@ public:
 
 	void OnMount(wxCommandEvent &event);
 	void OnSave(wxCommandEvent &event);
-	void OnBackground(wxCommandEvent &event);
-	void OnLanguage(wxCommandEvent &event);
 	void OnAbout(wxCommandEvent &event);
 	void OnCanvasSize(wxCommandEvent &event);
 	void OnTest(wxCommandEvent &event);

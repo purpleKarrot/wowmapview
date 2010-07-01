@@ -299,7 +299,6 @@ void Settings_Page2::OnButton(wxCommandEvent &event)
 		if ((fov > 0) && (fov < 270.0))
 			video.fov = (float) fov;
 
-		g_modelViewer->SaveSession();
 		g_modelViewer->interfaceManager.GetPane(this->GetParent()).Show(false);
 		g_modelViewer->interfaceManager.Update();
 	}

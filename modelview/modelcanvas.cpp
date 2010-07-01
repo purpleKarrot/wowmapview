@@ -23,12 +23,8 @@ unsigned long pauseTime = 0;
 
 IMPLEMENT_CLASS(ModelCanvas, wxWindow)
 BEGIN_EVENT_TABLE(ModelCanvas, wxWindow)
-	EVT_SIZE(ModelCanvas::OnSize)
 	EVT_PAINT(ModelCanvas::OnPaint)
-	EVT_ERASE_BACKGROUND(ModelCanvas::OnEraseBackground)
     EVT_TIMER(ID_TIMER, ModelCanvas::OnTimer)
-    EVT_MOUSE_EVENTS(ModelCanvas::OnMouse)
-	EVT_KEY_DOWN(ModelCanvas::OnKey)
 END_EVENT_TABLE()
 
 
@@ -76,23 +72,12 @@ ModelCanvas::ModelCanvas(wxWindow *parent, VideoCaps *caps)
 
 	// Set all our pointers to null
 	model =	0;			// Main model.
-	skyModel = 0;		// SkyBox Model
 	wmo = 0;			// world map object model
 	adt = 0;			// ADT
 	animControl = 0;
 	curAtt = 0;			// Current Attachment
 	root = 0;
-	sky = 0;
-
-	lightType = LIGHT_DYNAMIC;
-
-	// Setup our default colour values.
-	vecBGColor = Vec3D((float)(71.0/255),(float)(95.0/255),(float)(121.0/255)); 
-
-	drawSky = false;
-	bMouseLight = false;
 	useCamera = false;
-	
 	
 	//wxNO_BORDER|wxCLIP_CHILDREN|wxFULL_REPAINT_ON_RESIZE
 #ifdef _WINDOWS
@@ -121,7 +106,6 @@ ModelCanvas::ModelCanvas(wxWindow *parent, VideoCaps *caps)
 	}
 	
 	root = new Attachment(NULL, NULL, -1, -1);
-	sky = new Attachment(NULL, NULL, -1, -1);
 
 	new_ = new qtcanvas(this);
 }
@@ -138,20 +122,6 @@ ModelCanvas::~ModelCanvas()
 	clearAttachments();
 
 	wxDELETE(root);
-	wxDELETE(sky);
-}
-
-void ModelCanvas::OnEraseBackground(wxEraseEvent& event)
-{
-    event.Skip();
-}
-
-void ModelCanvas::OnSize(wxSizeEvent& event)
-{
-	event.Skip();
-
-	if (init) 
-		InitView();
 }
 
 void ModelCanvas::InitView()
@@ -256,186 +226,6 @@ void ModelCanvas::clearAttachments()
 {
 	if (root)
 		root->delChildren();
-
-	if (sky)
-		sky->delChildren();
-}
-
-void ModelCanvas::OnMouse(wxMouseEvent& event)
-{
-	if (!model && !wmo && !adt)
-		return;
-
-	if (event.Button(wxMOUSE_BTN_ANY) == true)
-		SetFocus();
-
-	int px = event.GetX();
-	int py = event.GetY();
-	int pz = event.GetWheelRotation();
-
-	// mul = multiplier in which to multiply everything to achieve a sense of control over the amount to move stuff by
-	float mul = 1.0f;
-	if (event.m_shiftDown)
-		mul /= 10;
-	if (event.m_controlDown)
-		mul *= 10;
-	if (event.m_altDown)
-		mul *= 50;
-
-	if (wmo) {
-
-		if (event.ButtonDown()) {
-			mx = px;
-			my = py;
-
-		} else if (event.Dragging()) {
-			int dx = mx - px;
-			int dy = my - py;
-			mx = px;
-			my = py;
-
-			if (event.LeftIsDown() && event.RightIsDown()) {
-				wmo->viewpos.y -= dy*mul;
-			} else if (event.LeftIsDown()) {
-				wmo->viewrot.x -= dx*mul/5;
-				wmo->viewrot.y -= dy*mul/5;
-			} else if (event.RightIsDown()) {
-				wmo->viewrot.x -= dx*mul/5;
-				float f = cos(wmo->viewrot.y * piover180);
-				float sf = sin(wmo->viewrot.x * piover180);
-				float cf = cos(wmo->viewrot.x * piover180);
-				wmo->viewpos.x -= sf * mul * dy * f;
-				wmo->viewpos.z += cf * mul * dy * f;
-				wmo->viewpos.y += sin(wmo->viewrot.y * piover180) * mul * dy;
-			} else if (event.MiddleIsDown()) {
-				//?
-			}
-
-		} else if (event.GetEventType() == wxEVT_MOUSEWHEEL) {
-			//?
-		}
-
-	} else if (model) {
-		if (model->animManager)
-			mul *= model->animManager->GetSpeed(); //animSpeed;
-
-		if (event.ButtonDown()) {
-			mx = px;
-			my = py;
-
-			if (bMouseLight) // going to use vRot to hold our temp light position (technically, our g_modelViewer->lightControl->lights rotation).
-				vRot0 = Vec3D(g_modelViewer->lightControl->GetCurrentPos().x,g_modelViewer->lightControl->GetCurrentPos().y,g_modelViewer->lightControl->GetCurrentPos().z);
-			else
-				vRot0 = model->rot;
-
-			vPos0 = model->pos;
-
-		} else if (event.Dragging()) {
-			int dx = mx - px;
-			int dy = my - py;
-
-			if (event.LeftIsDown()) {
-				if (bMouseLight)
-					return;
-
-				model->rot.x = vRot0.x - (dy / 2.0f); // * mul);
-				model->rot.y = vRot0.y - (dx / 2.0f); // * mul);
-
-				//viewControl->Refresh();
-
-			} else if (event.RightIsDown()) {
-				mul /= 100.0f;
-
-				if (bMouseLight) {
-					Vec4D temp = g_modelViewer->lightControl->GetCurrentPos();
-					temp.y = vRot0.y + dy*mul;
-					temp.x = vRot0.x - dx*mul;
-					g_modelViewer->lightControl->SetPos(temp);
-					g_modelViewer->lightControl->Update();
-				} else {
-					model->pos.x = vPos0.x - dx*mul;
-					model->pos.y = vPos0.y + dy*mul;
-
-					//viewControl->Refresh();
-				}
-
-			} else if (event.MiddleIsDown()) {
-				if (!event.m_altDown) {
-					mul = (mul / 20.0f) * dy;
-
-					if (bMouseLight) {
-						Vec4D temp = g_modelViewer->lightControl->GetCurrentPos();
-						temp.z = vRot0.z - mul;
-						g_modelViewer->lightControl->SetPos(temp); 
-						g_modelViewer->lightControl->Update();
-					} else {
-						Zoom(mul, false);
-						my = py;
-					}
-
-				} else {
-					mul = (mul / 1200.0f) * dy;
-					Zoom(mul, true);
-					my = py;
-				}
-			}
-
-		} else if (event.GetEventType() == wxEVT_MOUSEWHEEL) {
-			if (pz != 0) {
-				mul = (mul / 120.0f) * pz;
-				if (!wxGetKeyState(WXK_ALT)) {
-					if (bMouseLight) {
-						Vec4D temp = g_modelViewer->lightControl->GetCurrentPos();
-						temp.z -= mul / 10.0f;
-						g_modelViewer->lightControl->SetPos(temp); 
-						g_modelViewer->lightControl->Update();
-					} else {
-						Zoom(mul, false);
-					}
-				} else {
-					mul /= 50.0f;
-					Zoom(mul, true);
-				}
-			}
-		}
-	} else if (adt) {
-		// Copied from WMO controls.
-
-		if (event.ButtonDown()) {
-			mx = px;
-			my = py;
-
-		} else if (event.Dragging()) {
-			int dx = mx - px;
-			int dy = my - py;
-			mx = px;
-			my = py;
-
-			if (event.LeftIsDown() && event.RightIsDown()) {
-				adt->viewpos.y -= dy*mul;
-			} else if (event.LeftIsDown()) {
-				adt->viewrot.x -= dx*mul/5;
-				adt->viewrot.y -= dy*mul/5;
-			} else if (event.RightIsDown()) {
-				adt->viewrot.x -= dx*mul/5;
-				float f = cos(adt->viewrot.y * piover180);
-				float sf = sin(adt->viewrot.x * piover180);
-				float cf = cos(adt->viewrot.x * piover180);
-				adt->viewpos.x -= sf * mul * dy * f;
-				adt->viewpos.z += cf * mul * dy * f;
-				adt->viewpos.y += sin(adt->viewrot.y * piover180) * mul * dy;
-			} else if (event.MiddleIsDown()) {
-				//?
-			}
-
-		} else if (event.GetEventType() == wxEVT_MOUSEWHEEL) {
-			//?
-		}
-	}
-
-
-	//if (event.GetEventType() == wxEVT_ENTER_WINDOW)
-	//	SetFocus();
 }
 
 void ModelCanvas::InitGL()
@@ -445,14 +235,6 @@ void ModelCanvas::InitGL()
 	video.InitGL();
 
 	GLenum err = 0;
-
-	// If no g_modelViewer->lightControl object, exit for now
-	if (!g_modelViewer || !g_modelViewer->lightControl)
-		return;
-
-	// Setup lighting
-	g_modelViewer->lightControl->Init();
-	g_modelViewer->lightControl->UpdateGL();
 
 	init = true;
 
@@ -466,78 +248,9 @@ void ModelCanvas::InitGL()
 void ModelCanvas::OnPaint(wxPaintEvent& WXUNUSED(event))
 {
 	new_->updateGL();
-
-	// Set this window handler as the reference to draw to.
-	SetCurrent();
-	wxPaintDC dc(this);
-
-	if (!init)
-		InitGL();
-
-	if (video.render) {
-		if (wmo)
-			RenderWMO();
-		else if (model)
-			Render();
-		else if (adt)
-			RenderADT();
-	}
 }
 
-inline void ModelCanvas::RenderLight(Light *l)
-{
-	GLUquadricObj *quadratic = gluNewQuadric();		// Storage For Our Quadratic Object & // Create A Pointer To The Quadric Object
-	gluQuadricNormals(quadratic, GLU_SMOOTH);		// Create Smooth Normals
-
-	glPushMatrix();
-
-	//glEnable(GL_DEPTH_TEST);
-	glDisable(GL_LIGHTING);
-	
-	//glLightModelfv(GL_LIGHT_MODEL_AMBIENT, l->diffuse);
-	glColor4f(l->diffuse.x, l->diffuse.y, l->diffuse.z, 0.5f);
-
-	glTranslatef(l->pos.x, l->pos.y, l->pos.z);
-
-	// rotate the objects to point in the right direction
-	//Vec3D rot(l->pos.x, l->pos.y, l->pos.z);
-	//float theta = rot.thetaXZ(l->target);
-	//glRotatef(theta * rad2deg, 0.0f, 1.0f, 0.0f);
-	
-	gluSphere(quadratic, 0.15, 8, 8);
-
-	if (l->type == LIGHT_DIRECTIONAL) { // Directional light
-		glBegin(GL_LINES);
-		glVertex3f(0, 0, 0);
-		glVertex3f(l->target.x, l->target.y, l->target.z);
-		glEnd();
-
-	} else if (l->type == LIGHT_POSITIONAL) {	// Positional Light
-		
-	} else {	// Spot light
-		
-	}
-
-	glEnable(GL_LIGHTING);
-	glPopMatrix();
-}
-
-inline void ModelCanvas::RenderSkybox()
-{
-	// ************** SKYBOX *************
-	glPushMatrix();		// Save the current modelview matrix
-	glLoadIdentity();	// Reset it
-	
-	float fScale = 64.0f / skyModel->rad;
-	
-	glTranslatef(0.0f, 0.0f, -5.0f);	// Position the sky box
-	glScalef(fScale, fScale, fScale);	// Scale it so it looks appropriate
-	sky->draw(this);					// Render the skybox
-
-	glPopMatrix();						// load the old modelview matrix that we saved previously
-}
-
-inline void ModelCanvas::RenderObjects()
+void ModelCanvas::RenderObjects()
 {
 	glEnable(GL_LIGHTING);
 	glEnable(GL_TEXTURE_2D);
@@ -558,98 +271,10 @@ inline void ModelCanvas::RenderObjects()
 	glDepthMask(GL_TRUE);
 }
 
-inline void ModelCanvas::Render()
-{
-	glClearColor(vecBGColor.x, vecBGColor.y, vecBGColor.z, 0.0f);
-	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-	
-	// (re)set the view
-	InitView();
-
-	if (drawSky && skyModel && sky->model)
-		RenderSkybox();
-
-	camera.Setup();
-
-	// This is redundant and no longer needed.
-	// all lighting stuff needs to be reorganised
-	// ************* Absolute Lighting *******************
-	// All our lighting related rendering code
-	// Use model lighting?
-	if (model && (lightType==LIGHT_MODEL_ONLY)) {
-		Vec4D la;
-
-		if (model->header.nLights > 0) {
-			la = Vec4D(0.0f, 0.0f, 0.0f, 1.0f);
-		} else {
-			la = Vec4D(1.0f, 1.0f, 1.0f, 1.0f);
-		}
-
-		// Set the Model Ambience lighting.
-		glLightModelfv(GL_LIGHT_MODEL_AMBIENT, la);
-
-	// Dynamic
-	} else if (lightType == LIGHT_DYNAMIC) {
-		for (int i=0; i<MAX_LIGHTS; i++) {
-			if (g_modelViewer->lightControl->lights[i].enabled && !g_modelViewer->lightControl->lights[i].relative) {
-				glLightfv(GL_LIGHT0 + i, GL_POSITION, g_modelViewer->lightControl->lights[i].pos);
-			}
-		}
-		
-	// Ambient lighting is just a single colour applied to all rendered vertices.
-	} else if (lightType==LIGHT_AMBIENT) {
-		glLightModelfv(GL_LIGHT_MODEL_AMBIENT, g_modelViewer->lightControl->lights[0].diffuse);	// use diffuse, as thats our main 'colour setter'
-	}
-	// ==============================================
-
-	// This is also redundant
-	// The camera class should be taking over this crap
-	// *************************
-	// setup the view/projection
-	if (model) {
-		if (useCamera && model->hasCamera) {
-			model->cam.setup();
-		} else {
-			// TODO: Possibly move this into the Model/Attachment/Displayable::draw() routine?
-			glTranslatef(model->pos.x, model->pos.y, -model->pos.z);
-			glRotatef(model->rot.x, 1.0f, 0.0f, 0.0f);
-			glRotatef(model->rot.y, 0.0f, 1.0f, 0.0f);
-			glRotatef(model->rot.z, 0.0f, 0.0f, 1.0f);
-			// --==--
-		}
-	}
-	// ==========================
-			
-	// As above for lighting
-	// ************* Relative Lighting *******************
-	// More lighting code, this is to setup the g_modelViewer->lightControl->lights that are 'relative' to the model.
-	if (model && (lightType==LIGHT_DYNAMIC)) { // Else, for all our models, we use the new "lighting control", IF we're not using model only lighting		
-		// loop through the g_modelViewer->lightControl->lights of our lighting system checking to see if they are turned on
-		// and if so to apply their settings.
-		for (int i=0; i<MAX_LIGHTS; i++) {
-			if (g_modelViewer->lightControl->lights[i].enabled && g_modelViewer->lightControl->lights[i].relative) {
-				glLightfv(GL_LIGHT0 + i, GL_POSITION, g_modelViewer->lightControl->lights[i].pos);
-			}
-		}
-	}
-
-	if (model)
-	{
-		glEnable(GL_NORMALIZE);
-		RenderObjects();
-		glDisable(GL_NORMALIZE);
-	}
-
-	SwapBuffers();
-}
-
-inline void ModelCanvas::RenderWMO()
+void ModelCanvas::RenderWMO()
 {
 	if (!init)
 		InitGL();
-
-	glClearColor(vecBGColor.x, vecBGColor.y, vecBGColor.z, 0.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	//SetupProjection(modelsize);
 	InitView();
@@ -681,7 +306,7 @@ inline void ModelCanvas::RenderWMO()
 		// --==--
 	}
 	*/
-	camera.Setup();
+//	camera.Setup();
 
 
 	glEnable(GL_TEXTURE_2D);
@@ -695,13 +320,10 @@ inline void ModelCanvas::RenderWMO()
 	SwapBuffers();
 }
 
-inline void ModelCanvas::RenderADT()
+void ModelCanvas::RenderADT()
 {
 	if (!init)
 		InitGL();
-
-	glClearColor(vecBGColor.x, vecBGColor.y, vecBGColor.z, 0.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	//SetupProjection(modelsize);
 	InitView();
@@ -733,7 +355,7 @@ inline void ModelCanvas::RenderADT()
 		// --==--
 	}
 	*/
-	camera.Setup();
+//	camera.Setup();
 
 
 	glEnable(GL_TEXTURE_2D);
@@ -750,7 +372,7 @@ inline void ModelCanvas::RenderADT()
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
-inline void Attachment::draw(ModelCanvas *c)
+void Attachment::draw(ModelCanvas *c)
 {
 	if (!c)
 		return;
@@ -835,7 +457,7 @@ inline void Attachment::draw(ModelCanvas *c)
 	glPopMatrix();
 }
 
-inline void Attachment::drawParticles(bool force)
+void Attachment::drawParticles(bool force)
 {
 	glPushMatrix();
 
@@ -887,7 +509,6 @@ void Attachment::tick(float dt)
 void ModelCanvas::OnTimer(wxTimerEvent& event)
 {
 	if (video.render && init) {
-		CheckMovement();
 		tick();
 		Refresh(false);
 	}
@@ -916,11 +537,6 @@ void ModelCanvas::tick()
 		
 		root->tick(ddt);
 	}
-
-	if (drawSky && sky && skyModel) {
-		sky->tick(ddt);
-	}
-
 }
 
 /*
@@ -987,169 +603,6 @@ void ModelCanvas::ResetViewWMO(int id)
 		//model->pos.z = (g.v2-g.v1).length();
 		mid = (g.v1+g.v2)*0.5f;
 	}
-}
-
-void ModelCanvas::Zoom(float f, bool rel)
-{
-	if (!model)
-		return;
-	if (rel) {
-		float cosx = cos(model->rot.x * piover180);
-		model->pos.x += cos(model->rot.y * piover180) * cosx * f;
-		model->pos.y += sin(model->rot.x * piover180) * sin(model->rot.y * piover180) * f;
-		model->pos.z += sin(model->rot.y * piover180) * cosx * f;
-	} else {
-		model->pos.z -= f;
-	}
-}
-
-// Check for keyboard input
-void ModelCanvas::OnKey(wxKeyEvent &event)
-{
-	if(!model) 
-		return;
-	
-	int keycode = event.GetKeyCode(); 
-
-		if (keycode == '0')
-			animControl->SetAnimSpeed(1.0f);
-		else if (keycode == '1')
-			animControl->SetAnimSpeed(0.1f);
-		else if (keycode == '2')
-			animControl->SetAnimSpeed(0.2f);
-		else if (keycode == '3')
-			animControl->SetAnimSpeed(0.3f);
-		else if (keycode == '4')
-			animControl->SetAnimSpeed(0.4f);
-		else if (keycode == '5')
-			animControl->SetAnimSpeed(0.5f);
-		else if (keycode == '6')
-			animControl->SetAnimSpeed(0.6f);
-		else if (keycode == '7')
-			animControl->SetAnimSpeed(0.7f);
-		else if (keycode == '8')
-			animControl->SetAnimSpeed(0.8f);
-		else if (keycode == '9')
-			animControl->SetAnimSpeed(0.9f);
-}
-
-void ModelCanvas::CheckMovement()
-{
-	// Make sure its the canvas that has focus before continuing
-	wxWindow *win = wxWindow::FindFocus();
-	if(!win)
-		return;
-
-	// Its no longer an opengl canvas window, its now just a standard window.
-	// wxWindow *gl = wxDynamicCast(win, wxGLCanvas);
-	wxWindow *wintest = wxDynamicCast(win, wxWindow);
-	if(!wintest)
-		return;
-
-	
-	if (wxGetKeyState(WXK_NUMPAD8))	// Move forward
-		camera.MoveForward(-0.1f);
-	if (wxGetKeyState(WXK_NUMPAD2))	// Move Backwards
-		camera.MoveForward(0.1f);
-	if (wxGetKeyState(WXK_NUMPAD7))	// Rotate left
-		camera.RotateY(1.0f);
-	if (wxGetKeyState(WXK_NUMPAD9))	// Rotate right
-		camera.RotateY(-1.0f);
-	if (wxGetKeyState(WXK_NUMPAD5))	// Reset Camera
-		camera.Reset();
-	if (wxGetKeyState(WXK_NUMPAD4))	// Straff Left
-		camera.Strafe(-0.05f);
-	if (wxGetKeyState(WXK_NUMPAD6))	// Straff Right
-		camera.Strafe(0.05f);
-
-	// M2 Model only stuff below here
-	if (!model || !model->animManager)
-		return;
-
-	float speed = 1.0f;
-
-	// Time stuff
-	if (model)
-		speed = ((timeGetTime() - lastTime) * model->animManager->GetSpeed()) / 7.0f;
-	else
-		speed = (timeGetTime() - lastTime);
-
-	//lastTime = timeGetTime();
-
-	// Turning
-	if (wxGetKeyState(WXK_LEFT)) {
-		model->rot.y += speed;
-
-		if (model->rot.y > 360) model->rot.y -= 360;
-		if (model->rot.y < 0) model->rot.y += 360;
-		
-	} else if (wxGetKeyState(WXK_RIGHT)) {
-		model->rot.y -= speed;
-
-		if (model->rot.y > 360) model->rot.y -= 360;
-		if (model->rot.y < 0) model->rot.y += 360;
-	}
-	// --
-
-	// Moving forward/backward
-	//float speed = 0.0f;
-	if (model->animated)
-		speed *= (model->anims[model->currentAnim].moveSpeed / 160.0f);
-	//else
-	//	speed *= 0.05f;
-
-	if (wxGetKeyState(WXK_UP))
-		Zoom(speed, true);
-	else if (wxGetKeyState(WXK_DOWN))
-		Zoom(-speed, true);
-	// --
-}
-
-// Save the scene state,  currently this is just position/rotation/field of view
-void ModelCanvas::SaveSceneState(int id)
-{
-	if (!model)
-		return;
-
-	// bounds check
-	if (id > -1 && id < 4) {
-		sceneState[id].pos = model->pos;
-		sceneState[id].rot = model->rot;
-		sceneState[id].fov = video.fov;
-	}
-}
-
-// Load the scene state, as above
-void ModelCanvas::LoadSceneState(int id)
-{
-	if (!model)
-		return;
-
-	// bounds check
-	if (id > -1 && id < 4) {
-		video.fov =  sceneState[id].fov ;
-		model->pos = sceneState[id].pos;
-		model->rot = sceneState[id].rot;
-	}
-}
-
-void ModelCanvas::SetCurrent()
-{
-#ifdef _WINDOWS
-	video.SetCurrent();
-#else
-//	wxGLCanvas::SetCurrent();
-	video.render = true;
-#endif
-}
-
-void ModelCanvas::SwapBuffers()
-{
-#ifdef _WINDOWS
-	video.SwapBuffers();
-#else
-	wxGLCanvas::SwapBuffers();
-#endif
 }
 
 void Attachment::setup()

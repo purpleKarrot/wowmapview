@@ -1,3 +1,4 @@
+#include <GL/glew.h>
 #include <QApplication>
 #include "app.h"
 #include "globalvars.h"
@@ -77,9 +78,6 @@ bool WowModelViewApp::OnInit()
 
 		if (!frame->canvas->init)
 			frame->canvas->InitGL();
-
-		if (frame->lightControl)
-			frame->lightControl->UpdateGL();
 	}
 
 	// Load previously saved layout

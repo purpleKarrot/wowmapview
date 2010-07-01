@@ -1,4 +1,4 @@
-
+#include <GL/glew.h>
 #include "widgets/FileList.hpp"
 #include "modelviewer.h"
 #include "globalvars.h"
@@ -44,9 +44,6 @@ BEGIN_EVENT_TABLE(ModelViewer, wxFrame)
 	EVT_MENU(ID_SHOW_BOUNDS, ModelViewer::OnToggleCommand)
 	//EVT_MENU(ID_SHOW_PARTICLES, ModelViewer::OnToggleCommand)
 
-	EVT_MENU(ID_BACKGROUND, ModelViewer::OnBackground)
-	EVT_MENU(ID_BG_COLOR, ModelViewer::OnSetColor)
-	EVT_MENU(ID_SKYBOX, ModelViewer::OnBackground)
 	EVT_MENU(ID_SHOW_GRID, ModelViewer::OnToggleCommand)
 
 	EVT_MENU(ID_USE_CAMERA, ModelViewer::OnToggleCommand)
@@ -73,16 +70,6 @@ BEGIN_EVENT_TABLE(ModelViewer, wxFrame)
 	EVT_MENU(ID_ZOOM_IN, ModelViewer::OnToggleCommand)
 	EVT_MENU(ID_ZOOM_OUT, ModelViewer::OnToggleCommand)
 
-	// Light Menu
-	EVT_MENU(ID_LT_SAVE, ModelViewer::OnLightMenu)
-	EVT_MENU(ID_LT_LOAD, ModelViewer::OnLightMenu)
-	//EVT_MENU(ID_LT_COLOR, ModelViewer::OnSetColor)
-	EVT_MENU(ID_LT_TRUE, ModelViewer::OnLightMenu)
-	EVT_MENU(ID_LT_AMBIENT, ModelViewer::OnLightMenu)
-	EVT_MENU(ID_LT_DIRECTIONAL, ModelViewer::OnLightMenu)
-	EVT_MENU(ID_LT_MODEL, ModelViewer::OnLightMenu)
-	EVT_MENU(ID_LT_DIRECTION, ModelViewer::OnLightMenu)
-	
 	// Effects
 	EVT_MENU(ID_ENCHANTS, ModelViewer::OnEffects)
 	EVT_MENU(ID_SPELLS, ModelViewer::OnEffects)
@@ -125,7 +112,6 @@ BEGIN_EVENT_TABLE(ModelViewer, wxFrame)
 	EVT_MENU(ID_CHAR_RANDOMISE, ModelViewer::OnSetEquipment)
 
 	// About menu
-	EVT_MENU(ID_LANGUAGE, ModelViewer::OnLanguage)
 	EVT_MENU(ID_HELP, ModelViewer::OnAbout)
 	EVT_MENU(ID_ABOUT, ModelViewer::OnAbout)
 
@@ -152,7 +138,6 @@ ModelViewer::ModelViewer()
 	canvas = NULL;
 	charControl = NULL;
 	enchants = NULL;
-	lightControl = NULL;
 	modelControl = NULL;
 	arrowControl = NULL;
 	imageControl = NULL;
@@ -185,8 +170,6 @@ ModelViewer::ModelViewer()
 
 		// ------
 		// Initialise our main window.
-		// Load session settings
-		LoadSession();
 
 		// create our menu objects
 		InitMenu();
@@ -259,7 +242,6 @@ void ModelViewer::InitMenu()
 		viewMenu->Append(ID_BG_COLOR, _("Background Color..."));
 		viewMenu->AppendCheckItem(ID_BACKGROUND, _("Load Background\tCTRL+L"));
 		viewMenu->AppendCheckItem(ID_SKYBOX, _("Skybox"));
-		viewMenu->Check(ID_SKYBOX, canvas->drawSky);
 		viewMenu->AppendCheckItem(ID_SHOW_GRID, _("Show Grid"));
 
 		viewMenu->AppendCheckItem(ID_SHOW_MASK, _("Show Mask"));
@@ -452,7 +434,6 @@ void ModelViewer::InitObjects()
 
 	animControl = new AnimControl(this, ID_ANIM_FRAME);
 	charControl = new CharControl(this, ID_CHAR_FRAME);
-	lightControl = new LightControl(this, ID_LIGHT_FRAME);
 	modelControl = new ModelControl(this, ID_MODEL_FRAME);
 	settingsControl = new SettingsControl(this, ID_SETTINGS_FRAME);
 	settingsControl->Show(false);
@@ -551,12 +532,6 @@ void ModelViewer::InitDocking()
                 Name(wxT("charControl")).Caption(_("Character")).
                 BestSize(wxSize(170,700)).Right().Layer(2).Show(isChar));
 
-	// Lighting control
-	interfaceManager.AddPane(lightControl, wxAuiPaneInfo().
-		Name(wxT("Lighting")).Caption(_("Lighting")).
-		FloatingSize(wxSize(170,430)).Float().Fixed().Show(false).
-		DestroyOnClose(false)); //.FloatingPosition(GetStartPosition())
-
 	// model control
 	interfaceManager.AddPane(modelControl, wxAuiPaneInfo().
 		Name(wxT("Models")).Caption(_("Models")).
@@ -580,7 +555,6 @@ void ModelViewer::ResetLayout()
 {
 	interfaceManager.DetachPane(animControl);
 	interfaceManager.DetachPane(charControl);
-	interfaceManager.DetachPane(lightControl);
 	interfaceManager.DetachPane(modelControl);
 	interfaceManager.DetachPane(settingsControl);
 	interfaceManager.DetachPane(canvas);
@@ -600,11 +574,6 @@ void ModelViewer::ResetLayout()
                 Name(wxT("charControl")).Caption(_("Character")).
                 BestSize(wxSize(170,700)).Right().Layer(2).Show(isChar));
 
-	interfaceManager.AddPane(lightControl, wxAuiPaneInfo().
-		Name(wxT("Lighting")).Caption(_("Lighting")).
-		FloatingSize(wxSize(170,430)).Float().Fixed().Show(false).
-		DestroyOnClose(false)); //.FloatingPosition(GetStartPosition())
-
 	interfaceManager.AddPane(modelControl, wxAuiPaneInfo().
 		Name(wxT("Models")).Caption(_("Models")).
 		FloatingSize(wxSize(160,460)).Float().Show(false).
@@ -617,81 +586,6 @@ void ModelViewer::ResetLayout()
 
     // tell the manager to "commit" all the changes just made
     interfaceManager.Update();
-}
-
-
-void ModelViewer::LoadSession()
-{
-	wxLogMessage(_T("Loading Session settings from: %s\n"), cfgPath.c_str());
-
-	// Application Config Settings
-	wxFileConfig *pConfig = new wxFileConfig(_T("Global"),wxEmptyString, cfgPath, wxEmptyString, wxCONFIG_USE_LOCAL_FILE);
-
-	// Other session settings
-	if (canvas) {
-		pConfig->SetPath(_T("/Session"));
-		double c;
-		// Background Colour
-		pConfig->Read(_T("bgR"), &c, 71.0/255);
-		canvas->vecBGColor.x = c;
-		pConfig->Read(_T("bgG"), &c, 95.0/255);
-		canvas->vecBGColor.y = c;
-		pConfig->Read(_T("bgB"), &c, 121.0/255);
-		canvas->vecBGColor.z = c;
-		
-		// boolean vars
-		pConfig->Read(_T("RandomLooks"), &useRandomLooks, true);
-		pConfig->Read(_T("HideHelmet"), &bHideHelmet, false);
-		pConfig->Read(_T("ShowParticle"), &bShowParticle, true);
-		pConfig->Read(_T("ZeroParticle"), &bZeroParticle, true);
-		pConfig->Read(_T("KnightEyeGlow"), &bKnightEyeGlow, true);
-		pConfig->Read(_T("BackgroundImage"), &bgImagePath, wxEmptyString);
-	}
-
-	wxDELETE(pConfig);
-}
-
-void ModelViewer::SaveSession()
-{
-	// Application Config Settings
-	wxFileConfig *pConfig = new wxFileConfig(_T("Global"), wxEmptyString, cfgPath, wxEmptyString, wxCONFIG_USE_LOCAL_FILE);
-
-
-	// Graphic / Video display settings
-	pConfig->SetPath(_T("/Graphics"));
-	pConfig->Write(_T("FSAA"), video.curCap.aaSamples);
-	pConfig->Write(_T("AccumulationBuffer"), video.curCap.accum);
-	pConfig->Write(_T("AlphaBits"), video.curCap.alpha);
-	pConfig->Write(_T("ColourBits"), video.curCap.colour);
-	pConfig->Write(_T("DoubleBuffer"), video.curCap.doubleBuffer);
-	pConfig->Write(_T("HWAcceleration"), video.curCap.hwAcc);
-	pConfig->Write(_T("SampleBuffer"), video.curCap.sampleBuffer);
-	pConfig->Write(_T("StencilBuffer"), video.curCap.stencil);
-	pConfig->Write(_T("ZBuffer"), video.curCap.zBuffer);
-	
-
-
-	pConfig->SetPath(_T("/Session"));
-	// Attempt at saving colour values as 3 byte hex - loss of accuracy from float
-	//wxString temp(Vec3DToString(canvas->vecBGColor));
-
-	if (canvas) {
-		pConfig->Write(_T("bgR"), (double)canvas->vecBGColor.x);
-		pConfig->Write(_T("bgG"), (double)canvas->vecBGColor.y);
-		pConfig->Write(_T("bgB"), (double)canvas->vecBGColor.z);
-		
-		// boolean vars
-		pConfig->Write(_T("RandomLooks"), useRandomLooks);
-		pConfig->Write(_T("HideHelmet"), bHideHelmet);
-		pConfig->Write(_T("ShowParticle"), bShowParticle);
-		pConfig->Write(_T("ZeroParticle"), bZeroParticle);
-		pConfig->Write(_T("KnightEyeGlow"), bKnightEyeGlow);
-
-		if (canvas->model)
-			pConfig->Write(_T("Model"), wxString(canvas->model->name.c_str(), wxConvUTF8));
-	}
-
-	wxDELETE(pConfig);
 }
 
 void ModelViewer::LoadLayout()
@@ -1059,9 +953,6 @@ ModelViewer::~ModelViewer()
 	// wxAUI stuff
 	interfaceManager.UnInit();
 
-	// Save our session and layout info
-	SaveSession();
-
 	if (canvas) {
 		canvas->Disable();
 		canvas->Destroy(); 
@@ -1076,11 +967,6 @@ ModelViewer::~ModelViewer()
 	if (charControl) {
 		charControl->Destroy();
 		charControl = NULL;
-	}
-
-	if (lightControl) {
-		lightControl->Destroy();
-		lightControl = NULL;
 	}
 
 	if (settingsControl) {
@@ -1212,8 +1098,6 @@ void ModelViewer::OnToggleDock(wxCommandEvent &event)
 		interfaceManager.GetPane(animControl).Show(true);
 	else if (id==ID_SHOW_CHAR && isChar)
 		interfaceManager.GetPane(charControl).Show(true);
-	else if (id==ID_SHOW_LIGHT)
-		interfaceManager.GetPane(lightControl).Show(true);
 	else if (id==ID_SHOW_MODEL)
 		interfaceManager.GetPane(modelControl).Show(true);
 	else if (id==ID_SHOW_SETTINGS) {
@@ -1299,167 +1183,6 @@ void ModelViewer::OnToggleCommand(wxCommandEvent &event)
 
 	case ID_IMPORT_CHAR:
 		break;
-
-	case ID_ZOOM_IN:
-		canvas->Zoom(0.5f, false);
-		break;
-
-	case ID_ZOOM_OUT:
-		canvas->Zoom(-0.5f, false);
-		break;
-
-	case ID_SAVE_TEMP1:
-		canvas->SaveSceneState(1);
-		break;
-	case ID_SAVE_TEMP2:
-		canvas->SaveSceneState(2);
-		break;
-	case ID_SAVE_TEMP3:
-		canvas->SaveSceneState(3);
-		break;
-	case ID_SAVE_TEMP4:
-		canvas->SaveSceneState(4);
-		break;
-	case ID_LOAD_TEMP1:
-		canvas->LoadSceneState(1);
-		break;
-	case ID_LOAD_TEMP2:
-		canvas->LoadSceneState(2);
-		break;
-	case ID_LOAD_TEMP3:
-		canvas->LoadSceneState(3);
-		break;
-	case ID_LOAD_TEMP4:
-		canvas->LoadSceneState(4);
-		break;
-	}
-}
-
-void ModelViewer::OnLightMenu(wxCommandEvent &event)
-{
-	int id = event.GetId();
-
-	switch (id) {
-		case ID_LT_SAVE:
-		{
-			wxFileDialog dialog(this, _("Save Lighting"), wxEmptyString, wxEmptyString, _T("Scene Lighting (*.lit)|*.lit"), wxFD_SAVE|wxFD_OVERWRITE_PROMPT);
-			
-			if (dialog.ShowModal()==wxID_OK) {
-				wxString fn = dialog.GetFilename();
-
-				std::ofstream f(fn.fn_str(), std::ios_base::out|std::ios_base::trunc);
-				f << lightMenu->IsChecked(ID_LT_DIRECTION) << " " << lightMenu->IsChecked(ID_LT_TRUE) << " " << lightMenu->IsChecked(ID_LT_DIRECTIONAL) << " " << lightMenu->IsChecked(ID_LT_AMBIENT) << " " << lightMenu->IsChecked(ID_LT_MODEL) << std::endl;
-				for (int i=0; i<MAX_LIGHTS; i++) {
-					f << lightControl->lights[i].ambience.x << " " << lightControl->lights[i].ambience.y << " " << lightControl->lights[i].ambience.z << " " << lightControl->lights[i].arc << " " << lightControl->lights[i].constant_int << " " << lightControl->lights[i].diffuse.x << " " << lightControl->lights[i].diffuse.y << " " << lightControl->lights[i].diffuse.z << " " << lightControl->lights[i].enabled << " " << lightControl->lights[i].linear_int << " " << lightControl->lights[i].pos.x << " " << lightControl->lights[i].pos.y << " " << lightControl->lights[i].pos.z << " " << lightControl->lights[i].quadradic_int << " " << lightControl->lights[i].relative << " " << lightControl->lights[i].specular.x << " " << lightControl->lights[i].specular.y << " " << lightControl->lights[i].specular.z << " " << lightControl->lights[i].target.x << " " << lightControl->lights[i].target.y << " " << lightControl->lights[i].target.z << " " << lightControl->lights[i].type << std::endl;
-				}
-				f.close();
-			}
-
-			return;
-
-		} case ID_LT_LOAD: {
-			wxFileDialog dialog(this, _("Load Lighting"), wxEmptyString, wxEmptyString, _T("Scene Lighting (*.lit)|*.lit"), wxFD_OPEN|wxFD_FILE_MUST_EXIST);
-			
-			if (dialog.ShowModal()==wxID_OK) {
-				wxString fn = dialog.GetFilename();
-				std::ifstream f(fn.fn_str());
-				
-				bool lightObj, lightTrue, lightDir, lightAmb, lightModel;
-
-				//lightMenu->IsChecked(ID_LT_AMBIENT)
-				f >> lightObj >> lightTrue >> lightDir >> lightAmb >> lightModel;
-
-				lightMenu->Check(ID_LT_DIRECTION, lightObj);
-				lightMenu->Check(ID_LT_TRUE, lightTrue);
-				lightMenu->Check(ID_LT_DIRECTIONAL, lightDir);
-				lightMenu->Check(ID_LT_AMBIENT, lightAmb);
-				lightMenu->Check(ID_LT_MODEL, lightModel);
-
-				for (int i=0; i<MAX_LIGHTS; i++) {
-					f >> lightControl->lights[i].ambience.x >> lightControl->lights[i].ambience.y >> lightControl->lights[i].ambience.z >> lightControl->lights[i].arc >> lightControl->lights[i].constant_int >> lightControl->lights[i].diffuse.x >> lightControl->lights[i].diffuse.y >> lightControl->lights[i].diffuse.z >> lightControl->lights[i].enabled >> lightControl->lights[i].linear_int >> lightControl->lights[i].pos.x >> lightControl->lights[i].pos.y >> lightControl->lights[i].pos.z >> lightControl->lights[i].quadradic_int >> lightControl->lights[i].relative >> lightControl->lights[i].specular.x >> lightControl->lights[i].specular.y >> lightControl->lights[i].specular.z >> lightControl->lights[i].target.x >> lightControl->lights[i].target.y >> lightControl->lights[i].target.z >> lightControl->lights[i].type;
-				}
-				f.close();
-
-				if (lightDir) {
-					canvas->lightType = LIGHT_DYNAMIC; //LT_DIRECTIONAL;
-					
-					/*
-					if (lightTrue) {
-						if (event.IsChecked()){
-							// Need to reset all our colour, lighting, material back to 'default'
-							//GLfloat b[] = {0.5f, 0.4f, 0.4f, 1.0f};
-							//glColor4fv(b);
-							glDisable(GL_COLOR_MATERIAL);
-
-							glMaterialfv(GL_FRONT, GL_EMISSION, def_emission);
-							
-							glMaterialfv(GL_FRONT, GL_AMBIENT, def_ambience);
-							//glLightModelfv(GL_LIGHT_MODEL_AMBIENT, def_ambience);
-							
-							glMaterialfv(GL_FRONT, GL_DIFFUSE, def_diffuse);
-							glMaterialfv(GL_FRONT, GL_SPECULAR, def_specular);
-						} else {
-							glEnable(GL_COLOR_MATERIAL);
-						}
-					}
-					*/
-				} else if (lightAmb) {
-					//glEnable(GL_COLOR_MATERIAL);
-					canvas->lightType = LIGHT_AMBIENT;
-				} else if (lightModel) {
-					canvas->lightType = LIGHT_MODEL_ONLY;
-				}
-
-				lightControl->UpdateGL();
-				lightControl->Update();
-			}
-			
-			return;
-		}
-		/* case ID_USE_LIGHTS:
-			canvas->useLights = event.IsChecked();
-			return;
-		*/
-		case ID_LT_DIRECTION:
-			return;
-		case ID_LT_TRUE:
-			if (event.IsChecked()){
-				// Need to reset all our colour, lighting, material back to 'default'
-				//GLfloat b[] = {0.5f, 0.4f, 0.4f, 1.0f};
-				//glColor4fv(b);
-				glDisable(GL_COLOR_MATERIAL);
-
-				glMaterialfv(GL_FRONT, GL_EMISSION, def_emission);
-				glMaterialfv(GL_FRONT, GL_AMBIENT, def_ambience);
-				//glLightModelfv(GL_LIGHT_MODEL_AMBIENT, def_ambience);
-				
-				glMaterialfv(GL_FRONT, GL_DIFFUSE, def_diffuse);
-				glMaterialfv(GL_FRONT, GL_SPECULAR, def_specular);				
-			} else {
-				glEnable(GL_COLOR_MATERIAL);
-				//glLightModelfv(GL_LIGHT_MODEL_AMBIENT, Vec4D(0.4f,0.4f,0.4f,1.0f));
-			}
-			
-			lightControl->Update();
-
-			return;
-
-		// Ambient lighting
-		case ID_LT_AMBIENT:
-			//glEnable(GL_COLOR_MATERIAL);
-			canvas->lightType = LIGHT_AMBIENT;
-			return;
-
-		// Dynamic lighting
-		case ID_LT_DIRECTIONAL:
-			//glLightModelfv(GL_LIGHT_MODEL_AMBIENT, def_ambience);
-			canvas->lightType = LIGHT_DYNAMIC;
-			return;
-
-		// Model's ambient lighting
-		case ID_LT_MODEL:
-			canvas->lightType = LIGHT_MODEL_ONLY;
-			return;
 	}
 }
 
@@ -1478,15 +1201,6 @@ void ModelViewer::OnCamMenu(wxCommandEvent &event)
 	}
 
 	//viewControl->Update();	
-}
-
-// Menu button press events
-void ModelViewer::OnSetColor(wxCommandEvent &event)
-{
-	int id = event.GetId();
-	if (id==ID_BG_COLOR) {
-		canvas->vecBGColor = DoSetColor(canvas->vecBGColor);
-	}
 }
 
 // Menu button press events
@@ -1630,54 +1344,6 @@ void ModelViewer::OnSave(wxCommandEvent &event)
 {
 }
 
-void ModelViewer::OnBackground(wxCommandEvent &event)
-{
-	static wxFileName dir = cfgPath;
-	
-	int id = event.GetId();
-
-	if (id == ID_BACKGROUND) {
-		if (event.IsChecked()) {
-			wxFileDialog dialog(this, _("Load Background"), dir.GetPath(wxPATH_GET_VOLUME), wxEmptyString, _("Bitmap Images (*.bmp)|*.bmp|TGA Images (*.tga)|*.tga|Jpeg Images (*.jpg)|*.jpg|PNG Images (*.png)|*.png|AVI Video file(*.avi)|*.avi"));
-			if (dialog.ShowModal() == wxID_OK) {
-				dir.SetPath(dialog.GetPath());
-			} else {
-				viewMenu->Check(ID_BACKGROUND, false);
-			}
-		} else {
-		}
-	} else if (id == ID_SKYBOX) {
-		if (canvas->skyModel) {
-			wxDELETE(canvas->skyModel);
-			canvas->sky->delChildren();
-			
-		} else {
-			// List of skybox models, LightSkybox.dbc
-			wxArrayString skyboxes;
-
-			for (LightSkyBoxDB::Iterator it=skyboxdb.begin();  it!=skyboxdb.end(); ++it) {
-				wxString str(it->getString(LightSkyBoxDB::Name),wxConvUTF8);
-				str = str.BeforeLast('.');
-				str.Append(_T(".m2"));
-
-				if (skyboxes.Index(str, false) == wxNOT_FOUND)
-					skyboxes.Add(str);
-			}
-			skyboxes.Add(_T("World\\Outland\\PassiveDoodads\\SkyBox\\OutlandSkyBox.m2"));
-			skyboxes.Sort();
-
-
-			wxSingleChoiceDialog skyDialog(this, _("Choose"), _("Select a Sky Box"), skyboxes);
-			if (skyDialog.ShowModal() == wxID_OK && skyDialog.GetStringSelection() != wxEmptyString) {
-				canvas->skyModel = new Model(std::string(skyDialog.GetStringSelection().mb_str()), false);
-				canvas->sky->model = canvas->skyModel;
-			}
-		}
-		
-		canvas->drawSky = event.IsChecked();
-	}
-}
-
 void ModelViewer::SaveChar(const char *fn)
 {
 	std::ofstream f(fn, std::ios_base::out|std::ios_base::trunc);
@@ -1759,45 +1425,6 @@ void ModelViewer::LoadChar(const char *fn)
 
 	// Update interface docking components
 	interfaceManager.Update();
-}
-
-void ModelViewer::OnLanguage(wxCommandEvent &event)
-{
-	if (event.GetId() == ID_LANGUAGE) {
-		/*
-		static const wxLanguage langIds[] =
-		{
-			wxLANGUAGE_ENGLISH,
-			wxLANGUAGE_KOREAN,
-			wxLANGUAGE_FRENCH,
-			wxLANGUAGE_GERMAN,
-			wxLANGUAGE_CHINESE_SIMPLIFIED,
-			wxLANGUAGE_CHINESE_TRADITIONAL,
-			wxLANGUAGE_SPANISH,
-		};
-		*/
-		
-		wxString langNames[] =
-		{
-			_T("English"),
-			_T("Korean"),
-			_T("French"),
-			_T("German"),
-			_T("Chinese (Simplified)"),
-			_T("Chinese (Traditional)"),
-			_T("Spanish"),
-		};
-
-		// the arrays should be in sync
-		//wxCOMPILE_TIME_ASSERT(WXSIZEOF(langNames) == WXSIZEOF(langIds), LangArraysMismatch);
-
-		long lng = wxGetSingleChoiceIndex(_("Please select a language:"), _("Language"), WXSIZEOF(langNames), langNames);
-
-		if (lng != -1) {
-			interfaceID = lng;
-			wxMessageBox(_T("You will need to reload WoW Model Viewer for changes to take effect."), _T("Language Changed"), wxOK | wxICON_INFORMATION);
-		}
-	}
 }
 
 void ModelViewer::OnAbout(wxCommandEvent &event)

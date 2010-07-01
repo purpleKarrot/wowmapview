@@ -1,3 +1,4 @@
+#include <GL/glew.h>
 #include "globalvars.h"
 #include "modelviewer.h"
 #include "model.h"

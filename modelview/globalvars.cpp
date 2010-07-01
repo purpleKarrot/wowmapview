@@ -1,4 +1,5 @@
 
+#include <GL/glew.h>
 #include "globalvars.h"
 
 ModelViewer *g_modelViewer = NULL;

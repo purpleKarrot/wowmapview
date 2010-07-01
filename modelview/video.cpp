@@ -1,3 +1,4 @@
+#include <GL/glew.h>
 #include "modelviewer.h"
 #include "video.h"
 #include "mpq.hpp"
@@ -6,18 +7,18 @@
 
 #include "./GL/glew.h"
 
-#ifdef _WINDOWS
-	#include "./GL/wglew.h"
-#elif _MAC // OSX
-    #include <GL/glew.h>
-#else // Linux
-	#include <GL/glxew.h>
-
-	void (*wglGetProcAddress(const char *function_name))(void)
-	{
-		return glXGetProcAddress((GLubyte*)function_name);
-	}
-#endif
+//#ifdef _WINDOWS
+//	#include "./GL/wglew.h"
+//#elif _MAC // OSX
+//    #include <GL/glew.h>
+//#else // Linux
+//	#include <GL/glxew.h>
+//
+//	void (*wglGetProcAddress(const char *function_name))(void)
+//	{
+//		return glXGetProcAddress((GLubyte*)function_name);
+//	}
+//#endif
 
 extern ModelViewer *g_modelViewer;
 

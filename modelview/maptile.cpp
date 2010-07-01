@@ -1,3 +1,4 @@
+#include <GL/glew.h>
 #include "modelviewer.h"
 #include "globalvars.h"
 #include "maptile.h"
