@@ -1,38 +1,29 @@
 #include "SoundPlayer.hpp"
+#include <stdexcept>
 
 SoundPlayer::SoundPlayer()
 {
+	if (Mix_OpenAudio(MIX_DEFAULT_FREQUENCY, MIX_DEFAULT_FORMAT, 0, 1024) < 0)
+		throw std::runtime_error(Mix_GetError());
 }
 
 SoundPlayer::~SoundPlayer()
 {
 	stop();
+	Mix_CloseAudio();
 }
 
-void SoundPlayer::play(const char* file)
+void SoundPlayer::play(const char* filename)
 {
 	stop();
 
-//	if (is_mp3)
-//	{
-//		Mix_Music* music = Mix_LoadMUS_RW(SDL_RWFromConstMem(mem, size));
-//		Mix_PlayMusic(music, 1);
-//		mp3 = boost::shared_ptr<Mix_Music>(music, Mix_FreeMusic);
-//	}
-//	else if (is_wav)
-//	{
-//		Mix_Chunk* chunk = Mix_LoadWAV_RW(SDL_RWFromConstMem(mem, size));
-//		Mix_PlayChannelTimed(-1, chunk, 1, -1);
-//		wav = boost::shared_ptr<Mix_Chunk>(chunk, Mix_FreeChunk);
-//	}
-//	else
-	{
-		assert(!"file must be either mp3 or wav!");
-	}
+	file = FS().open(filename);
+
+	music = Music(Mix_LoadMUS_RW(file.get()), Mix_FreeMusic);
+	Mix_PlayMusic(music.get(), 1);
 }
 
 void SoundPlayer::stop()
 {
-//	Mix_HaltChannel(-1);
-//	Mix_HaltMusic();
+	Mix_HaltMusic();
 }

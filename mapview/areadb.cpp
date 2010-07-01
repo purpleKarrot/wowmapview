@@ -1,11 +1,11 @@
 #include "areadb.h"
 #include <string>
 
-AreaDB gAreaDB;
+dbc::AreaTable gAreaDB;
 dbc::Map gMapDB;
-LoadingScreensDB gLoadingScreensDB;
+dbc::LoadingScreens gLoadingScreensDB;
 dbc::Light gLightDB;
-LightSkyboxDB gLightSkyboxDB;
+dbc::LightSkybox gLightSkyboxDB;
 LightIntBandDB gLightIntBandDB;
 LightFloatBandDB gLightFloatBandDB;
 GroundEffectDoodadDB gGroundEffectDoodadDB;
@@ -26,32 +26,20 @@ void OpenDBs()
 	gLiquidTypeDB.open();
 }
 
-
-std::string AreaDB::getAreaName( int pAreaID )
+std::string getAreaName(const dbc::AreaTable& table, int pAreaID)
 {
-	unsigned int regionID = 0;
-	std::string areaName = "";
-	try 
+	try
 	{
-		AreaDB::Record rec = get_by_ID(gAreaDB, pAreaID );
-		areaName = rec.name();
-		regionID = rec.parent();
-	} 
-	catch(DBCFile::NotFound)
-	{
-		areaName = "Unknown location";
+		dbc::AreaTable::Record rec = get_by_ID(table, pAreaID);
+		unsigned int parent_id = rec.parent();
+
+		if (!parent_id)
+			return rec.name();
+
+		return getAreaName(table, parent_id) + ": " + rec.name();
 	}
-	if (regionID != 0) 
+	catch (DBCFile::NotFound)
 	{
-		try 
-		{
-			AreaDB::Record rec = get_by_ID(gAreaDB, regionID );
-			areaName = std::string(rec.name()) + std::string(": ") + areaName;
-		} 
-		catch(DBCFile::NotFound)
-		{
-			areaName = "Unknown location";
-		}
+		return "Unknown location";
 	}
-	return areaName;
 }

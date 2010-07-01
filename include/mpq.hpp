@@ -71,23 +71,34 @@ Filesystem& FS();
 class MPQFile
 {
 public:
-	MPQFile() :
-		eof(false), pointer(0)
+	MPQFile()
 	{
 	}
 
-	MPQFile(const char* filename) :
-		eof(false), pointer(0)
+	MPQFile(const MPQFile& other) :
+		file(other.file)
+	{
+	}
+
+	MPQFile(const char* filename)
 	{
 		openFile(filename);
 	}
 
 	~MPQFile()
 	{
-		close();
 	}
 
-	void openFile(const char* filename);
+	MPQFile& operator=(const MPQFile& other)
+	{
+		file = other.file;
+		return *this;
+	}
+
+	void openFile(const char* filename)
+	{
+		file = FS().open(filename);
+	}
 
 	size_t read(void* dest, size_t bytes);
 	size_t getSize();
@@ -101,14 +112,6 @@ public:
 
 private:
 	Filesystem::File file;
-
-	bool eof;
-	std::vector<unsigned char> buffer;
-	std::size_t pointer;
-
-	// disable copying
-	MPQFile(const MPQFile &f);
-	void operator=(const MPQFile &f);
 };
 
 #endif

@@ -1,0 +1,7 @@
+
+schema LoadingScreens("DBFilesClient\\LoadingScreens.dbc")
+{
+	uint	id;
+	string	name;
+	string	path;
+}

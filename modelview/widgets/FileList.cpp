@@ -6,6 +6,7 @@
 #include <boost/algorithm/string/predicate.hpp>
 #include "mpq.hpp"
 #include "../globalvars.h"
+#include "../SoundPlayer.hpp"
 
 FileList::FileList()
 {
@@ -92,5 +93,11 @@ void FileList::select(const QModelIndex& index)
 
 		if (filterModelsSearch(path))
 			g_modelViewer->LoadModel(path);
+
+		if (filterSoundsSearch(path))
+		{
+			static SoundPlayer sound_player;
+			sound_player.play(path.c_str());
+		}
 	}
 }

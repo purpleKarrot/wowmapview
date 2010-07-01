@@ -1,0 +1,7 @@
+
+schema LightSkybox("DBFilesClient\\LightSkybox.dbc")
+{
+	uint	id;
+	string	path;
+	uint	flags;
+}

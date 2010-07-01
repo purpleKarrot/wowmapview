@@ -10,16 +10,20 @@
 
 typedef std::vector<std::pair<std::string, void*> > ArchiveSet;
 
-void MPQFile::openFile(const char* filename)
+static void destrow_rwops(SDL_RWops* rwops)
+{
+	if (rwops)
+	{
+		delete[] rwops->hidden.mem.base;
+		SDL_RWclose(rwops);
+	}
+}
+
+Filesystem::File Filesystem::open(const char* filename)
 {
 	std::cout << "opening file: " << filename << std::endl;
 
-	eof = false;
-	pointer = 0;
-
-	ArchiveSet& gOpenArchives = FS().archives;
-	for (ArchiveSet::iterator i = gOpenArchives.begin(); i
-		!= gOpenArchives.end(); ++i)
+	for (ArchiveSet::iterator i = archives.begin(); i != archives.end(); ++i)
 	{
 		HANDLE mpq_a = i->second;
 
@@ -31,80 +35,83 @@ void MPQFile::openFile(const char* filename)
 		// Found!
 		DWORD filesize = SFileGetFileSize(fh);
 
-		// HACK: in patch.mpq some files don't want to open and give 1 for filesize
+		// in patch.mpq some files don't want to open and give 1 for filesize
 		if (filesize <= 1)
-			return;
+		{
+			SFileCloseFile(fh);
+			continue;
+		}
 
-		buffer.resize(filesize);
-		SFileReadFile(fh, &buffer[0], buffer.size());
+		unsigned char* buffer = new unsigned char[filesize];
+		SFileReadFile(fh, buffer, filesize);
 		SFileCloseFile(fh);
 
-		return;
+		return File(SDL_RWFromConstMem(buffer, filesize), destrow_rwops);
 	}
 
-	eof = true;
+	return File();
 }
 
 size_t MPQFile::read(void* dest, size_t bytes)
 {
-	if (eof)
+	if (!file)
 		return 0;
 
-	size_t rpos = pointer + bytes;
-	if (rpos > buffer.size())
-	{
-		bytes = buffer.size() - pointer;
-		eof = true;
-	}
-
-	memcpy(dest, &(buffer[pointer]), bytes);
-
-	pointer = rpos;
-
-	return bytes;
+	return SDL_RWread(file.get(), dest, 1, bytes);
 }
 
 bool MPQFile::isEof()
 {
-	return eof;
+	return !file || file->hidden.mem.here == file->hidden.mem.stop;
 }
 
 void MPQFile::seek(int offset)
 {
-	pointer = offset;
-	eof = (pointer >= buffer.size());
+	if (file)
+		SDL_RWseek(file.get(), offset, RW_SEEK_SET);
 }
 
 void MPQFile::seekRelative(int offset)
 {
-	pointer += offset;
-	eof = (pointer >= buffer.size());
+	if (file)
+		SDL_RWseek(file.get(), offset, RW_SEEK_CUR);
 }
 
 void MPQFile::close()
 {
-	buffer.clear();
-	eof = true;
+	file.reset();
 }
 
 size_t MPQFile::getSize()
 {
-	return buffer.size();
+	if (!file)
+		return 0;
+
+	return file->hidden.mem.stop - file->hidden.mem.base;
 }
 
 size_t MPQFile::getPos()
 {
-	return pointer;
+	if (!file)
+		return 0;
+
+	return SDL_RWtell(file.get());
 }
 
 unsigned char* MPQFile::getBuffer()
 {
-	return &buffer[0];
+	if (!file)
+		return 0;
+
+	return file->hidden.mem.base;
 }
 
 unsigned char* MPQFile::getPointer()
 {
-	return &buffer[pointer];
+	if (!file)
+		return 0;
+
+	return file->hidden.mem.here;
 }
 
 Filesystem::Filesystem()

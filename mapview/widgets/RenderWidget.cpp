@@ -444,37 +444,7 @@ void RenderWidget::display(float t, float dt)
 
 	std::stringstream status;
 
-	// TODO: look up WMO names/group names as well from some client db?
-	unsigned int areaID = gWorld->getAreaID();
-	unsigned int regionID = 0;
-	/// Look up area
-	try
-	{
-		AreaDB::Record rec = get_by_ID(gAreaDB, areaID);
-		std::string areaName = rec.name();
-		regionID = rec.parent();
-		status << areaName;
-	}
-	catch (DBCFile::NotFound)
-	{
-	}
-
-	status << "; ";
-
-	if (regionID != 0)
-	{
-		/// Look up region
-		try
-		{
-			std::string regionName = gAreaDB.getAreaName(regionID);
-			status << regionName;
-		}
-		catch (DBCFile::NotFound)
-		{
-		}
-	}
-
-	status << "; ";
+	status << getAreaName(gAreaDB, gWorld->getAreaID()) << "; ";
 
 	int time = ((int) gWorld->time) % 2880;
 	int hh, mm;

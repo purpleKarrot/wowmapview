@@ -105,14 +105,14 @@ public:
 	}
 
 	/// Get begin iterator over records
-	Iterator begin()
+	Iterator begin() const
 	{
 		assert(data);
 		return Iterator(data, stringTable, record_size());
 	}
 
 	/// Get begin iterator over records
-	Iterator end()
+	Iterator end() const
 	{
 		assert(data);
 		return Iterator(stringTable, stringTable, record_size());
@@ -236,7 +236,7 @@ private:
 };
 
 template<typename DBC>
-inline typename DBC::Record get_by_ID(DBC& file, unsigned int id)
+inline typename DBC::Record get_by_ID(const DBC& file, unsigned int id)
 {
 	for (typename DBC::Iterator i = file.begin(); i != file.end(); ++i)
 	{

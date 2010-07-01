@@ -203,18 +203,19 @@ void getGamePath()
 			gamePath.append(SLASH+_T("Data")+SLASH);
 		}
 	}
-#elif _MAC // Mac OS X
-    gamePath = wxT("/Applications/World\\ of\\ Warcraft/");
-	if (!wxFileExists(gamePath + SLASH + _T("data") + SLASH + _T("common.MPQ")) && !gamePath.empty()){
-        gamePath = wxDirSelector(wxT("Please select your World of Warcraft folder:"),gamePath);
-		gamePath.Append(_T("/Data/"));
-    }
-#else // Linux
-	gamePath = _T(".")+SLASH;
-	if (!wxFileExists(gamePath + SLASH + _T("data") + SLASH + _T("common.MPQ")) && !gamePath.empty()){
-		gamePath = wxDirSelector(wxT("Please select your World of Warcraft folder:"),gamePath);
-		gamePath.Append(_T("/Data/"));
+#else
+
+	std::string	gamepath = "data/";
+
+	const char* wow_path = getenv("WOW_PATH");
+	if (wow_path)
+	{
+		gamepath = wow_path;
+		gamepath += "Data/";
 	}
+
+	gamePath = wxString(gamepath.c_str(), wxConvUTF8);
+
 #endif
 }
 
