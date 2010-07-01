@@ -261,29 +261,4 @@ public:
 	void updateModels();
 };
 
-/*
-class WMOManager: public SimpleManager {
-public:
-	int add(std::string name);
-};
-
-
-class WMOInstance {
-	static std::set<int> ids;
-public:
-	WMO *wmo;
-	Vec3D pos;
-	Vec3D pos2, pos3, dir;
-	int id, d2, d3;
-	int doodadset;
-
-	WMOInstance(WMO *wmo, MPQFile &f);
-	void draw();
-	//void drawPortals();
-
-	static void reset();
-};
-*/
-
-
 #endif

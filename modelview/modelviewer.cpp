@@ -132,9 +132,6 @@ ModelViewer::ModelViewer()
 	charControl = NULL;
 	enchants = NULL;
 	modelControl = NULL;
-//	arrowControl = NULL;
-	imageControl = NULL;
-	//settingsControl = NULL;
 	modelOpened = NULL;
 
 	//wxWidget objects
@@ -450,9 +447,7 @@ void ModelViewer::InitDatabase()
 
 	itemdb.open();
 
-	wxString filename = locales[langID]+SLASH+_T("items.csv");
-	if (!wxFile::Exists(filename))
-		filename = locales[0]+SLASH+_T("items.csv");
+	wxString filename = _T("enUS/items.csv");
 	if (wxFile::Exists(filename)) {
 		items.open(filename);
 	} else {
@@ -481,20 +476,6 @@ void ModelViewer::InitDatabase()
 
 	setsdb.open();
 	setsdb.cleanup(items);
-
-//	char filename[20];
-//	filename = locales[langID]+SLASH+_T("npcs.csv");
-//	if(!wxFile::Exists(filename))
-//		filename = locales[0]+SLASH+_T("npcs.csv");
-//	if(wxFile::Exists(filename))
-//		npcs.open(filename);
-//	else {
-//		NPCRecord rec("26499,24949,7,Arthas");
-//		if (rec.model > 0) {
-//			npcs.npcs.push_back(rec);
-//		}
-//		wxLogMessage(_T("Error: Could not find npcs.csv, unable to create NPC list."));
-//	}
 
 	spelleffectsdb.open();
 	GetSpellEffects();
@@ -871,13 +852,54 @@ ModelViewer::~ModelViewer()
 	}
 }
 
+inline int file_exists(const std::string& path)
+{
+	FILE* f = fopen(path.c_str(), "rb");
+	if (f) {
+		fclose(f);
+		return true;
+	}
+	return false;
+}
+
 bool ModelViewer::InitMPQArchives()
 {
-	wxString path;
+	const char* locale;
+	const char* locales[] = { "enUS", "enGB", "deDE", "frFR", "zhTW",
+		"ruRU", "esES", "koKR", "zhCN" };
 
-	for (size_t i=0; i<mpqArchives.GetCount(); i++) {
-		FS().add(std::string(mpqArchives[i].mb_str()));
+//	char path[512];
+	for (size_t i = 0; i < 9; i++)
+	{
+		if (file_exists(gamepath + locales[i] + "/base-" + locales[i] + ".MPQ"))
+		{
+			locale = locales[i];
+			break;
+		}
 	}
+
+	FS().add(gamepath + "patch-3.MPQ");
+	FS().add(gamepath + "patch-2.MPQ");
+	FS().add(gamepath + "patch.MPQ");
+
+	FS().add(gamepath + locale + "/patch-" + locale + "-3.MPQ");
+	FS().add(gamepath + locale + "/patch-" + locale + "-2.MPQ");
+	FS().add(gamepath + locale + "/patch-" + locale + ".MPQ");
+
+	FS().add(gamepath + "expansion3.MPQ");
+	FS().add(gamepath + "expansion2.MPQ");
+	FS().add(gamepath + "lichking.MPQ");
+	FS().add(gamepath + "expansion.MPQ");
+	FS().add(gamepath + "common-3.MPQ");
+	FS().add(gamepath + "common-2.MPQ");
+	FS().add(gamepath + "common.MPQ");
+
+	FS().add(gamepath + locale + "/expansion3-locale-" + locale + ".MPQ");
+	FS().add(gamepath + locale + "/expansion2-locale-" + locale + ".MPQ");
+	FS().add(gamepath + locale + "/lichking-locale-" + locale + ".MPQ");
+	FS().add(gamepath + locale + "/expansion-locale-" + locale + ".MPQ");
+	FS().add(gamepath + locale + "/locale-" + locale + ".MPQ");
+	FS().add(gamepath + locale + "/base-" + locale + ".MPQ");
 
 	// Checks and logs the "TOC" version of the interface files that were loaded
 	MPQFile f("Interface\\FrameXML\\FrameXML.TOC");
@@ -949,7 +971,6 @@ bool ModelViewer::Init()
 	wxLogMessage(_T("Initiating Archives...\n"));
 
 	// more detail logging, this is so when someone has a problem and they send their log info
-	wxLogMessage(_T("Game Data Path: %s"), wxString(gamePath.fn_str(), wxConvUTF8).c_str());
 	wxLogMessage(_T("Use Local Files: %s\n"), useLocalFiles ? _T("true") : _T("false"));
 	
 	isChar = false;

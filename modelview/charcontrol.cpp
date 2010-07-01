@@ -570,9 +570,6 @@ void CharControl::RefreshEquipment()
 
 void CharControl::OnButton(wxCommandEvent &event)
 {
-	// This stores are equipment directory path in session
-	static wxString dir = cfgPath.BeforeLast('\\'); 
-
 	if (event.GetId()==ID_CLEAR_EQUIPMENT) {
 		for (int i=0; i<NUM_CHAR_SLOTS; i++) 
 			cd.equipment[i] = 0;

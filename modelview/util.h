@@ -36,9 +36,7 @@
 	#define snprintf sprintf_s
 #endif 
 
-extern wxString gamePath;
-extern wxString cfgPath;
-extern wxString bgImagePath;
+extern std::string gamepath;
 
 extern int gameVersion;
 
@@ -49,16 +47,11 @@ extern bool bKnightEyeGlow;
 extern bool bShowParticle;
 extern bool bZeroParticle;
 
-extern wxArrayString mpqArchives;
-
 extern long langID;
 extern long langOffset;
-extern long interfaceID;
 extern int ssCounter;
 extern int imgFormat;
 extern long versionID;
-
-extern wxString locales[];
 
 #ifdef _WINDOWS
 	typedef unsigned char uint8;
@@ -95,7 +88,6 @@ void fixnamen(char *name, uint32 len);
 wxString Vec3DToString(Vec3D vec);
 int wxStringToInt(const wxString& str);
 float round(float input, int limit);
-void MakeDirs(wxString base, wxString paths);
 unsigned short _SwapTwoBytes (unsigned short w);
 
 void getGamePath();

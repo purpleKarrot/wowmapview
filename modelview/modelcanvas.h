@@ -77,6 +77,7 @@ struct Attachment {
 	inline void drawParticles(bool force=false);
 	void tick(float dt);
 };
+
 class qtcanvas;
 class ModelCanvas:
 #ifdef _WINDOWS

@@ -7,11 +7,7 @@
 #include <wx/dir.h>
 #include <wx/dirdlg.h>
 
-wxString gamePath;
-wxString cfgPath;
-wxString bgImagePath;
-
-wxArrayString mpqArchives;
+std::string gamepath;
 
 int gameVersion = 0;
 
@@ -22,28 +18,10 @@ bool bKnightEyeGlow = true;
 bool bShowParticle = true;
 bool bZeroParticle = true;
 
-long langID = -1;
-long langOffset = -1;
-long interfaceID = -1;
+long langID = 0;
+long langOffset = 0;
 int ssCounter = 100; // ScreenShot Counter
 int imgFormat = 0;
-
-wxString locales[8] = {_T("enUS"), _T("koKR"), _T("frFR"), _T("deDE"), _T("zhCN"),  _T("zhTW"),  _T("esES"),  _T("ruRU")};
-
-/*
-wxString langCSConv[] =
-{
-	_T("iso-8859-1"),
-	wxEmptyString,
-	wxEmptyString,
-	wxEmptyString,
-	_T("gb2312"),
-	_T("big5"),
-	wxEmptyString,
-	wxEmptyString,
-};
-wxString CSConvStr;
-*/
 
 wxString CSConv(wxString str)
 {
@@ -117,28 +95,6 @@ float round(float input, int limit = 2){
 	return input;
 }
 
-void MakeDirs(wxString base, wxString paths){
-	wxString NewBase = base;
-	//wxLogMessage("MKDIR Paths\nBasePath: %s\nOthers Paths: %s", base, paths);
-	wxString Paths[30];
-	unsigned int PathNum = 0;
-	while (paths.Find(SLASH)>0){
-		Paths[PathNum] = paths.BeforeFirst(SLASH);
-		wxString rep = Paths[PathNum];
-		paths.Replace(rep.Append(SLASH),wxT(""),true);
-		//wxLogMessage("\nBuilding Paths: %s\npaths:%s",Paths[PathNum],paths);
-		PathNum++;
-	}
-	Paths[PathNum] = paths;
-	PathNum++;
-
-	for (unsigned int x=0;x<PathNum;x++){
-		NewBase = wxString(NewBase << SLASH << Paths[x]);
-		//wxLogMessage("Attempting to create the following directory: %s",NewBase);
-		wxMkdir(NewBase);
-	}
-}
-
 void getGamePath()
 {
 #ifdef _WINDOWS
@@ -205,7 +161,7 @@ void getGamePath()
 	}
 #else
 
-	std::string	gamepath = "data/";
+	gamepath = "data/";
 
 	const char* wow_path = getenv("WOW_PATH");
 	if (wow_path)
@@ -213,8 +169,6 @@ void getGamePath()
 		gamepath = wow_path;
 		gamepath += "Data/";
 	}
-
-	gamePath = wxString(gamepath.c_str(), wxConvUTF8);
 
 #endif
 }

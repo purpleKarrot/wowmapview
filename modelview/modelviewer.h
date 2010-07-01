@@ -31,7 +31,6 @@
 #include "animcontrol.h"
 #include "charcontrol.h"
 #include "modelcontrol.h"
-#include "imagecontrol.h"
 #include "util.h"
 #include "effects.h"
 #include "enums.h"
@@ -49,7 +48,7 @@ public:
 	CharControl *charControl;
 	EnchantsDialog *enchants;
 	ModelControl *modelControl;
-	ImageControl *imageControl;
+//	ImageControl *imageControl;
 	ModelOpened *modelOpened;
 
 	//wxWidget objects

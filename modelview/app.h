@@ -18,8 +18,6 @@ class WowModelViewApp: public wxApp
 	bool OnInit();
 	int MainLoop();
 
-	bool LoadSettings();
-
 	ModelViewer *frame;
 };
 
