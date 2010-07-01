@@ -8,11 +8,7 @@ class ModelCanvas;
 class qtcanvas: public QGLViewer
 {
 public:
-	qtcanvas(ModelCanvas* old) :
-		old(old)
-	{
-		show();
-	}
+	qtcanvas(ModelCanvas* old);
 
 	~qtcanvas()
 	{

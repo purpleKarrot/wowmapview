@@ -1,6 +1,13 @@
 #include <GL/glew.h>
 #include "qtcanvas.hpp"
 #include "modelcanvas.h"
+#include "widgets/MainWindow.hpp"
+
+qtcanvas::qtcanvas(ModelCanvas* old) :
+	old(old)
+{
+	MainWindow::add_central(this);
+}
 
 void qtcanvas::init()
 {

@@ -1,5 +1,6 @@
 #include <GL/glew.h>
 #include <QApplication>
+#include "widgets/MainWindow.hpp"
 #include "app.h"
 #include "globalvars.h"
 #include <wx/dir.h>
@@ -18,9 +19,11 @@ int main(int argc, char **argv)
 {
 	QApplication qapp(argc, argv);
 	QtDummy qtdummy;
-
 	QObject::connect(&qapp, SIGNAL(lastWindowClosed()), //
 		&qtdummy, SLOT(shutdown()));
+
+	MainWindow main_window;
+	main_window.show();
 
 	return wxEntry(argc, argv);
 }

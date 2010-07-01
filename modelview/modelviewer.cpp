@@ -1,5 +1,6 @@
 #include <GL/glew.h>
 #include "widgets/FileList.hpp"
+#include "widgets/MainWindow.hpp"
 #include "modelviewer.h"
 #include "globalvars.h"
 #include "mpq.hpp"
@@ -424,7 +425,7 @@ void ModelViewer::InitObjects()
 	wxLogMessage(_T("Initiating Objects..."));
 
 	FileList* file_list = new FileList;
-	file_list->show();
+	MainWindow::add_dock("File list", Qt::LeftDockWidgetArea, file_list);
 
 	animControl = new AnimControl(this, ID_ANIM_FRAME);
 	charControl = new CharControl(this, ID_CHAR_FRAME);

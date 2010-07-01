@@ -1,6 +1,7 @@
 // our headers
 #include "widgets/CharacterControl.hpp"
 #include "widgets/EquipmentControl.hpp"
+#include "widgets/MainWindow.hpp"
 #include "util.h"
 #include "charcontrol.h"
 #include "modelviewer.h"
@@ -78,7 +79,10 @@ CharControl::CharControl(wxWindow* parent, wxWindowID id)
 	wxLogMessage(_T("Creating Char Control..."));
 
 	new_cc = new CharacterControl(*this);
+	MainWindow::add_dock("Character control", Qt::RightDockWidgetArea, new_cc);
+
 	new_ec = new EquipmentControl(*this);
+	MainWindow::add_dock("Character control", Qt::RightDockWidgetArea, new_ec);
 
 	if(Create(parent, id, wxDefaultPosition, wxSize(100,700), 0, _T("CharControl")) == false) {
 		wxLogMessage(_T("GUI Error: Failed to create a window frame for the Character Control!"));

@@ -28,6 +28,7 @@ add_executable(wowmodelview
   widgets/FileListModel.cpp
   widgets/CharacterControl.cpp
   widgets/EquipmentControl.cpp
+  widgets/MainWindow.cpp
   )
 
 target_link_libraries(wowmodelview
