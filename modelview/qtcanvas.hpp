@@ -1,11 +1,11 @@
 #ifndef QTCANVAS_HPP
 #define QTCANVAS_HPP
 
-#include <QGLWidget>
+#include <QGLViewer/qglviewer.h>
 
 class ModelCanvas;
 
-class qtcanvas: public QGLWidget
+class qtcanvas: public QGLViewer
 {
 public:
 	qtcanvas(ModelCanvas* old) :
@@ -19,7 +19,8 @@ public:
 	}
 
 private:
-	void paintGL();
+	void draw();
+	void init();
 
 private:
 	ModelCanvas* old;

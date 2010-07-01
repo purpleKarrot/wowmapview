@@ -102,7 +102,7 @@ class ModelCanvas:
 	DECLARE_CLASS(ModelCanvas)
     DECLARE_EVENT_TABLE()
 	
-	float time, modelsize;
+	float time;//, modelsize;
 	SceneState sceneState[4]; // 4 scene states for F1-F4
 
 	GLuint fogTex;

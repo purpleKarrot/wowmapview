@@ -279,52 +279,6 @@ bool VideoSettings::GetCompatibleWinMode(VideoCaps caps)
 	return false;
 }
 
-void VideoSettings::Release()
-{
-}
-
-void VideoSettings::SetMode()
-{
-}
-
-void VideoSettings::ResizeGLScene(int width, int height)		// Resize And Initialize The GL Window
-{
-	if (height==0)										// Prevent A Divide By Zero By
-		height=1;										// Making Height Equal One
-
-	glViewport(0,0,width,height);						// Reset The Current Viewport
-	//glDepthRange(0.0f,1.0f);
-
-	glMatrixMode(GL_PROJECTION);						// Select The Projection Matrix
-	glLoadIdentity();									// Reset The Projection Matrix
-
-	// Calculate The Aspect Ratio Of The Window
-	gluPerspective(fov, (float)width/(float)height, 0.1f, 128.0f*5);
-
-	glMatrixMode(GL_MODELVIEW);							// Select The Modelview Matrix
-	glLoadIdentity();									// Reset The Modelview Matrix
-}
-
-
-void VideoSettings::SwapBuffers()
-{
-#ifdef _WINDOWS
-	::SwapBuffers(hDC);
-#endif
-}
-
-inline void VideoSettings::SetCurrent()
-{
-#ifdef _WINDOWS
-	if(!wglMakeCurrent(hDC, hRC)) {					// Try To Activate The Rendering Context
-		//wxMessageBox("Can't Activate The GL Rendering Context.","ERROR");
-		//render = false;
-	} else {
-		render = true;
-	}
-#endif
-}
-
 GLuint TextureManager::add(std::string name)
 {
 	GLuint id = 0;

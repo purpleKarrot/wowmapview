@@ -36,6 +36,7 @@ target_link_libraries(wowmodelview
   Storm wowview
   ${GLEW_LIBRARIES}
   ${SDLMIXER_LIBRARY}
+  ${QGLVIEWER_LIBRARY}
   )
 
 add_dependencies(wowmodelview dbc_schema)

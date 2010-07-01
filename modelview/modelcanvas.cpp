@@ -160,7 +160,6 @@ void ModelCanvas::InitView()
 	int w=0, h=0;
 	GetClientSize(&w, &h);
 
-	video.ResizeGLScene(w, h);
 	video.xRes = w;
 	video.yRes = h;
 }
@@ -967,7 +966,7 @@ void ModelCanvas::ResetView()
 		if (model->pos.y < -50) model->pos.y = -50;
 	}
 
-	modelsize = model->rad * 2.0f;
+//	modelsize = model->rad * 2.0f;
 	
 	if (model->name.substr(0,4)=="Item") 
 		model->rot.y = 0; // items look better facing right by default
@@ -1131,10 +1130,6 @@ void ModelCanvas::LoadSceneState(int id)
 		video.fov =  sceneState[id].fov ;
 		model->pos = sceneState[id].pos;
 		model->rot = sceneState[id].rot;
-
-		int screenSize[4];
-		glGetIntegerv(GL_VIEWPORT, (GLint*)screenSize);				// get the width/height of the canvas
-		video.ResizeGLScene(screenSize[2], screenSize[3]);
 	}
 }
 
@@ -1143,7 +1138,7 @@ void ModelCanvas::SetCurrent()
 #ifdef _WINDOWS
 	video.SetCurrent();
 #else
-	wxGLCanvas::SetCurrent();
+//	wxGLCanvas::SetCurrent();
 	video.render = true;
 #endif
 }

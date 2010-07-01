@@ -9,9 +9,14 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 add_definitions(-DGL_GLEXT_PROTOTYPES)
 
+set(QT_USE_QTXML    ON)
 set(QT_USE_QTOPENGL ON)
 find_package(Qt4 REQUIRED)
 include(${QT_USE_FILE})
+
+
+find_package(QGLViewer REQUIRED)
+#include_directories(${QGLVIEWER_INCLUDE_DIR})
 
 
 find_package(SDL       REQUIRED)
