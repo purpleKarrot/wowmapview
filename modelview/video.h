@@ -53,7 +53,6 @@ class VideoSettings {
 
 public:
 	VideoSettings();
-	~VideoSettings();
 
 	// Functions
 	bool Init();

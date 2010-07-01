@@ -2136,7 +2136,6 @@ void CharControl::OnUpdateItem(int type, int id)
 			// clearing the mount
 			model->charModelDetails.isMounted = false;
 			g_canvas->model = model;
-			g_canvas->ResetView();
 			if (charAtt) {
 				charAtt->scale = g_canvas->root->scale;
 				charAtt->id = 0;
@@ -2203,9 +2202,6 @@ void CharControl::OnUpdateItem(int type, int id)
 				//m-> = att->scale;
 				//delete att;
 			}
-
-			g_canvas->ResetView();
-			g_canvas->model->rot.x = 0; // mounted characters look better from the side
 		}
 		//canvas->timer.Start();
 		break;

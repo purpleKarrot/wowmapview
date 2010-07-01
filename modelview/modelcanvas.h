@@ -25,10 +25,6 @@
 #include "wmo.h"
 #include "util.h"
 #include "maptile.h"
-//#include "viewcontrol.h"
-#include "lightcontrol.h"
-#include <GL/glew.h>
-//#include "CShader.h"
 #include "camera.h"
 #include "enums.h"
 
@@ -109,11 +105,7 @@ public:
 	// GUI Control Panels
 	AnimControl *animControl;
 
-	// Event Handlers
-    void OnPaint(wxPaintEvent& WXUNUSED(event));
-
     void OnTimer(wxTimerEvent& event);
-	void tick();
 	wxTimer timer;
 
 	// OGL related functions
@@ -123,7 +115,6 @@ public:
 	void InitShaders();
 	void UninitShaders();
 
-	void ResetView();
 	void ResetViewWMO(int id);
 
 	// Main render routines which call the sub routines

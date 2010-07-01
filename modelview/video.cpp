@@ -5,21 +5,6 @@
 
 #include <wx/display.h>
 
-#include "./GL/glew.h"
-
-//#ifdef _WINDOWS
-//	#include "./GL/wglew.h"
-//#elif _MAC // OSX
-//    #include <GL/glew.h>
-//#else // Linux
-//	#include <GL/glxew.h>
-//
-//	void (*wglGetProcAddress(const char *function_name))(void)
-//	{
-//		return glXGetProcAddress((GLubyte*)function_name);
-//	}
-//#endif
-
 extern ModelViewer *g_modelViewer;
 
 VideoSettings video;
@@ -27,12 +12,6 @@ TextureManager texturemanager;
 
 VideoSettings::VideoSettings()
 {
-#ifdef _WINDOWS
-	hWnd = NULL;
-	hRC = NULL;
-	hDC = NULL;
-#endif
-
 	pixelFormat = 0;
 	xRes = 0;
 	yRes = 0;
@@ -42,7 +21,6 @@ VideoSettings::VideoSettings()
 	init = false;
 	render = false;
 
-	//useAntiAlias = true;
 	useEnvMapping = true;
 	useShaders = true;
 	useCompression = false;
@@ -53,10 +31,6 @@ VideoSettings::VideoSettings()
 #else
 	useFBO = false;
 #endif
-}
-
-VideoSettings::~VideoSettings()
-{
 }
 
 bool VideoSettings::Init()
@@ -123,60 +97,6 @@ bool VideoSettings::Init()
 	} else {
 		hasHardware = true;
 	}
-	
-	/*
-	// Display Device info
-	wxLogMessage(_T("Display Device Count: %i"), wxDisplay::GetCount());
-	for (size_t i=0; i<wxDisplay::GetCount(); i++) {
-		wxDisplay disp(i);
-		wxRect bounds = disp.GetGeometry();
-		wxString name = disp.GetName();
-		wxLogMessage(_T("Device Name: %s\n Primary Device: %i\n Bit-Depth: %ibits\n Window Bounds: %i,%i,%i,%i\n"), name.c_str(), disp.IsPrimary(), disp.GetCurrentMode().GetDepth(), bounds.x, bounds.y, bounds.width, bounds.height);
-	}
-
-	if (wxDisplay::GetCount() > 1) {
-		// TODO: If they have more than one device we should ask which they want to use.
-		
-	}
-	*/
-
-	wxLogMessage(_T("Support wglPixelFormat: %s"), supportWGLPixelFormat ? _T("true") : _T("false"));
-	wxLogMessage(_T("Support Texture Compression: %s"), supportCompression ? _T("true") : _T("false"));
-	wxLogMessage(_T("Support Multi-Textures: %s"), supportMultiTex ? _T("true") : _T("false"));
-	wxLogMessage(_T("Support Draw Range Elements: %s"), supportDrawRangeElements ? _T("true") : _T("false"));
-	wxLogMessage(_T("Support Vertex Buffer Objects: %s"), supportVBO ? _T("true") : _T("false"));
-	wxLogMessage(_T("Support Point Sprites: %s"), supportPointSprites ? _T("true") : _T("false"));
-	wxLogMessage(_T("Support Pixel Shaders: %s"), supportFragProg ? _T("true") : _T("false"));
-	wxLogMessage(_T("Support Vertex Shaders: %s"), supportVertexProg ? _T("true") : _T("false"));
-	wxLogMessage(_T("Support GLSL: %s"), supportGLSL ? _T("true") : _T("false"));
-	wxLogMessage(_T("Support Anti-Aliasing: %s"), supportAntiAlias ? _T("true") : _T("false"));
-	wxLogMessage(_T("Support Pixel Buffer Objects: %s"), supportPBO ? _T("true") : _T("false"));
-	wxLogMessage(_T("Support Frame Buffer Objects: %s"), supportFBO ? _T("true") : _T("false"));
-	wxLogMessage(_T("Support Non-Power-of-Two: %s"), supportNPOT ? _T("true") : _T("false"));
-	wxLogMessage(_T("Support Rectangle Textures: %s"), supportTexRects ? _T("true") : _T("false"));
-	wxLogMessage(_T("Support OpenGL 2.0: %s"), supportOGL20 ? _T("true") : _T("false"));
-
-	// Max texture sizes
-	GLint texSize; 
-	// Rectangle
-	if (glewIsSupported("GL_ARB_texture_rectangle")) {
-		glGetIntegerv(GL_MAX_RECTANGLE_TEXTURE_SIZE_ARB, &texSize); 
-		wxLogMessage(_T("Max Rectangle Texture Size Supported: %i"), texSize);
-	}
-	// Square
-	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &texSize); 
-	wxLogMessage(_T("Max Texture Size Supported: %i\n"), texSize);
-	
-
-	
-	// Debug:
-	//supportPointSprites = false; // Always set to false,  for now.
-	//supportVBO = false;
-	//supportFBO = false;
-	//supportNPOT = false;
-	//supportPBO = false;
-	//supportCompression = false;
-	//supportTexRects = false;
 
 	init = true;
 
@@ -188,8 +108,7 @@ void VideoSettings::InitGL()
 	if (!init)
 		return;
 
-	GLenum err = 0;
-	err = glGetError();
+	GLenum err = glGetError();
 	if (err)
 		wxLogMessage(_T("OpenGL Error: %s : %s :[0x%x] : An error occured on line %i"), __FUNCTION__, __FILE__, (unsigned int)err, __LINE__);
 

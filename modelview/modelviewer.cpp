@@ -48,12 +48,6 @@ BEGIN_EVENT_TABLE(ModelViewer, wxFrame)
 
 	EVT_MENU(ID_USE_CAMERA, ModelViewer::OnToggleCommand)
 
-	// Cam
-	EVT_MENU(ID_CAM_FRONT, ModelViewer::OnCamMenu)
-	EVT_MENU(ID_CAM_SIDE, ModelViewer::OnCamMenu)
-	EVT_MENU(ID_CAM_BACK, ModelViewer::OnCamMenu)
-	EVT_MENU(ID_CAM_ISO, ModelViewer::OnCamMenu)
-
 	EVT_MENU(ID_CANVAS120, ModelViewer::OnCanvasSize)
 	EVT_MENU(ID_CANVAS512, ModelViewer::OnCanvasSize)
 	EVT_MENU(ID_CANVAS640, ModelViewer::OnCanvasSize)
@@ -842,7 +836,6 @@ void ModelViewer::LoadNPC(unsigned int modelid)
 			// ---
 
 			animControl->UpdateModel(canvas->model);
-			canvas->ResetView();
 		}
 	} catch (...) {}
 
@@ -1184,23 +1177,6 @@ void ModelViewer::OnToggleCommand(wxCommandEvent &event)
 	case ID_IMPORT_CHAR:
 		break;
 	}
-}
-
-void ModelViewer::OnCamMenu(wxCommandEvent &event)
-{
-	int id = event.GetId();
-	if (id==ID_CAM_FRONT)
-		canvas->model->rot.y = -90.0f;
-	else if (id==ID_CAM_BACK)
-		canvas->model->rot.y = 90.0f;
-	else if (id==ID_CAM_SIDE)
-		canvas->model->rot.y = 0.0f;
-	else if (id==ID_CAM_ISO) {
-		canvas->model->rot.y = -40.0f;
-		canvas->model->rot.x = 20.0f;
-	}
-
-	//viewControl->Update();	
 }
 
 // Menu button press events

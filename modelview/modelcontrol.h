@@ -39,7 +39,6 @@ class ModelControl: public wxWindow
 	wxCheckBox *bones, *box, *render, *wireframe, *texture, *particles;
 	wxCheckListBox *geosets;
 	wxStaticText *lblGeosets, *lblLod, *lblScale, *lblAlpha;
-	wxTextCtrl *txtX, *txtY, *txtZ;
 
 	// List of models in the scene.
 	//std::vector<Model*> models;

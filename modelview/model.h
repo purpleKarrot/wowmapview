@@ -340,10 +340,6 @@ public:
 	bool showTexture;
 	float alpha;
 
-	// Position and rotation vector
-	Vec3D pos;
-	Vec3D rot;
-
 	//
 	bool ok;
 	bool ind;

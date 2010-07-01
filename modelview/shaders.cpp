@@ -1,20 +1,8 @@
 #include "shaders.h"
-//#include "wowmapview.h"
 
-bool supportShaders = false;
 static bool initedShaders = false;
 
-/*
-Commented out as it currently breaks the compile with the new Glew 1.5.4
-
-PFNGLPROGRAMSTRINGARBPROC glProgramStringARB = NULL;
-PFNGLBINDPROGRAMARBPROC glBindProgramARB = NULL;
-PFNGLDELETEPROGRAMSARBPROC glDeleteProgramsARB = NULL;
-PFNGLGENPROGRAMSARBPROC glGenProgramsARB = NULL;
-PFNGLPROGRAMLOCALPARAMETER4FARBPROC glProgramLocalParameter4fARB;
-*/
-
-ShaderPair *terrainShaders[4]={0,0,0,0}, *wmoShader=0, *waterShaders[1]={0};
+ShaderPair *terrainShaders[4]={0,0,0,0}, *wmoShader=0, *waterShaders=0;
 
 // TODO
 bool isExtensionSupported(char *s)
@@ -29,36 +17,25 @@ void OldinitShaders()
 {
 	if (initedShaders)
 		return;
-	supportShaders = isExtensionSupported("ARB_vertex_program") && isExtensionSupported("ARB_fragment_program");
-	if (supportShaders) {
-		// init extension stuff
-#ifdef	_WINDOWS
-		//glARB = () wglGetProcAddress("");
-		glProgramStringARB = (PFNGLPROGRAMSTRINGARBPROC) wglGetProcAddress("glProgramStringARB");
-		glBindProgramARB = (PFNGLBINDPROGRAMARBPROC) wglGetProcAddress("glBindProgramARB");
-		glDeleteProgramsARB = (PFNGLDELETEPROGRAMSARBPROC) wglGetProcAddress("glDeleteProgramsARB");
-		glGenProgramsARB = (PFNGLGENPROGRAMSARBPROC) wglGetProcAddress("glGenProgramsARB");
-		glProgramLocalParameter4fARB = (PFNGLPROGRAMLOCALPARAMETER4FARBPROC) wglGetProcAddress("glProgramLocalParameter4fARB");
-#endif
-		// init various shaders here
-		OldreloadShaders();
-	}
-	wxLogMessage(_T("Shaders %s\n"), supportShaders?"enabled":"disabled");
+
+	OldreloadShaders();
+
 	initedShaders = true;
 }
 
 void OldreloadShaders()
 {
-	for (int i=0; i<4; i++) delete terrainShaders[i];
+	for (int i = 0; i < 4; i++)
+		delete terrainShaders[i];
 	delete wmoShader;
-	delete waterShaders[0];
+	delete waterShaders;
 
 	terrainShaders[0] = new ShaderPair(0, "shaders/terrain1.fs", true);
 	terrainShaders[1] = new ShaderPair(0, "shaders/terrain2.fs", true);
 	terrainShaders[2] = new ShaderPair(0, "shaders/terrain3.fs", true);
 	terrainShaders[3] = new ShaderPair(0, "shaders/terrain4.fs", true);
 	wmoShader = new ShaderPair(0, "shaders/wmospecular.fs", true);
-	waterShaders[0] = new ShaderPair(0, "shaders/wateroutdoor.fs", true);
+	waterShaders = new ShaderPair(0, "shaders/wateroutdoor.fs", true);
 }
 
 Shader::Shader(GLenum target, const char *program, bool fromFile):id(0),target(target)

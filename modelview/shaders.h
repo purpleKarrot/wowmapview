@@ -5,12 +5,6 @@
 
 extern bool supportShaders;
 
-//extern PFNGLPROGRAMSTRINGARBPROC glProgramStringARB;
-//extern PFNGLBINDPROGRAMARBPROC glBindProgramARB;
-//extern PFNGLDELETEPROGRAMSARBPROC glDeleteProgramsARB;
-//extern PFNGLGENPROGRAMSARBPROC glGenProgramsARB;
-//extern PFNGLPROGRAMLOCALPARAMETER4FARBPROC glProgramLocalParameter4fARB;
-
 void OldinitShaders();
 void OldreloadShaders();
 
@@ -40,7 +34,8 @@ public:
 	void unbind();
 };
 
-extern ShaderPair *terrainShaders[4], *wmoShader, *waterShaders[1];
-
+extern ShaderPair* terrainShaders[4];
+extern ShaderPair* wmoShader;
+extern ShaderPair* waterShaders;
 
 #endif

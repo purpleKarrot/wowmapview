@@ -262,7 +262,7 @@ void Liquid::draw()
 	if (video.supportShaders && (shader>=0)) {
 		// SHADER-BASED
 		Vec3D col2;
-		waterShaders[shader]->bind();
+		waterShaders->bind();
 		if (type==2) {
 			//col = gWorld->skies->colorSet[WATER_COLOR_LIGHT];
 			//col2 = gWorld->skies->colorSet[WATER_COLOR_DARK];
@@ -275,7 +275,7 @@ void Liquid::draw()
 		glProgramLocalParameter4fARB(GL_FRAGMENT_PROGRAM_ARB, 1, col2.x,col2.y,col2.z,tcol);
 
 		glCallList(dlist);
-		waterShaders[shader]->unbind();
+		waterShaders->unbind();
 	} else {
 		// FIXED-FUNCTION
 

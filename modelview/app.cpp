@@ -145,9 +145,6 @@ bool WowModelViewApp::LoadSettings()
 	pConfig->Read(_T("AlphaBits"), &video.curCap.alpha, 0);
 	pConfig->Read(_T("ColourBits"), &video.curCap.colour, 24);
 	pConfig->Read(_T("DoubleBuffer"), (bool*) &video.curCap.doubleBuffer, 1); // True
-#ifdef _WINDOWS
-	pConfig->Read(_T("HWAcceleration"), &video.curCap.hwAcc, WGL_FULL_ACCELERATION_ARB);
-#endif
 	pConfig->Read(_T("SampleBuffer"), (bool*) &video.curCap.sampleBuffer, 0); // False
 	pConfig->Read(_T("StencilBuffer"), &video.curCap.stencil, 0);
 	pConfig->Read(_T("ZBuffer"), &video.curCap.zBuffer, 16);

@@ -69,11 +69,6 @@ ModelControl::ModelControl(wxWindow* parent, wxWindowID id)
 
 		lblGeosets = new wxStaticText(this, wxID_ANY, _("Show Geosets"), wxPoint(5,235), wxDefaultSize);
 		geosets = new wxCheckListBox(this, ID_MODEL_GEOSETS, wxPoint(5, 250), wxSize(150,120), 0, NULL, 0, wxDefaultValidator, _T("GeosetsList"));
-		
-		wxStaticText *lblXYZ = new wxStaticText(this, wxID_ANY, _T("X\nY\nZ"), wxPoint(2,380), wxSize(20,60));
-		txtX = new wxTextCtrl(this, ID_MODEL_X, _T("0.0"), wxPoint(25,380), wxDefaultSize, wxTE_PROCESS_ENTER, wxDefaultValidator);
-		txtY = new wxTextCtrl(this, ID_MODEL_Y, _T("0.0"), wxPoint(25,400), wxDefaultSize, wxTE_PROCESS_ENTER, wxDefaultValidator);
-		txtZ = new wxTextCtrl(this, ID_MODEL_Z, _T("0.0"), wxPoint(25,420), wxDefaultSize, wxTE_PROCESS_ENTER, wxDefaultValidator);
 
 	} catch(...) {};
 }
@@ -91,9 +86,6 @@ ModelControl::~ModelControl()
 	texture->Destroy();
 	particles->Destroy();
 	geosets->Destroy();
-	txtX->Destroy();
-	txtY->Destroy();
-	txtZ->Destroy();
 }
 
 // Iterates through all the models counting and creating a list
@@ -235,10 +227,6 @@ void ModelControl::Update()
 
 	alpha->SetValue(int(model->alpha * 100));
 	scale->SetValue(100);
-
-	txtX->SetValue(wxString::Format(_T("%f"), model->pos.x));
-	txtY->SetValue(wxString::Format(_T("%f"), model->pos.y));
-	txtZ->SetValue(wxString::Format(_T("%f"), model->pos.z));
 }
 
 void ModelControl::OnCheck(wxCommandEvent &event)

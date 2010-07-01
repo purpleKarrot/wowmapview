@@ -31,7 +31,6 @@
 #include "modelcanvas.h"
 #include "animcontrol.h"
 #include "charcontrol.h"
-#include "lightcontrol.h"
 #include "modelcontrol.h"
 #include "imagecontrol.h"
 #include "util.h"
@@ -108,7 +107,6 @@ public:
 	void OnToggleDock(wxCommandEvent &event);
 	void OnToggleCommand(wxCommandEvent &event);
 	void OnEffects(wxCommandEvent &event);
-	void OnCamMenu(wxCommandEvent &event);
 
 	// Wrapper function for character stuff (forwards events to charcontrol)
 	void OnSetEquipment(wxCommandEvent &event);

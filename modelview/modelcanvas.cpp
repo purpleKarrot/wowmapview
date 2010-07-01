@@ -23,36 +23,26 @@ unsigned long pauseTime = 0;
 
 IMPLEMENT_CLASS(ModelCanvas, wxWindow)
 BEGIN_EVENT_TABLE(ModelCanvas, wxWindow)
-	EVT_PAINT(ModelCanvas::OnPaint)
     EVT_TIMER(ID_TIMER, ModelCanvas::OnTimer)
 END_EVENT_TABLE()
 
 
-#ifdef _WINDOWS // The following time related functions COULD be 64bit incompatible.
-	// for timeGetTime:
-	#pragma comment(lib,"Winmm.lib")
+#include <sys/time.h>
 
-#else // for linux
-	#include <sys/time.h>
+int timeGetTime()
+{
+	static struct timeval t;
+	gettimeofday(&t, NULL);
 
-	//typedef int DWORD;
-	int timeGetTime()
-	{
-		static int start=0;
-		static struct timeval t;
-		gettimeofday(&t, NULL);
-		if (start==0){
-			start = t.tv_sec;
-		}
+	static int start = 0;
+	if (start == 0)
+		start = t.tv_sec;
 
-		return (int)((t.tv_sec-start)*1000 + t.tv_usec/1000);
-	}
-#endif
+	return int((t.tv_sec - start) * 1000 + t.tv_usec / 1000);
+}
 
 #ifndef _WINDOWS
-namespace {
-	int attrib[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, 0 };
-}
+static int attrib[] = { WX_GL_RGBA, WX_GL_DOUBLEBUFFER, 0 };
 #endif
 
 ModelCanvas::ModelCanvas(wxWindow *parent, VideoCaps *caps)
@@ -166,8 +156,6 @@ Attachment* ModelCanvas::LoadModel(const char *fn)
 
 	curAtt = root;
 
-	ResetView();
-
 	return root;
 }
 
@@ -185,8 +173,6 @@ Attachment* ModelCanvas::LoadCharModel(const char *fn)
 		model = NULL;
 		return NULL;
 	}
-	
-	ResetView();
 
 	Attachment *att = root->addChild(model, 0, -1);
 	curAtt = att;
@@ -230,8 +216,6 @@ void ModelCanvas::clearAttachments()
 
 void ModelCanvas::InitGL()
 {
-	// Initiate our default OpenGL settings
-	SetCurrent();
 	video.InitGL();
 
 	GLenum err = 0;
@@ -243,11 +227,6 @@ void ModelCanvas::InitGL()
 
 	// init the default view
 	InitView();
-}
-
-void ModelCanvas::OnPaint(wxPaintEvent& WXUNUSED(event))
-{
-	new_->updateGL();
 }
 
 void ModelCanvas::RenderObjects()
@@ -276,11 +255,8 @@ void ModelCanvas::RenderWMO()
 	if (!init)
 		InitGL();
 
-	//SetupProjection(modelsize);
 	InitView();
 
-	// Lighting
-	Vec4D la;
 	// From what I can tell, WoW OpenGL only uses 4 g_modelViewer->lightControl->lights
 	for (int i=0; i<4; i++) {
 		GLuint light = GL_LIGHT0 + i;
@@ -289,35 +265,16 @@ void ModelCanvas::RenderWMO()
 		glLightf(light, GL_QUADRATIC_ATTENUATION, 0.03f);
 		glDisable(light);
 	}
-	la = Vec4D(0.35f, 0.35f, 0.35f, 1.0f);
 
-	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, la);
+	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, Vec4D(0.35f, 0.35f, 0.35f, 1.0f));
 	glColor3f(1.0f, 1.0f, 1.0f);
-	// --==--
-
-	/*
-	// TODO: Possibly move this into the Model/Attachment/Displayable::draw() routine?
-	// View
-	if (model) {
-		glTranslatef(model->pos.x, model->pos.y, -model->pos.z);
-		glRotatef(model->rot.x, 1.0f, 0.0f, 0.0f);
-		glRotatef(model->rot.y, 0.0f, 1.0f, 0.0f);
-		glRotatef(model->rot.z, 0.0f, 0.0f, 1.0f);
-		// --==--
-	}
-	*/
-//	camera.Setup();
-
 
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_CULL_FACE);
+
 	root->draw(this);
 	//root->drawParticles(true);
-
-	//glFlush();
-	//glFinish();
-	SwapBuffers();
 }
 
 void ModelCanvas::RenderADT()
@@ -325,11 +282,8 @@ void ModelCanvas::RenderADT()
 	if (!init)
 		InitGL();
 
-	//SetupProjection(modelsize);
 	InitView();
 
-	// Lighting
-	Vec4D la;
 	// From what I can tell, WoW OpenGL only uses 4 g_modelViewer->lightControl->lights
 	for (int i=0; i<4; i++) {
 		GLuint light = GL_LIGHT0 + i;
@@ -338,38 +292,16 @@ void ModelCanvas::RenderADT()
 		glLightf(light, GL_QUADRATIC_ATTENUATION, 0.03f);
 		glDisable(light);
 	}
-	la = Vec4D(0.35f, 0.35f, 0.35f, 1.0f);
 
-	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, la);
+	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, Vec4D(0.35f, 0.35f, 0.35f, 1.0f));
 	glColor3f(1.0f, 1.0f, 1.0f);
-	// --==--
-
-	/*
-	// TODO: Possibly move this into the Model/Attachment/Displayable::draw() routine?
-	// View
-	if (model) {
-		glTranslatef(model->pos.x, model->pos.y, -model->pos.z);
-		glRotatef(model->rot.x, 1.0f, 0.0f, 0.0f);
-		glRotatef(model->rot.y, 0.0f, 1.0f, 0.0f);
-		glRotatef(model->rot.z, 0.0f, 0.0f, 1.0f);
-		// --==--
-	}
-	*/
-//	camera.Setup();
-
 
 	glEnable(GL_TEXTURE_2D);
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_CULL_FACE);
+
 	root->draw(this);
 	//root->drawParticles(true);
-
-	//glFlush();
-	//glFinish();
-	SwapBuffers();
-
-	// cleanup
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
 void Attachment::draw(ModelCanvas *c)
@@ -508,23 +440,10 @@ void Attachment::tick(float dt)
 
 void ModelCanvas::OnTimer(wxTimerEvent& event)
 {
-	if (video.render && init) {
-		tick();
-		Refresh(false);
-	}
-}
-
-void ModelCanvas::tick()
-{
-	int ddt = 0;
-
-	// Time stuff
-	//time = float();
-	ddt = (timeGetTime() - lastTime);// * animSpeed;
+	int ddt = (timeGetTime() - lastTime);
 	lastTime = timeGetTime();
-	// --
 
-	globalTime += (ddt);
+	globalTime += ddt;
 
 	if (model) {
 		if (model->animManager && !wmo) {
@@ -537,55 +456,8 @@ void ModelCanvas::tick()
 		
 		root->tick(ddt);
 	}
-}
 
-/*
-void ModelCanvas::TogglePause()
-{
-	if (!bPaused) {
-		// pause
-		bPaused = true;
-		pauseTime = timeGetTime();
-
-	} else {
-		// unpause
-		DWORD t = timeGetTime();
-		deltaTime += t - pauseTime;
-		if (time==0) deltaTime = t;
-		bPaused = false;
-	}
-}
-*/
-
-void ModelCanvas::ResetView()
-{
-	model->rot = Vec3D(0,-90.0f,0);
-	model->pos = Vec3D(0, 0, 5.0f);
-
-	bool isSkyBox = (model->name.substr(0,3)=="Env");
-	if (!isSkyBox) {
-		if (model->name.find("SkyBox")<model->name.length())
-			isSkyBox = true;
-	}
-
-	if (isSkyBox) {
-		// for skyboxes, don't zoom out ;)
-		model->pos.y = model->pos.z = 0.0f;
-	} else {
-		model->pos.z = model->rad * 1.6f;
-		if (model->pos.z < 3.0f) model->pos.z = 3.0f;
-		if (model->pos.z > 64.0f) model->pos.z = 64.0f;
-		
-		//ofsy = (model->anims[model->currentAnim].boxA.y + model->anims[model->currentAnim].boxB.y) * 0.5f;
-		model->pos.y = -model->rad * 0.5f;
-		if (model->pos.y > 50) model->pos.y = 50;
-		if (model->pos.y < -50) model->pos.y = -50;
-	}
-
-//	modelsize = model->rad * 2.0f;
-	
-	if (model->name.substr(0,4)=="Item") 
-		model->rot.y = 0; // items look better facing right by default
+	new_->updateGL();
 }
 
 void ModelCanvas::ResetViewWMO(int id)

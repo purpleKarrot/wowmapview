@@ -245,8 +245,6 @@ Model::Model(std::string name, bool forceAnim) : ManagedItem(name), forceAnim(fo
 	// Initiate our model variables.
 	trans = 1.0f;
 	rad = 1.0f;
-	pos = Vec3D(0.0f, 0.0f, 0.0f);
-	rot = Vec3D(0.0f, 0.0f, 0.0f);
 
 	for (int i=0; i<TEXTURE_MAX; i++) {
 		specialTextures[i] = -1;
