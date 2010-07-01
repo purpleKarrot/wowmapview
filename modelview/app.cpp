@@ -83,9 +83,6 @@ bool WowModelViewApp::OnInit()
 			frame->canvas->InitGL();
 	}
 
-	// Load previously saved layout
-	frame->LoadLayout();
-
 	return true;
 }
 

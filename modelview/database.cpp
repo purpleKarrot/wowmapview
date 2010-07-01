@@ -3,7 +3,6 @@
 #include "mpq.hpp"
 
 ItemDatabase		items;
-NPCDatabase			npcs;
 
 HelmGeosetDB		helmetdb;
 ItemVisualEffectDB	effectdb;
@@ -647,97 +646,6 @@ wxString ItemDatabase::addDiscoveryDisplayId(int id, wxString name, int type)
 			rec.type, rec.sheath, rec.quality, rec.name.c_str());
 	}
 	return ret;
-}
-
-bool NPCDatabase::avaiable(int id)
-{
-	return (npcLookup.find(id)!=npcLookup.end());
-}
-
-wxString NPCDatabase::addDiscoveryId(int id, wxString name)
-{
-	wxString ret = wxEmptyString;
-
-	NPCRecord rec;
-	rec.id = id+100000;
-	rec.model = id;
-	rec.type = 7;
-	rec.discovery = true;
-	rec.name.Printf(_T("%s [%d]"), name.c_str(), rec.id);
-	if (rec.type > 0) {
-		npcs.push_back(rec);
-		ret.Printf(_T("%d,%d,%d,%s"), rec.id, rec.model, rec.type, rec.name.c_str());
-	}
-	return ret;
-}
-
-
-NPCRecord::NPCRecord(const char* line)
-{
-	sscanf(line, "%u,%u,%u,", &id, &model, &type);
-	discovery = false;
-	for (size_t i=strlen(line)-2; i>1; i--) {
-		if (line[i]==',') {
-			//name = (line + i + 1);
-			name.Printf(_T("%s [%d] [%d]"), wxString(line+i+1, wxConvUTF8).c_str(), id, model);
-			break;
-		}
-	}
-}
-
-NPCDatabase::NPCDatabase(const char* filename)
-{
-	//ItemRecord all(_("---- None ----"), IT_ALL);
-	//items.push_back(all);
-
-	std::ifstream fin(filename);
-	char line[512];
-	while (fin.getline(line,512)) {
-		NPCRecord rec(line);
-		if (rec.model > 0) {
-			npcs.push_back(rec);
-		}
-	}
-	fin.close();
-	sort(npcs.begin(), npcs.end());
-
-	int j=0;
-	for (std::vector<NPCRecord>::iterator it=npcs.begin();	it!=npcs.end(); ++it)
-	{
-		npcLookup[it->id] = j;
-		j++;
-	}
-}
-
-void NPCDatabase::open(wxString filename)
-{
-	std::ifstream fin(filename.mb_str());
-	char line[512];
-	if (fin.is_open()) {
-		while (fin.getline(line,512)) {
-			NPCRecord rec(line);
-			if (rec.model > 0) {
-				npcs.push_back(rec);
-			}
-		}
-		fin.close();
-		sort(npcs.begin(), npcs.end());
-	}
-}
-
-
-const NPCRecord& NPCDatabase::get(int id)
-{
-	return npcs[id];
-}
-
-const NPCRecord& NPCDatabase::getByID(int id)
-{
-    if (npcLookup.find(id)!=npcLookup.end()) {
-		return npcs[npcLookup[id]];
-    }
-	
-	return npcs[0];
 }
 
 SpellEffectsDB::Record SpellEffectsDB::getByName(const wxString name)

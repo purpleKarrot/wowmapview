@@ -195,7 +195,6 @@ public:
 	void selectSet();
 	void selectStart();
 	void selectMount();
-	void selectNPC(int type);
 };
 
 

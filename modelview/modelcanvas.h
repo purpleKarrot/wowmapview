@@ -25,7 +25,6 @@
 #include "wmo.h"
 #include "util.h"
 #include "maptile.h"
-#include "camera.h"
 #include "enums.h"
 
 

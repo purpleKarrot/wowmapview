@@ -586,7 +586,7 @@ void CharControl::OnButton(wxCommandEvent &event)
 
 	} else if (event.GetId()==ID_LOAD_NPC_START) {
 		// TODO: a "Load NPC Outfit..." option to the character menu. It's now possible to equip a character with the exact NPC's gear (without weapons).		
-		selectNPC(UPDATE_NPC_START);
+//		selectNPC(UPDATE_NPC_START);
 	} else if (event.GetId()==ID_MOUNT) {
 		selectMount();
 
@@ -1993,93 +1993,6 @@ void CharControl::selectMount()
 	this->itemDialog = itemDialog;
 }
 
-void CharControl::selectNPC(int type)
-{
-	ClearItemDialog();
-
-	numbers.clear();
-	choices.Clear();
-
-	std::vector<int> quality;
-	
-	//choices.Add(_("---- None ----"));
-	//numbers.push_back(-1);
-	//quality.push_back(0);
-
-	// collect all items for this type, making note of the occurring subclasses
-	std::vector<int> typesFound;
-	int sel=0, ord=0;
-
-	for (std::vector<NPCRecord>::iterator it=npcs.npcs.begin();  it!=npcs.npcs.end(); ++it) {
-/*
-		if (type == UPDATE_NPC_START) {
-			try {
-				CreatureSkinDB::Record modelRec = skindb.getBySkinID(it->id);
-				int displayID = modelRec.Get<unsigned int>(CreatureSkinDB::NPCID);
-				if (displayID == 0)
-					continue;
-			} catch (...) {}
-
-		}
-*/
-		if (it->model > 0) {
-			choices.Add(CSConv(it->name));
-			numbers.push_back(it->id);
-			quality.push_back(0);
-
-			/*
-			if (it->id == current) 
-				sel = ord;
-			*/
-			ord++;
-			
-			if ((*it).type > 0) 
-				typesFound.push_back(it->type);
-		}
-	}
-	
-	// make category list
-	cats.clear();
-	catnames.clear();
-
-	std::map<int, int> typeLookup;
-	for (CreatureTypeDB::Iterator it=npctypedb.begin();  it!=npctypedb.end(); ++it) {
-		int type = it->Get<unsigned int>(CreatureTypeDB::ID);
-
-		// Used to go through the 'string fields' looking for the one with data.
-		// This is a problem when the DBC files are the non-english ones.
-		wxString str;
-		str = CSConv(wxString(it->getString(CreatureTypeDB::Name + langOffset),wxConvUTF8));
-
-		catnames.Add(str);
-		typeLookup[type] = (int)catnames.size()-1;
-	}
-
-	if (typesFound.size() > 1) {
-		// build category list
-		for (size_t i=0; i<numbers.size(); i++) {
-			NPCRecord r = npcs.getByID(numbers[i]);
-			cats.push_back(typeLookup[r.type]);
-		}
-
-		itemDialog = new CategoryChoiceDialog(this, type, g_modelViewer, _T("Select an NPC"), _T("NPC Models"), choices, cats, catnames, &quality, false, true);
-	} else {
-		itemDialog = new FilteredChoiceDialog(this, type, g_modelViewer, _T("Select an NPC"), _T("NPC Models"), choices, &quality, false);
-	}
-	
-	itemDialog->SetSelection(sel);
-	
-	wxSize s = itemDialog->GetSize();
-	const int w = 250;
-	if (s.GetWidth() > w) {
-		itemDialog->SetSizeHints(w,-1,-1,-1,-1,-1);
-		itemDialog->SetSize(w, -1);
-	}
-
-	itemDialog->Move(itemDialog->GetParent()->GetPosition() + wxPoint(4,64));
-	itemDialog->Show();
-}
-
 void CharControl::OnUpdateItem(int type, int id)
 {
 	switch (type) {
@@ -2217,8 +2130,6 @@ void CharControl::OnUpdateItem(int type, int id)
 		return;
 
 	case UPDATE_NPC:
-		g_modelViewer->LoadNPC(npcs.get(id).model);
-
 		break;
 
 	case UPDATE_SINGLE_ITEM:
@@ -2227,100 +2138,7 @@ void CharControl::OnUpdateItem(int type, int id)
 		break;
 
 	case UPDATE_NPC_START:
-		// Open the first record, just so we can declare the var.
-		NPCDB::Record npcrec = npcdb.getRecord(0);
-		int displayID = 0;
-
-		try {
-			// 68,3167,7,Stormwind City Guard, helmet 14964
-			NPCRecord r = npcs.get(id);
-			//wxLogMessage(_T("id: %d, %d, %d, %s"), id, r.id, r.model, r.name.c_str());
-			CreatureSkinDB::Record modelRec = skindb.getBySkinID(r.model);
-			displayID = modelRec.Get<unsigned int>(CreatureSkinDB::NPCID);
-			//wxLogMessage(_T("displayID: %d\n"), displayID);
-		} catch (...) {
-			wxLogMessage(_T("Can't get extra info from: %d,%d,%d"), npcs.get(id).id, 
-				npcs.get(id).model, npcs.get(id).name.c_str());
-		}
-		if (displayID) {
-			try {
-				npcrec = npcdb.getByNPCID(displayID);
-
-				int itemid;
-
-				itemid = items.getItemIDByModel(npcrec.Get<unsigned int>(NPCDB::HelmID));
-				cd.equipment[CS_HEAD] = itemid;
-				if (slotHasModel(CS_HEAD)) RefreshItem(CS_HEAD);
-				if (itemid) labels[CS_HEAD]->SetLabel(CSConv(items.getByID(cd.equipment[CS_HEAD]).name));
-				else labels[CS_HEAD]->SetLabel(_("---- None ----"));
-
-				itemid = items.getItemIDByModel(npcrec.Get<unsigned int>(NPCDB::ShoulderID));
-				cd.equipment[CS_SHOULDER] = itemid;
-				if (slotHasModel(CS_SHOULDER)) RefreshItem(CS_SHOULDER);
-				if (itemid) labels[CS_SHOULDER]->SetLabel(CSConv(items.getByID(cd.equipment[CS_SHOULDER]).name));
-				else labels[CS_SHOULDER]->SetLabel(_("---- None ----"));
-
-				itemid = items.getItemIDByModel(npcrec.Get<unsigned int>(NPCDB::ShirtID));
-				cd.equipment[CS_SHIRT] = itemid;
-				//if (slotHasModel(CS_SHIRT)) RefreshItem(CS_SHIRT);
-				if (itemid) labels[CS_SHIRT]->SetLabel(CSConv(items.getByID(cd.equipment[CS_SHIRT]).name));
-				else labels[CS_SHIRT]->SetLabel(_("---- None ----"));
-
-				itemid = items.getItemIDByModel(npcrec.Get<unsigned int>(NPCDB::ChestID));
-				cd.equipment[CS_CHEST] = itemid;
-				//if (slotHasModel(CS_CHEST)) RefreshItem(CS_CHEST);
-				if (itemid) labels[CS_CHEST]->SetLabel(CSConv(items.getByID(cd.equipment[CS_CHEST]).name));
-				else labels[CS_CHEST]->SetLabel(_("---- None ----"));
-
-				itemid = items.getItemIDByModel(npcrec.Get<unsigned int>(NPCDB::BeltID));
-				cd.equipment[CS_BELT] = itemid;
-				//if (slotHasModel(CS_BELT)) RefreshItem(CS_BELT);
-				if (itemid) labels[CS_BELT]->SetLabel(CSConv(items.getByID(cd.equipment[CS_BELT]).name));
-				else labels[CS_BELT]->SetLabel(_("---- None ----"));
-
-				itemid = items.getItemIDByModel(npcrec.Get<unsigned int>(NPCDB::PantsID));
-				cd.equipment[CS_PANTS] = itemid;
-				//if (slotHasModel(CS_PANTS)) RefreshItem(CS_PANTS);
-				if (itemid) labels[CS_PANTS]->SetLabel(CSConv(items.getByID(cd.equipment[CS_PANTS]).name));
-				else labels[CS_PANTS]->SetLabel(_("---- None ----"));
-
-				itemid = items.getItemIDByModel(npcrec.Get<unsigned int>(NPCDB::BootsID));
-				cd.equipment[CS_BOOTS] = itemid;
-				//if (slotHasModel(CS_BOOTS)) RefreshItem(CS_BOOTS);
-				if (itemid) labels[CS_BOOTS]->SetLabel(CSConv(items.getByID(cd.equipment[CS_BOOTS]).name));
-				else labels[CS_BOOTS]->SetLabel(_("---- None ----"));
-
-				itemid = items.getItemIDByModel(npcrec.Get<unsigned int>(NPCDB::BracersID));
-				cd.equipment[CS_BRACERS] = itemid;
-				//if (slotHasModel(CS_BRACERS)) RefreshItem(CS_BRACERS);
-				if (itemid) labels[CS_BRACERS]->SetLabel(CSConv(items.getByID(cd.equipment[CS_BRACERS]).name));
-				else labels[CS_BRACERS]->SetLabel(_("---- None ----"));
-
-				itemid = items.getItemIDByModel(npcrec.Get<unsigned int>(NPCDB::GlovesID));
-				cd.equipment[CS_GLOVES] = itemid;
-				//if (slotHasModel(CS_GLOVES)) RefreshItem(CS_GLOVES);
-				if (itemid) labels[CS_GLOVES]->SetLabel(CSConv(items.getByID(cd.equipment[CS_GLOVES]).name));
-				else labels[CS_GLOVES]->SetLabel(_("---- None ----"));
-
-				itemid = items.getItemIDByModel(npcrec.Get<unsigned int>(NPCDB::TabardID));
-				cd.equipment[CS_TABARD] = itemid;
-				//if (slotHasModel(CS_TABARD)) RefreshItem(CS_TABARD);
-				if (itemid) labels[CS_TABARD]->SetLabel(CSConv(items.getByID(cd.equipment[CS_TABARD]).name));
-				else labels[CS_TABARD]->SetLabel(_("---- None ----"));
-
-				itemid = items.getItemIDByModel(npcrec.Get<unsigned int>(NPCDB::CapeID));
-				cd.equipment[CS_CAPE] = itemid;
-				if (slotHasModel(CS_CAPE)) RefreshItem(CS_CAPE);
-				if (itemid) labels[CS_CAPE]->SetLabel(CSConv(items.getByID(cd.equipment[CS_CAPE]).name));
-				else labels[CS_CAPE]->SetLabel(_("---- None ----"));
-				//wxLogMessage(_T("npcdb.getByNPCID good: %d"), npcrec.Get<unsigned int>(NPCDB::HelmID));
-			} catch (...) {
-				wxLogMessage(_T("npcdb.getByNPCID error"));
-			}
-		}
-
 		break;
-
 	}
 
 	//  Update controls associated

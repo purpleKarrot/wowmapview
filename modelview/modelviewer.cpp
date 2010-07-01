@@ -24,8 +24,6 @@ BEGIN_EVENT_TABLE(ModelViewer, wxFrame)
 	// File menu
 	EVT_MENU(ID_VIEW_NPC, ModelViewer::OnCharToggle)
 	EVT_MENU(ID_VIEW_ITEM, ModelViewer::OnCharToggle)
-	EVT_MENU(ID_FILE_SCREENSHOT, ModelViewer::OnSave)
-	EVT_MENU(ID_FILE_SCREENSHOTCONFIG, ModelViewer::OnSave)
 	// --
 	EVT_MENU(ID_FILE_RESETLAYOUT, ModelViewer::OnToggleCommand)
 	// --
@@ -71,7 +69,7 @@ BEGIN_EVENT_TABLE(ModelViewer, wxFrame)
 	EVT_MENU(ID_EQCREATURE_R, ModelViewer::OnEffects)
 	EVT_MENU(ID_EQCREATURE_L, ModelViewer::OnEffects)
 	EVT_MENU(ID_SHADER_DEATH, ModelViewer::OnEffects)
-	EVT_MENU(ID_TEST, ModelViewer::OnTest)
+//	EVT_MENU(ID_TEST, ModelViewer::OnTest)
 
 	// Options
 	EVT_MENU(ID_SAVE_CHAR, ModelViewer::OnToggleCommand)
@@ -134,9 +132,9 @@ ModelViewer::ModelViewer()
 	charControl = NULL;
 	enchants = NULL;
 	modelControl = NULL;
-	arrowControl = NULL;
+//	arrowControl = NULL;
 	imageControl = NULL;
-	settingsControl = NULL;
+	//settingsControl = NULL;
 	modelOpened = NULL;
 
 	//wxWidget objects
@@ -430,8 +428,8 @@ void ModelViewer::InitObjects()
 	animControl = new AnimControl(this, ID_ANIM_FRAME);
 	charControl = new CharControl(this, ID_CHAR_FRAME);
 	modelControl = new ModelControl(this, ID_MODEL_FRAME);
-	settingsControl = new SettingsControl(this, ID_SETTINGS_FRAME);
-	settingsControl->Show(false);
+//	settingsControl = new SettingsControl(this, ID_SETTINGS_FRAME);
+//	settingsControl->Show(false);
 	modelOpened = new ModelOpened(this, ID_MODELOPENED_FRAME);
 
 	canvas = new ModelCanvas(this);
@@ -485,18 +483,18 @@ void ModelViewer::InitDatabase()
 	setsdb.cleanup(items);
 
 //	char filename[20];
-	filename = locales[langID]+SLASH+_T("npcs.csv");
-	if(!wxFile::Exists(filename))
-		filename = locales[0]+SLASH+_T("npcs.csv");
-	if(wxFile::Exists(filename))
-		npcs.open(filename);
-	else {
-		NPCRecord rec("26499,24949,7,Arthas");
-		if (rec.model > 0) {
-			npcs.npcs.push_back(rec);
-		}		
-		wxLogMessage(_T("Error: Could not find npcs.csv, unable to create NPC list."));
-	}
+//	filename = locales[langID]+SLASH+_T("npcs.csv");
+//	if(!wxFile::Exists(filename))
+//		filename = locales[0]+SLASH+_T("npcs.csv");
+//	if(wxFile::Exists(filename))
+//		npcs.open(filename);
+//	else {
+//		NPCRecord rec("26499,24949,7,Arthas");
+//		if (rec.model > 0) {
+//			npcs.npcs.push_back(rec);
+//		}
+//		wxLogMessage(_T("Error: Could not find npcs.csv, unable to create NPC list."));
+//	}
 
 	spelleffectsdb.open();
 	GetSpellEffects();
@@ -511,11 +509,6 @@ void ModelViewer::InitDocking()
 	// wxAUI stuff
 	//interfaceManager.SetFrame(this); 
 	interfaceManager.SetManagedWindow(this);
-
-	// OpenGL Canvas
-	interfaceManager.AddPane(canvas, wxAuiPaneInfo().
-				Name(wxT("canvas")).Caption(_("OpenGL Canvas")).
-				CenterPane());
 
 	// Animation frame
     interfaceManager.AddPane(animControl, wxAuiPaneInfo().
@@ -538,100 +531,7 @@ void ModelViewer::InitDocking()
 		Name(wxT("ModelOpened")).Caption(_("ModelOpened")).
 		FloatingSize(wxSize(700,90)).Float().Fixed().Show(false).
 		DestroyOnClose(false));
-
-	// settings frame
-	interfaceManager.AddPane(settingsControl, wxAuiPaneInfo().
-		Name(wxT("Settings")).Caption(_("Settings")).
-		FloatingSize(wxSize(400,440)).Float().TopDockable(false).LeftDockable(false).
-		RightDockable(false).BottomDockable(false).Fixed().Show(false));
 }
-
-void ModelViewer::ResetLayout()
-{
-	interfaceManager.DetachPane(animControl);
-	interfaceManager.DetachPane(charControl);
-	interfaceManager.DetachPane(modelControl);
-	interfaceManager.DetachPane(settingsControl);
-	interfaceManager.DetachPane(canvas);
-	
-	// OpenGL Canvas
-	interfaceManager.AddPane(canvas, wxAuiPaneInfo().
-				Name(wxT("canvas")).Caption(_("OpenGL Canvas")).
-				CenterPane());
-
-	// Animation frame
-    interfaceManager.AddPane(animControl, wxAuiPaneInfo().
-				Name(wxT("animControl")).Caption(_("Animation")).
-				Bottom().Layer(1));
-
-	// Character frame
-	interfaceManager.AddPane(charControl, wxAuiPaneInfo().
-                Name(wxT("charControl")).Caption(_("Character")).
-                BestSize(wxSize(170,700)).Right().Layer(2).Show(isChar));
-
-	interfaceManager.AddPane(modelControl, wxAuiPaneInfo().
-		Name(wxT("Models")).Caption(_("Models")).
-		FloatingSize(wxSize(160,460)).Float().Show(false).
-		DestroyOnClose(false));
-
-	interfaceManager.AddPane(settingsControl, wxAuiPaneInfo().
-		Name(wxT("Settings")).Caption(_("Settings")).
-		FloatingSize(wxSize(400,440)).Float().TopDockable(false).LeftDockable(false).
-		RightDockable(false).BottomDockable(false).Show(false));
-
-    // tell the manager to "commit" all the changes just made
-    interfaceManager.Update();
-}
-
-void ModelViewer::LoadLayout()
-{
-	// Application Config Settings
-	wxFileConfig *pConfig = new wxFileConfig(_T("Global"), wxEmptyString, cfgPath, wxEmptyString, wxCONFIG_USE_LOCAL_FILE);
-
-	wxString layout;
-
-	// Get layout data
-	pConfig->SetPath(_T("/Session"));
-	pConfig->Read(_T("Layout"), &layout);
-
-	// if the layout data exists,  load it.
-	if (!layout.IsNull() && !layout.IsEmpty()) {
-		if (!interfaceManager.LoadPerspective(layout, false))
-			wxLogMessage(_T("Error: Could not load the layout."));
-		else {
-			// No need to display these windows on startup
-			interfaceManager.GetPane(modelControl).Show(false);
-			interfaceManager.GetPane(modelOpened).Show(false);
-			interfaceManager.GetPane(settingsControl).Show(false);
-
-			// If character panel is showing,  hide it
-			interfaceManager.GetPane(charControl).Show(isChar);
-
-			interfaceManager.Update();
-
-			wxLogMessage(_T("Info: GUI Layout loaded from previous session."));
-		}
-	}
-
-	wxDELETE(pConfig);
-}
-
-void ModelViewer::SaveLayout()
-{
-	// Application Config Settings
-	wxFileConfig *pConfig = new wxFileConfig(_T("Global"), wxEmptyString, cfgPath, wxEmptyString, wxCONFIG_USE_LOCAL_FILE);
-
-	pConfig->SetPath(_T("/Session"));
-	
-	// Save GUI layout data
-	wxString layout = interfaceManager.SavePerspective();
-	pConfig->Write(_T("Layout"), layout);
-
-	wxLogMessage(_T("Info: GUI Layout was saved."));
-
-	wxDELETE(pConfig);
-}
-
 
 void ModelViewer::LoadModel(const std::string& fn)
 {
@@ -936,14 +836,6 @@ ModelViewer::~ModelViewer()
 
 	video.render = false;
 
-	// If we have a canvas (which we always should)
-	// Stop rendering, give more power back to the CPU to close this sucker down!
-	//if (canvas)
-	//	canvas->timer.Stop();
-
-	// Save current layout
-	SaveLayout();
-
 	// wxAUI stuff
 	interfaceManager.UnInit();
 
@@ -961,11 +853,6 @@ ModelViewer::~ModelViewer()
 	if (charControl) {
 		charControl->Destroy();
 		charControl = NULL;
-	}
-
-	if (settingsControl) {
-		settingsControl->Destroy();
-		settingsControl = NULL;
 	}
 
 	if (modelControl) {
@@ -1095,8 +982,8 @@ void ModelViewer::OnToggleDock(wxCommandEvent &event)
 	else if (id==ID_SHOW_MODEL)
 		interfaceManager.GetPane(modelControl).Show(true);
 	else if (id==ID_SHOW_SETTINGS) {
-		interfaceManager.GetPane(settingsControl).Show(true);
-		settingsControl->Open();
+//		interfaceManager.GetPane(settingsControl).Show(true);
+//		settingsControl->Open();
 	} else if (id==ID_SHOW_MODELOPENED) {
 		interfaceManager.GetPane(modelOpened).Show(true);
 	}
@@ -1111,22 +998,7 @@ void ModelViewer::OnToggleCommand(wxCommandEvent &event)
 	//switch 
 	switch(id) {
 	case ID_FILE_RESETLAYOUT:
-		ResetLayout();
 		break;
-
-	/*
-	case ID_USE_ANTIALIAS:
-		useAntiAlias = event.IsChecked();
-		break;
-
-
-	case ID_USE_HWACC:
-		if (event.IsChecked() == true)
-			disableHWAcc = false;
-		else
-			disableHWAcc = true;
-		break;
-	*/
 
 	case ID_USE_ENVMAP:
 		video.useEnvMapping = event.IsChecked();
@@ -1156,25 +1028,9 @@ void ModelViewer::OnToggleCommand(wxCommandEvent &event)
 		break;
 
 	case ID_SAVE_CHAR:
-		{
-			wxFileDialog saveDialog(this, _("Save character"), wxEmptyString, wxEmptyString, _T("Character files (*.chr)|*.chr"), wxFD_SAVE|wxFD_OVERWRITE_PROMPT);
-			if (saveDialog.ShowModal()==wxID_OK) {
-				SaveChar(saveDialog.GetPath().mb_str());
-			}
-		}
 		break;
 	case ID_LOAD_CHAR:
-		{
-			wxFileDialog loadDialog(this, _("Load character"), wxEmptyString, wxEmptyString, _T("Character files (*.chr)|*.chr"), wxFD_OPEN|wxFD_FILE_MUST_EXIST);
-			if (loadDialog.ShowModal()==wxID_OK) {
-				for (int i=0; i<NUM_CHAR_SLOTS; i++)
-					charControl->cd.equipment[i] = 0;
-				
-				LoadChar(loadDialog.GetPath().mb_str());
-			}
-		}
 		break;
-
 	case ID_IMPORT_CHAR:
 		break;
 	}
@@ -1234,22 +1090,6 @@ void ModelViewer::OnEffects(wxCommandEvent &event)
 	}
 }
 
-Vec3D ModelViewer::DoSetColor(const Vec3D &defColor)
-{
-	wxColourData data;
-	wxColour dcol((unsigned char)(defColor.x*255.0f), (unsigned char)(defColor.y*255.0f), (unsigned char)(defColor.z*255.0f));
-	data.SetChooseFull(true);
-	data.SetColour(dcol);
-	   
-	wxColourDialog dialog(this, &data);
-
-	if (dialog.ShowModal() == wxID_OK) {
-		wxColour col = dialog.GetColourData().GetColour();
-		return Vec3D(col.Red()/255.0f, col.Green()/255.0f, col.Blue()/255.0f);
-	}
-	return defColor;
-}
-
 void ModelViewer::OnSetEquipment(wxCommandEvent &event)
 {
 	if (isChar) 
@@ -1260,8 +1100,8 @@ void ModelViewer::OnSetEquipment(wxCommandEvent &event)
 
 void ModelViewer::OnCharToggle(wxCommandEvent &event)
 {
-	if (event.GetId() == ID_VIEW_NPC)
-		charControl->selectNPC(UPDATE_NPC);
+//	if (event.GetId() == ID_VIEW_NPC)
+//		charControl->selectNPC(UPDATE_NPC);
 	if (event.GetId() == ID_VIEW_ITEM)
 		charControl->selectItem(UPDATE_SINGLE_ITEM, -1, -1);
 	else if (isChar) 
@@ -1271,137 +1111,7 @@ void ModelViewer::OnCharToggle(wxCommandEvent &event)
 
 void ModelViewer::OnMount(wxCommandEvent &event)
 {
-	/*
-	const unsigned int mountSlot = 0;
-
-	// check if it's mountable
-	if (!canvas->viewingModel) return;
-	Model *root = (Model*)canvas->root->model;
-	if (!root) return;
-	if (root->name.substr(0,8)!="Creature") return;
-	bool mountable = (root->header.nAttachLookup > mountSlot) && (root->attLookup[mountSlot]!=-1);
-	if (!mountable) return;
-
-	std::string fn = charControl->selectCharModel();
-	if (fn.length()==0) return;
-
-	canvas->root->delChildren();
-	Attachment *att = canvas->root->addChild(fn.c_str(), mountSlot, -1);
-
-	wxHostInfo hi;
-	hi = layoutManager->GetDockHost(wxDEFAULT_RIGHT_HOST);
-	if (!charControlDockWindow->IsDocked()) {
-		layoutManager->DockWindow(charControlDockWindow, hi);
-		charControlDockWindow->Show(TRUE);
-	}
-	charMenu->Check(ID_SHOW_UNDERWEAR, true);
-	charMenu->Check(ID_SHOW_EARS, true);
-	charMenu->Check(ID_SHOW_HAIR, true);
-	charMenu->Check(ID_SHOW_FACIALHAIR, true);
-
-	Model *m = (Model*)att->model;
-	charControl->UpdateModel(att);
-
-	menuBar->EnableTop(2, true);
-	isChar = true;
-
-	// find a Mount animation (id = 91, let's hope this doesn't change)
-	for (size_t i=0; i<m->header.nAnimations; i++) {
-		if (m->anims[i].animID == 91) {
-			m->currentAnim = (int)i;
-			break;
-		}
-	}
-	*/
-
 	charControl->selectMount();
-}
-
-void ModelViewer::OnSave(wxCommandEvent &event)
-{
-}
-
-void ModelViewer::SaveChar(const char *fn)
-{
-	std::ofstream f(fn, std::ios_base::out|std::ios_base::trunc);
-	f << canvas->model->name << std::endl;
-	f << charControl->cd.race << " " << charControl->cd.gender << std::endl;
-	f << charControl->cd.skinColor << " " << charControl->cd.faceType << " " << charControl->cd.hairColor << " " << charControl->cd.hairStyle << " " << charControl->cd.facialHair << " " << charControl->cd.hairColor << std::endl;
-	for (int i=0; i<NUM_CHAR_SLOTS; i++) {
-		f << charControl->cd.equipment[i] << std::endl;
-	}
-
-	// 5976 is the ID value for "Guild Tabard"
-	if (charControl->cd.equipment[CS_TABARD] == 5976) {
-		f << charControl->td.Background << " " << charControl->td.Border << " " << charControl->td.BorderColor << " " << charControl->td.Icon << " " << charControl->td.IconColor << std::endl;
-	}
-
-	f << std::endl;
-	f.close();
-}
-
-void ModelViewer::LoadChar(const char *fn)
-{
-	std::string modelname;
-	std::ifstream f(fn);
-	
-	f >> modelname; // model name
-
-	// Clear the existing model
-	if (isWMO) {
-		//canvas->clearAttachments();
-		wxDELETE(canvas->wmo);
-		canvas->wmo = NULL;
-	} else if (isModel) {
-		canvas->clearAttachments();
-		//if (!isChar) // may memory leak
-		//	wxDELETE(canvas->model);
-		canvas->model = NULL;
-	}
-
-	// Load the model
-	LoadModel(modelname);
-	canvas->model->modelType = MT_CHAR;
-
-	f >> charControl->cd.race >> charControl->cd.gender; // race and gender
-	f >> charControl->cd.skinColor >> charControl->cd.faceType >> charControl->cd.hairColor >> charControl->cd.hairStyle >> charControl->cd.facialHair >> charControl->cd.hairColor;
-
-	while (!f.eof()) {
-		for (int i=0; i<NUM_CHAR_SLOTS; i++) {
-			f >> charControl->cd.equipment[i];
-		}
-		break;
-	}
-
-	// 5976 is the ID value for "Guild Tabard"
-	if (charControl->cd.equipment[CS_TABARD] == 5976 && !f.eof()) {
-		f >> charControl->td.Background >> charControl->td.Border >> charControl->td.BorderColor >> charControl->td.Icon >> charControl->td.IconColor;
-		charControl->td.showCustom = true;
-	}
-
-	f.close();
-
-	charControl->RefreshModel();
-	charControl->RefreshEquipment();
-
-	charMenu->Enable(ID_SAVE_CHAR, true);
-	charMenu->Enable(ID_SHOW_UNDERWEAR, true);
-	charMenu->Enable(ID_SHOW_EARS, true);
-	charMenu->Enable(ID_SHOW_HAIR, true);
-	charMenu->Enable(ID_SHOW_FACIALHAIR, true);
-	charMenu->Enable(ID_SHOW_FEET, true);
-	charMenu->Enable(ID_SHEATHE, true);
-	charMenu->Enable(ID_SAVE_EQUIPMENT, true);
-	charMenu->Enable(ID_LOAD_EQUIPMENT, true);
-	charMenu->Enable(ID_CLEAR_EQUIPMENT, true);
-	charMenu->Enable(ID_LOAD_SET, true);
-	charMenu->Enable(ID_LOAD_START, true);
-	charMenu->Enable(ID_LOAD_NPC_START, true);
-	charMenu->Enable(ID_MOUNT_CHARACTER, true);
-	charMenu->Enable(ID_CHAR_RANDOMISE, true);
-
-	// Update interface docking components
-	interfaceManager.Update();
 }
 
 void ModelViewer::OnAbout(wxCommandEvent &event)
@@ -1502,31 +1212,6 @@ void ModelViewer::OnCanvasSize(wxCommandEvent &event)
 			SetSize((curx + difx), (cury + dify));
 		//}
 	}
-}
-
-void ModelViewer::OnTest(wxCommandEvent &event)
-{
-		if (!charControl->charAtt)
-			return;
-
-		if (arrowControl) {
-			arrowControl->Show(true);
-		} else {
-			arrowControl = new ArrowControl(this, wxID_ANY, wxDefaultPosition, charControl->charAtt);
-			/* // wxIFM stuff
-			arrowControlPanel = new wxIFMDefaultChildData(arrowControl, IFM_CHILD_GENERIC, wxDefaultPosition, wxSize(140, 300), true, _("Arrow Control"));
-			arrowControlPanel->m_orientation = IFM_ORIENTATION_FLOAT;
-			interfaceManager->AddChild(arrowControlPanel);
-			interfaceManager->Update(IFM_DEFAULT_RECT,true);
-
-			interfaceManager->ShowChild(arrowControl,true,true);
-			*/
-			// wxAUI
-			interfaceManager.AddPane(arrowControl, wxAuiPaneInfo().
-			Name(wxT("Arrows")).Caption(_("Arrows")).
-			FloatingSize(wxSize(150,300)).Float().Show(true)); //.FloatingPosition(GetStartPosition())
-			interfaceManager.Update();
-		}
 }
 
 void ModelViewer::UpdateControls()

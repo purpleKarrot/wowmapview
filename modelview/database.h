@@ -53,7 +53,6 @@ class ItemSetDB;
 class ItemSubClassDB;
 class ItemVisualDB;
 class ItemVisualEffectDB;
-class NPCDatabase;
 class NPCDB;
 class StartOutfitDB;
 class CreatureTypeDB;
@@ -69,7 +68,6 @@ extern HelmGeosetDB	helmetdb;
 extern ItemVisualEffectDB effectdb;
 extern ItemDisplayDB itemdisplaydb;
 extern CreatureModelDB modeldb;
-extern NPCDatabase npcs;
 extern ItemSetDB setsdb;
 extern CreatureSkinDB skindb;
 extern dbc::CharStartOutfit startdb;
@@ -485,46 +483,6 @@ public:
 	static const size_t NameV400 = 11;		// string
 };
 
-// ============/////////////////=================/////////////////
-
-
-// ------------------------------
-// NPC Stuff
-// -------------------------------
-struct NPCRecord 
-{
-	wxString name;
-	int id, model, type;
-	bool discovery;
-
-	NPCRecord(const char* line);
-	NPCRecord(): id(0), model(0) {}
-	NPCRecord(const NPCRecord &r): id(r.id), name(r.name), model(r.model), type(r.type) {}
-
-	const bool operator< (const NPCRecord &r) const
-	{ 
-		return name < r.name;
-	}
-};
-
-class NPCDatabase 
-{
-public:
-	NPCDatabase(const char* filename);
-	NPCDatabase() { }
-
-	std::vector<NPCRecord> npcs;
-	std::map<int, int> npcLookup;
-
-	void open(wxString filename);
-
-	const NPCRecord& get(int id);
-	const NPCRecord& getByID(int id);
-	bool avaiable(int id);
-	wxString addDiscoveryId(int id, wxString name);
-};
-
-// =========================================
 
 class SpellEffectsDB: public DBCFile
 {
