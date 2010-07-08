@@ -21,8 +21,6 @@ static void destrow_rwops(SDL_RWops* rwops)
 
 Filesystem::File Filesystem::open(const char* filename)
 {
-	std::cout << "opening file: " << filename << std::endl;
-
 	for (ArchiveSet::iterator i = archives.begin(); i != archives.end(); ++i)
 	{
 		HANDLE mpq_a = i->second;
@@ -114,8 +112,99 @@ unsigned char* MPQFile::getPointer()
 	return file->hidden.mem.here;
 }
 
+static std::string getGamePath()
+{
+#ifdef _WIN32
+	HKEY key;
+	LONG l = RegOpenKeyEx(HKEY_LOCAL_MACHINE,
+		"SOFTWARE\\Blizzard Entertainment\\World of Warcraft\\Beta", 0,
+		KEY_QUERY_VALUE, &key);
+	if (l != ERROR_SUCCESS)
+	{
+		l = RegOpenKeyEx(HKEY_LOCAL_MACHINE,
+			"SOFTWARE\\Blizzard Entertainment\\World of Warcraft\\PTR", 0,
+			KEY_QUERY_VALUE, &key);
+	}
+	if (l != ERROR_SUCCESS)
+	{
+		l = RegOpenKeyEx(HKEY_LOCAL_MACHINE,
+			"SOFTWARE\\Blizzard Entertainment\\World of Warcraft", 0,
+			KEY_QUERY_VALUE, &key);
+	}
+	if (l == ERROR_SUCCESS)
+	{
+		DWORD s = 1024;
+		BYTE wow_path[s];
+		DWORD t;
+		l = RegQueryValueEx(key, "InstallPath", 0, &t, (LPBYTE) wow_path, &s);
+		RegCloseKey(key);
+		return std::string(wow_path, &wow_path[t]) + "Data\\";
+	}
+#endif
+
+	const char* wow_path = getenv("WOW_PATH");
+	if (wow_path)
+		return std::string(wow_path) + "Data/";
+
+	return "data/";
+}
+
+static int file_exists(const std::string& path)
+{
+	FILE *f = fopen(path.c_str(), "rb");
+	if (f)
+	{
+		fclose(f);
+		return true;
+	}
+	return false;
+}
+
 Filesystem::Filesystem()
 {
+	std::string gamepath = getGamePath();
+
+	const char* locale = 0;
+
+	const char *locales[] = { "enUS", "enGB", "deDE", "frFR", "zhTW", "ruRU",
+		"esES", "koKR", "zhCN" };
+
+	for (size_t i = 0; i < 9; i++)
+	{
+		if (file_exists(gamepath + locales[i] + "/base-" + locales[i] + ".MPQ"))
+		{
+			locale = locales[i];
+			break;
+		}
+	}
+	std::cout << "Locale: " << locale << std::endl;
+
+	add(gamepath + "patch-3.MPQ");
+	add(gamepath + "patch-2.MPQ");
+	add(gamepath + "patch.MPQ");
+
+	add(gamepath + "expansion3.MPQ");
+	add(gamepath + "expansion2.MPQ");
+	add(gamepath + "expansion.MPQ");
+	add(gamepath + "common-3.MPQ");
+	add(gamepath + "common-2.MPQ");
+	add(gamepath + "common.MPQ");
+
+	add(gamepath + locale + "/patch-" + locale + "-3.MPQ");
+	add(gamepath + locale + "/patch-" + locale + "-2.MPQ");
+	add(gamepath + locale + "/patch-" + locale + ".MPQ");
+
+	add(gamepath + locale + "/expansion3-speech-" + locale + ".MPQ");
+	add(gamepath + locale + "/expansion2-speech-" + locale + ".MPQ");
+	add(gamepath + locale + "/expansion-speech-" + locale + ".MPQ");
+
+	add(gamepath + locale + "/expansion3-locale-" + locale + ".MPQ");
+	add(gamepath + locale + "/expansion2-locale-" + locale + ".MPQ");
+	add(gamepath + locale + "/expansion-locale-" + locale + ".MPQ");
+
+	add(gamepath + locale + "/speech-" + locale + ".MPQ");
+	add(gamepath + locale + "/locale-" + locale + ".MPQ");
+	add(gamepath + locale + "/base-" + locale + ".MPQ");
 }
 
 Filesystem::~Filesystem()

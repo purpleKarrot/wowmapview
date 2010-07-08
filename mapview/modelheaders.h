@@ -115,8 +115,8 @@ struct ModelAnimation {
 	uint32 d2;
 	uint32 playSpeed;  // note: this can't be play speed because it's 0 for some models
 
-	Vec3D boxA, boxB;
-	float rad;
+	Vec3D boxA, boxB; // Minimum Extent, Maximum Extend
+	float rad; // Bounds Radius
 
 	int16 NextAnimation;
 	int16 Index;
@@ -145,11 +145,11 @@ struct ModelBoneDef {
 	int32 keyBoneId;
 	int32 flags;
 	int16 parent; // parent bone index
-	int16 geoid;
+	int16 geoid; // A geoset for this bone.
 	int32 unknown; // new int added to the bone definitions.  Added in WoW 2.0
-	AnimationBlock translation;
-	AnimationBlock rotation;
-	AnimationBlock scaling;
+	AnimationBlock translation; // (short, vec3f)
+	AnimationBlock rotation; // (short, vec4s)
+	AnimationBlock scaling; // (short, vec3f)
 	Vec3D pivot;
 };
 
@@ -197,15 +197,15 @@ struct ModelGeoset {
 struct ModelTexUnit{
 	// probably the texture units
 	// size always >=number of materials it seems
-	uint16 flags;		// Flags
+	uint16 flags;		// Usually 16 for static textures, and 0 for animated textures.
 	uint16 shading;		// If set to 0x8000: shaders. Used in skyboxes to ditch the need for depth buffering. See below.
 	uint16 op;			// Material this texture is part of (index into mat)
 	uint16 op2;			// Always same as above?
-	int16 colorIndex;	// color or -1
-	uint16 flagsIndex;	// more flags...
-	uint16 texunit;		// Texture unit (0 or 1)
-	uint16 mode;			// ? (seems to be always 1)
-	uint16 textureid;	// Texture id (index into global texture list)
+	int16 colorIndex;	// A Color out of the Colors-Block or -1 if none.
+	uint16 flagsIndex;	// RenderFlags (index into render flags, TexFlags)
+	uint16 texunit;		// Index into the texture unit lookup table.
+	uint16 mode;		// See below.
+	uint16 textureid;	// Index into Texture lookup table
 	uint16 texunit2;	// copy of texture unit value?
 	uint16 transid;		// transparency id (index into transparency list)
 	uint16 texanimid;	// texture animation id
@@ -215,6 +215,45 @@ enum TextureFlags {
 	TEXTURE_WRAPX=1,
 	TEXTURE_WRAPY
 };
+/*
+Shader thingey
+Its actually two uint8s defining the shader used. Everything below this is in binary. X represents a variable digit.
+Depending on "Mode", its either "Diffuse_%s_%s" and "Combiners_%s_%s" (Mode=0) or "Diffuse_%s" and "Combiners_%s" (Mode>0).
+
+
+Diffuse
+Mode   Shading     String
+0      0XXX 0XXX   Diffuse_T1_T2
+0      0XXX 1XXX   Diffuse_T1_Env
+0      1XXX 0XXX   Diffuse_Env_T2
+0      1XXX 1XXX   Diffuse_Env_Env
+
+1      0XXX XXXX   Diffuse_T1
+1      1XXX XXXX   Diffuse_Env
+
+Combiners
+Mode   Shading     String
+0      X000 XXXX   Combiners_Opaque_%s
+0      X001 XXXX   Combiners_Mod_%s
+0      X011 XXXX   Combiners_Add_%s
+0      X100 XXXX   Combiners_Mod2x_%s
+
+0      XXXX X000   Combiners_%s_Opaque
+0      XXXX X001   Combiners_%s_Mod
+0      XXXX X011   Combiners_%s_Add
+0      XXXX X100   Combiners_%s_Mod2x
+0      XXXX X110   Combiners_%s_Mod2xNA
+0      XXXX X111   Combiners_%s_AddNA
+
+1      X000 XXXX   Combiners_Opaque
+1      X001 XXXX   Combiners_Mod
+1      X010 XXXX   Combiners_Decal
+1      X011 XXXX   Combiners_Add
+1      X100 XXXX   Combiners_Mod2x
+1      X101 XXXX   Combiners_Fade
+
+*/
+
 #define	RENDERFLAGS_UNLIT	1
 #define	RENDERFLAGS_UNFOGGED	2
 #define	RENDERFLAGS_TWOSIDED	4

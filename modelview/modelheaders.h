@@ -31,90 +31,6 @@ struct PhysicsSettings {
 	float BoundingRadius;
 };
 
-#ifndef WotLK
-struct ModelHeader {
-	char id[4];
-	uint8 version[4];
-	uint32 nameLength;
-	uint32 nameOfs;
-	uint32 type;
-
-	uint32 nGlobalSequences;
-	uint32 ofsGlobalSequences;
-	uint32 nAnimations;
-	uint32 ofsAnimations;
-	uint32 nAnimationLookup;
-	uint32 ofsAnimationLookup;
-	uint32 nD;
-	uint32 ofsD;
-	uint32 nBones;
-	uint32 ofsBones;
-	uint32 nKeyBoneLookup;
-	uint32 ofsKeyBoneLookup;
-
-	uint32 nVertices;
-	uint32 ofsVertices;
-	uint32 nViews;
-	uint32 ofsViews;
-
-	uint32 nColors;
-	uint32 ofsColors;
-
-	uint32 nTextures;
-	uint32 ofsTextures;
-
-	uint32 nTransparency; // H
-	uint32 ofsTransparency;
-	uint32 nI;   // always unused ?
-	uint32 ofsI;
-	uint32 nTexAnims;	// J
-	uint32 ofsTexAnims;
-	uint32 nTexReplace;
-	uint32 ofsTexReplace;
-
-	uint32 nTexFlags;
-	uint32 ofsTexFlags;
-	uint32 nBoneLookup;
-	uint32 ofsBoneLookup;
-
-	uint32 nTexLookup;
-	uint32 ofsTexLookup;
-
-	uint32 nTexUnitLookup;		// L
-	uint32 ofsTexUnitLookup;
-	uint32 nTransparencyLookup; // M
-	uint32 ofsTransparencyLookup;
-	uint32 nTexAnimLookup;
-	uint32 ofsTexAnimLookup;
-
-	float floats[14];
-
-	uint32 nBoundingTriangles;
-	uint32 ofsBoundingTriangles;
-	uint32 nBoundingVertices;
-	uint32 ofsBoundingVertices;
-	uint32 nBoundingNormals;
-	uint32 ofsBoundingNormals;
-
-	uint32 nAttachments; // O
-	uint32 ofsAttachments;
-	uint32 nAttachLookup; // P
-	uint32 ofsAttachLookup;
-	uint32 nEvents; // Q
-	uint32 ofsEvents;
-	uint32 nLights; // R
-	uint32 ofsLights;
-	uint32 nCameras; // S
-	uint32 ofsCameras;
-	uint32 nCameraLookup;
-	uint32 ofsCameraLookup;
-	uint32 nRibbonEmitters; // U
-	uint32 ofsRibbonEmitters;
-	uint32 nParticleEmitters; // V
-	uint32 ofsParticleEmitters;
-
-};
-#else
 struct ModelHeader {
 	char id[4];
 	uint8 version[4];
@@ -197,7 +113,7 @@ struct ModelHeader {
 	uint32 ofsParticleEmitters; // Spells and weapons, doodads and loginscreens use them. Blood dripping of a blade? Particles.
 
 };
-#endif
+
 
 #define	ANIMATION_HANDSCLOSED	15
 #define	ANIMATION_MOUNT			91
@@ -245,14 +161,10 @@ struct ModelAnimationWotLK {
 	int16 Index;
 };
 
-// sub-block in block E - animation data, size 28 bytes, WotLK 20 bytes
+// sub-block in block E - animation data
 struct AnimationBlock {
 	int16 type;		// interpolation type (0=none, 1=linear, 2=hermite)
 	int16 seq;		// global sequence id or -1
-	#ifndef WotLK
-	uint32 nRanges;
-	uint32 ofsRanges;
-	#endif
 	uint32 nTimes;
 	uint32 ofsTimes;
 	uint32 nKeys;
@@ -304,32 +216,24 @@ struct ModelVertex {
 	int unk1, unk2; // always 0,0 so this is probably unused
 };
 
-/// Lod part, 
 struct ModelView {
-#ifdef WotLK
 	char id[4];				 // Signature
-#endif
-    uint32 nIndex;
-    uint32 ofsIndex; // int16, Vertices in this model (index into vertices[])
-    uint32 nTris;
-	uint32 ofsTris;	 // int16[3], indices
-    uint32 nProps;
-	uint32 ofsProps; // int32, additional vtx properties
-    uint32 nSub;
-	uint32 ofsSub;	 // ModelGeoset, materials/renderops/submeshes
-    uint32 nTex;
-	uint32 ofsTex;	 // ModelTexUnit, material properties/textures
+	uint32 nIndex, ofsIndex; // Vertices in this model (index into vertices[])
+	uint32 nTris, ofsTris;	 // indices
+	uint32 nProps, ofsProps; // additional vtx properties
+	uint32 nSub, ofsSub;	 // materials/renderops/submeshes
+	uint32 nTex, ofsTex;	 // material properties/textures
 	int32 lod;				 // LOD bias?
 };
 
 
-/// Lod part, One material + render operation
+/// One material + render operation
 struct ModelGeoset {
 	uint32 id;		// mesh part id?
-	uint16 vstart;	// first vertex, Starting vertex number.
-	uint16 vcount;	// num vertices, Number of vertices.
-	uint16 istart;	// first index, Starting triangle index (that's 3* the number of triangles drawn so far).
-	uint16 icount;	// num indices, Number of triangle indices.
+	uint16 vstart;	// first vertex
+	uint16 vcount;	// num vertices
+	uint16 istart;	// first index
+	uint16 icount;	// num indices
 	uint16 nBones;		// number of bone indices, Number of elements in the bone lookup table.
 	uint16 StartBones;		// ? always 1 to 4, Starting index in the bone lookup table.
 	uint16 d5;		// ?
@@ -339,7 +243,7 @@ struct ModelGeoset {
 };
 
 #define	TEXTUREUNIT_STATIC	16
-/// Lod part, A texture unit (sub of material)
+/// A texture unit (sub of material)
 struct ModelTexUnit{
 	// probably the texture units
 	// size always >=number of materials it seems
@@ -531,13 +435,9 @@ struct ModelParticleEmitterDef {
 	AnimationBlock HorizontalRange; // They can do it horizontally too! (range: 0 to 2*pi)
 	AnimationBlock Gravity; // Fall down, apple!
 	AnimationBlock Lifespan; // Everyone has to die.
-#ifdef WotLK
 	int32 unknown;
-#endif
 	AnimationBlock EmissionRate; // Stread your particles, emitter.
-#ifdef WotLK
 	int32 unknown2;
-#endif
 	AnimationBlock EmissionAreaLength; // Well, you can do that in this area.
 	AnimationBlock EmissionAreaWidth;
 	AnimationBlock Gravity2; // A second gravity? Its strong.

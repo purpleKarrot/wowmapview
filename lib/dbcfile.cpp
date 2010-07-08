@@ -4,6 +4,8 @@
 
 void DBCFileBase::load(const char* filename)
 {
+	std::cout << "loading DBC: " << filename << std::endl;
+
 	MPQFile f(filename);
 	assert(!f.isEof());
 

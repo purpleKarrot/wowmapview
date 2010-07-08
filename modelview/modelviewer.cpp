@@ -524,28 +524,19 @@ void ModelViewer::LoadModel(const std::string& fn)
 	// check if this is a character model
 	isChar = boost::algorithm::starts_with(fn, "character");
 
-	Attachment *modelAtt = NULL;
+	Attachment *modelAtt = canvas->LoadCharModel(fn.c_str());
+	if (!modelAtt)
+	{
+		wxLogMessage(_T("Error: Failed to load the model - %s"), fn.c_str());
+		return;
+	}
 
-	if (isChar) {
-		modelAtt = canvas->LoadCharModel(fn.c_str());
-
-		// error check
-		if (!modelAtt) {
-			wxLogMessage(_T("Error: Failed to load the model - %s"), fn.c_str());
-			return;
-		}
-
+	if (isChar)
+	{
 		canvas->model->modelType = MT_CHAR;
-
-	} else {
-		modelAtt = canvas->LoadCharModel(fn.c_str()); //  change it from LoadModel, don't sure it's right or not.
-
-		// error check
-		if (!modelAtt) {
-			wxLogMessage(_T("Error: Failed to load the model - %s"), fn.c_str());
-			return;
-		}
-
+	}
+	else
+	{
 		canvas->model->modelType = MT_NORMAL;
 	}
 
@@ -852,55 +843,8 @@ ModelViewer::~ModelViewer()
 	}
 }
 
-inline int file_exists(const std::string& path)
-{
-	FILE* f = fopen(path.c_str(), "rb");
-	if (f) {
-		fclose(f);
-		return true;
-	}
-	return false;
-}
-
 bool ModelViewer::InitMPQArchives()
 {
-	const char* locale;
-	const char* locales[] = { "enUS", "enGB", "deDE", "frFR", "zhTW",
-		"ruRU", "esES", "koKR", "zhCN" };
-
-//	char path[512];
-	for (size_t i = 0; i < 9; i++)
-	{
-		if (file_exists(gamepath + locales[i] + "/base-" + locales[i] + ".MPQ"))
-		{
-			locale = locales[i];
-			break;
-		}
-	}
-
-	FS().add(gamepath + "patch-3.MPQ");
-	FS().add(gamepath + "patch-2.MPQ");
-	FS().add(gamepath + "patch.MPQ");
-
-	FS().add(gamepath + locale + "/patch-" + locale + "-3.MPQ");
-	FS().add(gamepath + locale + "/patch-" + locale + "-2.MPQ");
-	FS().add(gamepath + locale + "/patch-" + locale + ".MPQ");
-
-	FS().add(gamepath + "expansion3.MPQ");
-	FS().add(gamepath + "expansion2.MPQ");
-	FS().add(gamepath + "lichking.MPQ");
-	FS().add(gamepath + "expansion.MPQ");
-	FS().add(gamepath + "common-3.MPQ");
-	FS().add(gamepath + "common-2.MPQ");
-	FS().add(gamepath + "common.MPQ");
-
-	FS().add(gamepath + locale + "/expansion3-locale-" + locale + ".MPQ");
-	FS().add(gamepath + locale + "/expansion2-locale-" + locale + ".MPQ");
-	FS().add(gamepath + locale + "/lichking-locale-" + locale + ".MPQ");
-	FS().add(gamepath + locale + "/expansion-locale-" + locale + ".MPQ");
-	FS().add(gamepath + locale + "/locale-" + locale + ".MPQ");
-	FS().add(gamepath + locale + "/base-" + locale + ".MPQ");
-
 	// Checks and logs the "TOC" version of the interface files that were loaded
 	MPQFile f("Interface\\FrameXML\\FrameXML.TOC");
 	if (f.isEof()) {
@@ -951,19 +895,6 @@ bool ModelViewer::InitMPQArchives()
 
 bool ModelViewer::Init()
 {
-	/*
-	// Set our display mode	
-	//if (video.GetCompatibleWinMode(video.curCap)) {
-		video.SetMode();
-		if (!video.render) // Something bad must of happened - find a new working display mode
-			video.GetAvailableMode();
-	/*
-	} else {
-		wxLogMessage(_T("Error: Failed to find a compatible graphics mode.  Finding first available display mode..."));
-		video.GetAvailableMode(); // Get first available display mode that supports the current desktop colour bitdepth
-	}
-	*/
-	
 	wxLogMessage(_T("Setting OpenGL render state..."));
 	video.InitGL();
 

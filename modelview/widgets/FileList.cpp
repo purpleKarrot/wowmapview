@@ -94,6 +94,12 @@ void FileList::select(const QModelIndex& index)
 		if (filterModelsSearch(path))
 			g_modelViewer->LoadModel(path);
 
+		if (filterWMOsSearch(path))
+			g_canvas->LoadWMO(path);
+
+		if (filterADTsSearch(path))
+			g_canvas->LoadADT(path);
+
 		if (filterSoundsSearch(path))
 		{
 			static SoundPlayer sound_player;

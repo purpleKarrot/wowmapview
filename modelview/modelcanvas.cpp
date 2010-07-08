@@ -179,8 +179,9 @@ Attachment* ModelCanvas::LoadCharModel(const char *fn)
 	return att;
 }
 
-void ModelCanvas::LoadADT(wxString fn)
+void ModelCanvas::LoadADT(const std::string& param)
 {
+	wxString fn(param.c_str(), wxConvUTF8);
 	OldinitShaders();
 
 	root->model = NULL;
@@ -200,10 +201,11 @@ void ModelCanvas::LoadADT(wxString fn)
 	}
 }
 
-void ModelCanvas::LoadWMO(wxString fn)
+void ModelCanvas::LoadWMO(const std::string& fn)
 {
-	if (!wmo) {
-		wmo = new WMO(std::string(fn.mb_str()));
+	if (!wmo)
+	{
+		wmo = new WMO(fn);
 		root->model = wmo;
 	}
 }

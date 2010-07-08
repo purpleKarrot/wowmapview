@@ -130,8 +130,8 @@ public:
 
 	Attachment* LoadModel(const char* fn);
 	Attachment* LoadCharModel(const char* fn);
-	void LoadWMO(wxString fn);
-	void LoadADT(wxString fn);
+	void LoadWMO(const std::string& fn);
+	void LoadADT(const std::string& fn);
 	
 	// Various toggles
 	bool init;

@@ -3,9 +3,26 @@
 #include "modelcanvas.h"
 #include "widgets/MainWindow.hpp"
 
+class Camera: public qglviewer::Camera
+{
+	float zNear() const
+	{
+		return 0.1f;
+	}
+
+	float zFar() const
+	{
+		return 10000.f;
+	}
+};
+
 qtcanvas::qtcanvas(ModelCanvas* old) :
 	old(old)
 {
+	qglviewer::Camera* oldcam = camera();
+	setCamera(new Camera);
+	delete oldcam;
+
 	MainWindow::add_central(this);
 }
 

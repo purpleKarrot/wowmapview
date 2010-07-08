@@ -337,7 +337,7 @@ MapTile::MapTile(wxString filename): topnode(0,0,16), nWMO(0), nMDX(0)
 	}
 */
 
-	MPQFile f((char *)filename.c_str());
+	MPQFile f((const char *)filename.mb_str());
 	ok = !f.isEof();
 	if (!ok) {
 		wxLogMessage(_T("Error: loading %s"),filename.c_str());

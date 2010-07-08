@@ -36,8 +36,6 @@
 	#define snprintf sprintf_s
 #endif 
 
-extern std::string gamepath;
-
 extern int gameVersion;
 
 extern bool useLocalFiles;
@@ -89,8 +87,6 @@ wxString Vec3DToString(Vec3D vec);
 int wxStringToInt(const wxString& str);
 float round(float input, int limit);
 unsigned short _SwapTwoBytes (unsigned short w);
-
-void getGamePath();
 
 // Byte Swapping
 #if defined _WINDOWS || defined _MSWIN

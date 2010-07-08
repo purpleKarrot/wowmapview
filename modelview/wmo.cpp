@@ -7,12 +7,12 @@ WMO::WMO(std::string name): ManagedItem(name)
 	MPQFile f(name.c_str());
 	ok = !f.isEof();
 	if (!ok) {
-		wxLogMessage(_T("Error: Couldn't load WMO %s."), name.c_str());
+		std::cerr << "Error: Couldn't load WMO " << name << std::endl;
 		f.close();
 		return;
 	}
 
-	wxLogMessage(_T("Loading WMO %s"), name.c_str());
+	std::cout << "Loading WMO " << name << std::endl;
 
 	char fourcc[5];
 	uint32 size;
@@ -252,8 +252,7 @@ WMO::WMO(std::string name): ManagedItem(name)
 	f.close();
 	delete[] texbuf;
 
-	//for (int i=0; i<nGroups; i++) groups[i].initDisplayList();
-
+	for (int i=0; i<nGroups; i++) groups[i].initDisplayList();
 }
 
 WMO::~WMO()
@@ -687,7 +686,7 @@ void WMOGroup::initDisplayList()
 	wxString fname;
 	fname.Printf(_T("%s_%03d.wmo"), temp.c_str(), num);
 
-	MPQFile gf((char *)fname.c_str());
+	MPQFile gf((const char *)fname.mb_str());
     gf.seek(0x14);
 
 	// read header

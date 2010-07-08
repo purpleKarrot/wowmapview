@@ -55,8 +55,6 @@ bool WowModelViewApp::OnInit()
 	SetVendorName(_T("WoWModelViewer"));
 	SetAppName(_T("WoWModelViewer"));
 
-	getGamePath();
-
 	// Now create our main frame.
 	frame = new ModelViewer();
 	SetTopWindow(frame);

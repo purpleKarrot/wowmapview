@@ -47,8 +47,6 @@ public:
 
 	File open(const char* filename);
 
-	void add(const std::string& filename);
-
 	bool exists(const char* filename);
 	int getSize(const char* filename);
 
@@ -59,6 +57,9 @@ public:
 
 	void getFileLists(std::set<FileTreeItem>& dest, //
 		bool filterfunc(std::string const&) = defaultFilterFunc);
+
+private:
+	void add(const std::string& filename);
 
 private:
 	friend class MPQFile;
