@@ -326,7 +326,7 @@ MapTile::MapTile(int x0, int z0, char* filename, bool bigAlpha): x(x0), z(z0), t
 					if (FS().exists(texshader.c_str()))
 						texpath = texshader;
 
-				textures.push_back(wow::Texture(texpath.c_str()));
+				textures.push_back(wow::texture(texpath.c_str()));
 			}
 			delete[] buf;
 		}
@@ -814,7 +814,7 @@ void MapChunk::initTextures(const char *basename, int first, int last)
 	char buf[256];
 	for (int i=first; i<=last; i++) {
 		sprintf(buf, "%s.%d.blp", basename, i);
-		wTextures.push_back(wow::Texture(buf));
+		wTextures.push_back(wow::texture(buf));
 	}
 }
 

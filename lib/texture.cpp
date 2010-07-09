@@ -155,7 +155,7 @@ static void LoadBLP(GLuint id, const char* filename)
 	//}
 }
 
-TextureI::TextureI(std::string const& filename) :
+texture_instance::texture_instance(std::string const& filename) :
 	path(filename)
 {
 	glGenTextures(1, &name);
@@ -164,13 +164,13 @@ TextureI::TextureI(std::string const& filename) :
 	std::cout << "Loading " << path << std::endl;
 }
 
-TextureI::~TextureI()
+texture_instance::~texture_instance()
 {
 	glDeleteTextures(1, &name);
 	std::cout << "Deleting " << path << std::endl;
 }
 
-void TextureI::bind() const
+void texture_instance::bind() const
 {
 	glBindTexture(GL_TEXTURE_2D, name);
 }

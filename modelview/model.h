@@ -143,11 +143,7 @@ public:
 	bool calc;
 	Model *model;
 	void calcMatrix(Bone* allbones, int anim, int time, bool rotate=true);
-#ifdef WotLK
 	void init(MPQFile &f, ModelBoneDef &b, uint32 *global, MPQFile *animfiles);
-#else
-	void init(MPQFile &f, ModelBoneDef &b, uint32 *global);
-#endif
 };
 
 class TextureAnim {
@@ -265,6 +261,21 @@ public:
 	}
 };
 
+struct CharModelDetails {
+	bool closeRHand;
+	bool closeLHand;
+
+	bool isChar;
+	bool isMounted;
+
+	void Reset() {
+		closeRHand = false;
+		closeLHand = false;
+		isChar = false;
+		isMounted = false;
+	}
+};
+
 class Model: public ManagedItem, public Displayable
 {
 	// VBO Data
@@ -320,11 +331,9 @@ public:
 
 	ModelHeader header;
 	ModelCamera cam;
-#ifdef WotLK
 	wxString fullname;
 	wxString modelname;
 	wxString lodname;
-#endif
 	
 	std::vector<ModelRenderPass> passes;
 	std::vector<ModelGeoset> geosets;

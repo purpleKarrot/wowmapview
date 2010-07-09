@@ -541,7 +541,7 @@ void initGlobalVBOs()
 void World::initDisplay()
 {
 	// temp code until I figure out water properly
-	water = wow::Texture("XTextures\\river\\lake_c.10.blp");
+	water = wow::texture("XTextures\\river\\lake_c.10.blp");
 
 	// default strip indices
 	short *defstrip = new short[stripsize];

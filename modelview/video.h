@@ -16,16 +16,21 @@
 typedef GLuint TextureID;
 
 
-class Texture : public ManagedItem {
+class Texture: public ManagedItem
+{
 public:
-	int w,h;
+	int w, h;
 	GLuint id;
 	bool compressed;
 
-	Texture(std::string name):ManagedItem(name), w(0), h(0), id(0), compressed(false) {}
-	void getPixels(unsigned char *buff, unsigned int format=GL_RGBA);
-
+	Texture(std::string name) :
+		ManagedItem(name), w(0), h(0), id(0), compressed(false)
+	{
+	}
 };
+
+void getPixels(const Texture& texture, unsigned char *buff);
+
 
 class TextureManager : public Manager<GLuint> {
 	

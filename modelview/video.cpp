@@ -447,10 +447,16 @@ void TextureManager::doDelete(GLuint id)
 }
 
 
-void Texture::getPixels(unsigned char* buf, unsigned int format)
+//void Texture::getPixels(unsigned char* buf, unsigned int format)
+//{
+//	glBindTexture(GL_TEXTURE_2D, id);
+//	glGetTexImage(GL_TEXTURE_2D, 0, format, GL_UNSIGNED_BYTE, buf);
+//}
+
+void getPixels(const Texture& texture, unsigned char* buf)
 {
-	glBindTexture(GL_TEXTURE_2D, id);
-	glGetTexImage(GL_TEXTURE_2D, 0, format, GL_UNSIGNED_BYTE, buf);
+	glBindTexture(GL_TEXTURE_2D, texture.id);
+	glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_UNSIGNED_BYTE, buf);
 }
 
 void decompressDXTC(GLint format, int w, int h, size_t size, unsigned char *src, unsigned char *dest)

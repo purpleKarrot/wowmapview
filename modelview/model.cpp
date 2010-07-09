@@ -8,6 +8,7 @@
 #include <algorithm>
 #include "util.h"
 
+#define	ANIMATION_HANDSCLOSED	15
 #define GL_BUFFER_OFFSET(i) ((char *)(0) + (i))
 
 int globalTime = 0;
@@ -121,9 +122,7 @@ void AnimManager::Next() {
 	}
 	
 	Frame = anims[animList[PlayIndex].AnimID].timeStart;
-#ifdef WotLK
 	TotalFrames = GetFrameCount();
-#endif
 }
 
 void AnimManager::Prev() {
@@ -141,9 +140,7 @@ void AnimManager::Prev() {
 	}
 
 	Frame = anims[animList[PlayIndex].AnimID].timeEnd;
-#ifdef WotLK
 	TotalFrames = GetFrameCount();
-#endif
 }
 
 int AnimManager::Tick(int time) {
@@ -333,7 +330,6 @@ Model::Model(std::string name, bool forceAnim) : ManagedItem(name), forceAnim(fo
 		return;
 	}
 
-#ifdef WotLK
 	modelname = tempname;
 
 	if (header.nameOfs != 304 && header.nameOfs != 320) {
@@ -342,14 +338,6 @@ Model::Model(std::string name, bool forceAnim) : ManagedItem(name), forceAnim(fo
 		//f.close();
 		//return;
 	}
-#else
-	if (header.nameOfs != 336) {
-		wxLogMessage(_T("Error:\t\tInvalid model nameOfs=%d/%d!  May be corrupted."), header.nameOfs, sizeof(ModelHeader));
-		//ok = false;
-		//f.close();
-		//return;
-	}
-#endif
 
 	// Error check
 	// 9 1 0 0 = WoW 4.0 models
@@ -777,7 +765,7 @@ void Model::initCommon(MPQFile &f)
 		// just use the first LOD/view
 
 		// indices - allocate space, too
-#ifdef WotLK
+
 		// remove suffix .M2
 		lodname = modelname.BeforeLast(_T('.'));
 		fullname = lodname;
@@ -810,22 +798,6 @@ void Model::initCommon(MPQFile &f)
 		// render ops
 		ModelGeoset *ops = (ModelGeoset*)(g.getBuffer() + view->ofsSub);
 		ModelTexUnit *tex = (ModelTexUnit*)(g.getBuffer() + view->ofsTex);
-#else // not WotLK
-		ModelView *view = (ModelView*)(f.getBuffer() + header.ofsViews);
-
-		// Indices,  Triangles
-		uint16 *indexLookup = (uint16*)(f.getBuffer() + view->ofsIndex);
-		uint16 *triangles = (uint16*)(f.getBuffer() + view->ofsTris);
-		nIndices = view->nTris;
-		indices = new uint16[nIndices];
-		for (size_t i = 0; i<nIndices; i++) {
-	        indices[i] = indexLookup[triangles[i]];
-		}
-
-		// render ops
-		ModelGeoset *ops = (ModelGeoset*)(f.getBuffer() + view->ofsSub);
-		ModelTexUnit *tex = (ModelTexUnit*)(f.getBuffer() + view->ofsTex);
-#endif // WotLK
 
 		ModelRenderFlags *renderFlags = (ModelRenderFlags*)(f.getBuffer() + header.ofsTexFlags);
 		uint16 *texlookup = (uint16*)(f.getBuffer() + header.ofsTexLookup);
@@ -944,9 +916,8 @@ void Model::initCommon(MPQFile &f)
 			passes.push_back(pass);
 		}
 
-#ifdef WotLK
 		g.close();
-#endif
+
 		// transparent parts come later
 		std::sort(passes.begin(), passes.end());
 	}
@@ -991,9 +962,6 @@ void Model::initAnimated(MPQFile &f)
 	if (header.nAnimations > 0) {
 		anims = new ModelAnimation[header.nAnimations];
 
-		#ifndef WotLK
-		memcpy(anims, f.getBuffer() + header.ofsAnimations, header.nAnimations * sizeof(ModelAnimation));
-		#else
 		ModelAnimationWotLK animsWotLK;
 		char tempname[256];
 		animfiles = new MPQFile[header.nAnimations];
@@ -1018,7 +986,6 @@ void Model::initAnimated(MPQFile &f)
 				g_modelViewer->modelOpened->Add(wxString(tempname, wxConvUTF8));
 			}
 		}
-		#endif
 
 		animManager = new AnimManager(anims);
 	}
@@ -1029,12 +996,9 @@ void Model::initAnimated(MPQFile &f)
 		ModelBoneDef *mb = (ModelBoneDef*)(f.getBuffer() + header.ofsBones);
 		for (size_t i=0; i<header.nBones; i++) {
 			//if (i==0) mb[i].rotation.ofsRanges = 1.0f;
-#ifdef WotLK
+
 			bones[i].model = this;
 			bones[i].init(f, mb[i], globalSequences, animfiles);
-#else
-			bones[i].init(f, mb[i], globalSequences);
-#endif
 		}
 
 		// Block keyBoneLookup is a lookup table for Key Skeletal Bones, hands, arms, legs, etc.
@@ -1046,7 +1010,6 @@ void Model::initAnimated(MPQFile &f)
 		}
 	}
 
-#ifdef WotLK
 	// free MPQFile
 	if (header.nAnimations > 0) {
 		for(size_t i=0; i<header.nAnimations; i++) {
@@ -1055,7 +1018,6 @@ void Model::initAnimated(MPQFile &f)
 		}
 		delete [] animfiles;
 	}
-#endif
 
 	// Index at ofsAnimations which represents the animation in AnimationData.dbc. -1 if none.
 	if (header.nAnimationLookup > 0) {
@@ -1482,17 +1444,11 @@ bool ModelRenderPass::init(Model *m)
 
 		// emissive colors
 		if (color!=-1 && m->colors && m->colors[color].color.uses(0)) {
-#ifdef WotLK /* Alfred 2008.10.02 buggy opacity make model invisable, TODO */
 			Vec3D c = m->colors[color].color.getValue(0,m->animtime);
 			if (m->colors[color].opacity.uses(m->anim)) {
 				float o = m->colors[color].opacity.getValue(m->anim,m->animtime);
 				ocol.w = o;
 			}
-#else
-			Vec3D c = m->colors[color].color.getValue(m->anim,m->animtime);
-			float o = m->colors[color].opacity.getValue(m->anim,m->animtime);
-			ocol.w = o;
-#endif
 
 			if (unlit) {
 				ocol.x = c.x; ocol.y = c.y; ocol.z = c.z;
@@ -1506,12 +1462,8 @@ bool ModelRenderPass::init(Model *m)
 
 		// opacity
 		if (opacity!=-1) {
-#ifdef WotLK /* Alfred 2008.10.02 buggy opacity make model invisable, TODO */
 			if (m->transparency && m->transparency[opacity].trans.uses(0))
 				ocol.w *= m->transparency[opacity].trans.getValue(0, m->animtime);
-#else
-			ocol.w *= m->transparency[opacity].trans.getValue(m->anim, m->animtime);
-#endif
 		}
 
 		// exit and return false before affecting the opengl render state
@@ -1976,7 +1928,6 @@ void TextureAnim::init(MPQFile &f, ModelTexAnimDef &mta, uint32 *global)
 	scale.init(mta.scale, f, global);
 }
 
-#ifdef WotLK
 void Bone::init(MPQFile &f, ModelBoneDef &b, uint32 *global, MPQFile *animfiles)
 {
 	calc = false;
@@ -1995,26 +1946,6 @@ void Bone::init(MPQFile &f, ModelBoneDef &b, uint32 *global, MPQFile *animfiles)
 	rot.fix(fixCoordSystemQuat);
 	scale.fix(fixCoordSystem2);
 }
-#else
-void Bone::init(MPQFile &f, ModelBoneDef &b, uint32 *global)
-{
-	calc = false;
-
-	parent = b.parent;
-	pivot = fixCoordSystem(b.pivot);
-	billboard = (b.flags & MODELBONE_BILLBOARD) != 0;
-	//billboard = false;
-
-	boneDef = b;
-	
-	trans.init(b.translation, f, global);
-	rot.init(b.rotation, f, global);
-	scale.init(b.scaling, f, global);
-	trans.fix(fixCoordSystem);
-	rot.fix(fixCoordSystemQuat);
-	scale.fix(fixCoordSystem2);
-}
-#endif
 
 void ModelAttachment::init(MPQFile &f, ModelAttachmentDef &mad, uint32 *global)
 {

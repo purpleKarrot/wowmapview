@@ -8,7 +8,6 @@ qt4_wrap_cpp(MOC_SOURCE
 
 add_executable(wowmapview
   ${MOC_SOURCE}
-  lib/texture.cpp
   widgets/FileList.cpp
   widgets/MapItemModel.cpp
   widgets/MainWindow.cpp

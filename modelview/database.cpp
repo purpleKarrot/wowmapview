@@ -111,15 +111,9 @@ int CharSectionsDB::getColorsFor(unsigned int race, unsigned int gender, unsigne
 	for(Iterator i=begin(); i!=end(); ++i)
 	{
 		// don't allow NPC skins ;(
-		#ifndef WotLK
-		if (i->Get<unsigned int>(Race)==race && i->Get<unsigned int>(Gender)==gender && i->Get<unsigned int>(Type)==type && i->Get<unsigned int>(Section)==section && i->Get<unsigned int>(IsNPC)==npc) {
-			n++;
-		}
-		#else
 		if (i->Get<unsigned int>(Race)==race && i->Get<unsigned int>(Gender)==gender && i->Get<unsigned int>(Type)==type && i->Get<unsigned int>(Section)==section) {
 			n++;
 		}
-		#endif
 	}
 
     return n;
@@ -176,15 +170,9 @@ int CharSectionsDB::getSectionsFor(unsigned int race, unsigned int gender, unsig
 #endif // for worgen female
 	for(Iterator i=begin(); i!=end(); ++i)
 	{
-		#ifndef WotLK
-		if (i->Get<unsigned int>(Race)==race && i->Get<unsigned int>(Gender)==gender && i->Get<unsigned int>(Type)==type && i->Get<unsigned int>(Color)==color && i->Get<unsigned int>(IsNPC)==npc) {
-			n++;
-		}
-		#else
 		if (i->Get<unsigned int>(Race)==race && i->Get<unsigned int>(Gender)==gender && i->Get<unsigned int>(Type)==type && i->Get<unsigned int>(Color)==color) {
 			n++;
 		}
-		#endif
 	}
     return n;
 }
@@ -193,13 +181,8 @@ CharSectionsDB::Record CharSectionsDB::getByParams(unsigned int race, unsigned i
 {
 	for(Iterator i=begin(); i!=end(); ++i)
 	{
-		#ifndef WotLK
-		if (i->Get<unsigned int>(Race)==race && i->Get<unsigned int>(Gender)==gender && i->Get<unsigned int>(Type)==type && i->Get<unsigned int>(Section)==section && i->Get<unsigned int>(Color)==color && i->Get<unsigned int>(IsNPC)==npc)
-			return (*i);
-		#else
 		if (i->Get<unsigned int>(Race)==race && i->Get<unsigned int>(Gender)==gender && i->Get<unsigned int>(Type)==type && i->Get<unsigned int>(Section)==section && i->Get<unsigned int>(Color)==color)
 			return (*i);
-		#endif
 	}
 	throw NotFound();
 }

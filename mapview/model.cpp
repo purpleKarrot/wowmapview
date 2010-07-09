@@ -49,7 +49,7 @@ Model::Model(std::string name, bool forceAnim) : forceAnim(forceAnim)
 
 	for (int i=0; i<TEXTURE_MAX; i++) {
 		specialTextures[i] = -1;
-		replaceTextures[i] = wow::Texture();
+		replaceTextures[i] = wow::texture();
 		useReplaceTextures[i] = false;
 	}
 
@@ -254,10 +254,10 @@ void Model::initCommon(MPQFile &f)
 			if (texdef[i].type == 0) {
 				strncpy(texname, (const char*)(f.getBuffer() + texdef[i].nameOfs), texdef[i].nameLen);
 				texname[texdef[i].nameLen] = 0;
-				textures[i] = wow::Texture(texname);
+				textures[i] = wow::texture(texname);
 			} else {
 				// special texture - only on characters and such...
-                textures[i] = wow::Texture();
+                textures[i] = wow::texture();
 				specialTextures[i] = texdef[i].type;
 
 				if (texdef[i].type < TEXTURE_MAX)
@@ -265,7 +265,7 @@ void Model::initCommon(MPQFile &f)
 
 				if (texdef[i].type == 3) {
 					// a fix for weapons with type-3 textures.
-					replaceTextures[texdef[i].type] = wow::Texture("Item\\ObjectComponents\\Weapon\\ArmorReflect4.BLP");
+					replaceTextures[texdef[i].type] = wow::texture("Item\\ObjectComponents\\Weapon\\ArmorReflect4.BLP");
 				}
 			}
 		}
@@ -876,10 +876,10 @@ void ModelLight::init(MPQFile &f, ModelLightDef &mld, int *global)
 	tdir = dir = Vec3D(0,1,0); // no idea
 	type = mld.type;
 	parent = mld.bone;
-	ambColor.init(mld.ambColor, f, global);
-	ambIntensity.init(mld.ambIntensity, f, global);
-	diffColor.init(mld.color, f, global);
-	diffIntensity.init(mld.intensity, f, global);
+	ambColor.init(mld.ambientColor, f, global);
+	ambIntensity.init(mld.ambientIntensity, f, global);
+	diffColor.init(mld.diffuseColor, f, global);
+	diffIntensity.init(mld.diffuseIntensity, f, global);
 }
 
 void ModelLight::setup(int time, GLuint l)

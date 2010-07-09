@@ -9,6 +9,8 @@
 #include "mpq.hpp"
 #include "globalvars.h"
 
+#define	ANIMATION_MOUNT			91
+
 int slotOrder[] = {	
 	CS_SHIRT,
 	CS_HEAD,
@@ -269,14 +271,6 @@ void CharControl::UpdateModel(Attachment *a)
 	cd.maxHairColor = chardb.getColorsFor(race, gender, CharSectionsDB::HairType, 0, 0);
 	cd.maxFacialHair = facialhairdb.getStylesFor(race, gender);
 
-#ifndef	WotLK
-	// Re-set the menu
-	if (cd.useNPC)
-		g_modelViewer->optMenu->Check(ID_USE_NPCSKINS, 1);
-	else
-		g_modelViewer->optMenu->Check(ID_USE_NPCSKINS, 0);
-#endif
-
 	g_modelViewer->charMenu->Check(ID_SHOW_FEET, 0);
 	// ----
 
@@ -498,49 +492,6 @@ void CharControl::OnCheck(wxCommandEvent &event)
 		bSheathe = event.IsChecked();
 	else if (event.GetId()==ID_SHOW_FEET) 
 		cd.showFeet = event.IsChecked();
-#ifndef	WotLK
-	else if (event.GetId()==ID_USE_NPCSKINS) {		
-		// All this extra checking is to modify the the 'bounds' of the max skins on the spin button.
-		size_t p1 = model->name.find_first_of('\\', 0);
-		size_t p2 = model->name.find_first_of('\\', p1+1);
-		size_t p3 = model->name.find_first_of('\\', p2+1);
-
-		std::string raceName = model->name.substr(p1+1,p2-p1-1);
-		std::string genderName = model->name.substr(p2+1,p3-p2-1);
-
-		unsigned int race, gender;
-
-		try {
-			CharRacesDB::Record raceRec = racedb.getByName(wxString(raceName.c_str(), wxConvUTF8));
-			race = raceRec.Get<unsigned int>(CharRacesDB::RaceID);
-			gender = (genderName == "female" || genderName == "Female" || genderName == "FEMALE") ? 1 : 0;
-		} catch (std::exception&) {
-			// wtf
-			race = 0;
-			gender = 0;
-		}
-
-		// If the race is a goblin, then ignore this
-		if (race == 9 && gameVersion < 40000) {
-			g_modelViewer->optMenu->Check(ID_USE_NPCSKINS, true);
-			return;
-		}
-
-		//  set our flag
-		cd.useNPC = event.IsChecked();
-
-		cd.maxSkinColor = chardb.getColorsFor(race, gender, CharSectionsDB::SkinType, 0, cd.useNPC);
-		if (cd.maxSkinColor==0 && cd.useNPC==1) {
-			wxMessageBox(_T("The selected character does not have any NPC skins!\nSwitching back to normal character skins."));
-			cd.useNPC = 0;
-			cd.maxSkinColor = chardb.getColorsFor(race, gender, CharSectionsDB::SkinType, 0, cd.useNPC);
-		} else {
-			cd.skinColor = 0;
-			spins[0]->SetValue(0);
-			spins[0]->SetRange(0, cd.maxSkinColor-1);
-		}
-	}
-#endif
 
 	//  Update controls associated
 	RefreshEquipment();
@@ -1654,7 +1605,7 @@ void CharTexture::compose(TextureID texID)
 
 		tempbuf.resize(tex.w * tex.h * 4);
 
-		tex.getPixels(&tempbuf[0]);
+		getPixels(tex, &tempbuf[0]);
 
 		// blit the texture region over the original
 		for (int y = 0, dy = coords.ypos; y < coords.ysize; y++, dy++)

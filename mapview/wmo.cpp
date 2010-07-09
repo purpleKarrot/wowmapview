@@ -76,7 +76,7 @@ WMO::WMO(std::string name): name(name), groups(0), nTextures(0), nGroups(0),
 
 				std::string texpath(texbuf+m->nameStart);
 
-				m->tex = wow::Texture(texpath.c_str());
+				m->tex = wow::texture(texpath);
 			}
 		}
 		else if (strcmp(fourcc,"MOGN")==0) {

@@ -193,21 +193,12 @@ public:
 	static const size_t Race = 1;		// uint
 	static const size_t Gender = 2;		// uint
 	static const size_t Type = 3;		// uint
-	#ifndef WotLK
-	static const size_t Section = 4;	// uint
-	static const size_t Color = 5;		// uint
-	static const size_t Tex1 = 6;		// string
-	static const size_t Tex2 = 7;		// string
-	static const size_t Tex3 = 8;		// string
-	static const size_t IsNPC = 9;		// uint | 1 for npc
-	#else
 	static const size_t Tex1 = 4;		// string
 	static const size_t Tex2 = 5;		// string
 	static const size_t Tex3 = 6;		// string
 	//static const size_t Flags = 7;		// uint		(As specified in http://www.madx.dk/wowdev/wiki/index.php?title=CharSections.dbc)
 	static const size_t Section = 8;	// uint
 	static const size_t Color = 9;		// uint
-	#endif
 
 	/// Types
 	static const size_t SkinType = 0;
@@ -272,15 +263,9 @@ public:
 	static const size_t Race = 0;				// uint
 	static const size_t Gender = 1;				// uint
 	static const size_t Style = 2;				// uint
-	#ifndef WotLK
-	static const size_t Geoset100 = 6;			// uint
-	static const size_t Geoset300 = 7;			// uint
-	static const size_t Geoset200 = 8;			// uint
-	#else
 	static const size_t Geoset100 = 3;			// uint
 	static const size_t Geoset300 = 4;			// uint
 	static const size_t Geoset200 = 5;			// uint
-	#endif
 	// uint
 	// uint
 	

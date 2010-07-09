@@ -19,6 +19,7 @@
 
 // stl
 #include <string>
+#include <boost/scoped_ptr.hpp>
 
 // our headers
 #include "model.h"
@@ -140,7 +141,7 @@ public:
 
 	// Models / Attachments
 	Model *model;
-	WMO *wmo;
+	boost::scoped_ptr<WMO> wmo;
 	MapTile *adt;
 
 	Attachment *root;

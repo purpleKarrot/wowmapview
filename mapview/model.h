@@ -2,7 +2,7 @@
 #define MODEL_H
 
 #include "vec3d.h"
-#include "lib/texture.hpp"
+#include "texture.hpp"
 
 class Model;
 class Bone;
@@ -167,9 +167,9 @@ public:
 	// ===============================
 	// Texture data
 	// ===============================
-	std::vector<wow::Texture> textures;
+	std::vector<wow::texture> textures;
 	int specialTextures[TEXTURE_MAX];
-	wow::Texture replaceTextures[TEXTURE_MAX];
+	wow::texture replaceTextures[TEXTURE_MAX];
 	bool useReplaceTextures[TEXTURE_MAX];
 
 

@@ -88,9 +88,6 @@ enum ObjectID {
 	ID_SHADER_DEATH,
 	ID_TEST,
 
-#ifndef	WotLK
-	ID_USE_NPCSKINS,
-#endif
 	ID_DEFAULT_DOODADS,
 	ID_USE_ANTIALIAS,
 	ID_USE_ENVMAP,
@@ -594,15 +591,4 @@ enum TextureTypes {
 	TEXTURE_INVENTORY_ART2		// Used on inventory art M2s (2): ui-buffon.m2 and forcedbackpackitem.m2 (LUA::Model:ReplaceIconTexture("texture"))
 };
 
-enum TextureFlags {
-	TEXTURE_WRAPX=1,
-	TEXTURE_WRAPY
-};
-
-enum ModelLightTypes {
-	MODELLIGHT_DIRECTIONAL=0,
-	MODELLIGHT_POINT
-};
-
 #endif
-

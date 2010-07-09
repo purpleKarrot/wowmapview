@@ -55,7 +55,7 @@ public:
 
 	short *mapstrip,*mapstrip2;
 
-	wow::Texture water;
+	wow::texture water;
 	Vec3D camera, lookat;
 	Frustum frustum;
 	int cx,cz;

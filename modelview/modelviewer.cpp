@@ -76,9 +76,6 @@ BEGIN_EVENT_TABLE(ModelViewer, wxFrame)
 	EVT_MENU(ID_LOAD_CHAR, ModelViewer::OnToggleCommand)
 	EVT_MENU(ID_IMPORT_CHAR, ModelViewer::OnToggleCommand)
 
-#ifndef	WotLK
-	EVT_MENU(ID_USE_NPCSKINS, ModelViewer::OnCharToggle)
-#endif
 	EVT_MENU(ID_DEFAULT_DOODADS, ModelViewer::OnToggleCommand)
 	EVT_MENU(ID_USE_ANTIALIAS, ModelViewer::OnToggleCommand)
 	EVT_MENU(ID_USE_HWACC, ModelViewer::OnToggleCommand)
@@ -336,20 +333,9 @@ void ModelViewer::InitMenu()
 		effectsMenu->Append(ID_ENCHANTS, _("Apply Enchants"));
 		effectsMenu->Append(ID_EQCREATURE_R, _("Creature Right-Hand"));
 		effectsMenu->Append(ID_EQCREATURE_L, _("Creature Left-Hand"));
-#ifndef	WotLK
-		effectsMenu->Append(ID_SPELLS, _("Spell Effects"));
-		effectsMenu->Enable(ID_SPELLS, false);
-		effectsMenu->Append(ID_SHADER_DEATH, _("Death Effect"));
-		effectsMenu->Enable(ID_SHADER_DEATH, false);
-		effectsMenu->Append(ID_TEST, _T("TEST"));
-#endif
 
 		// Options menu
 		optMenu = new wxMenu;
-#ifndef	WotLK
-		optMenu->AppendCheckItem(ID_USE_NPCSKINS, _("Use npc character skins"));
-		optMenu->Check(ID_USE_NPCSKINS, false);
-#endif
 		optMenu->AppendCheckItem(ID_DEFAULT_DOODADS, _("Always show default doodads in WMOs"));
 		optMenu->Check(ID_DEFAULT_DOODADS, true);
 		optMenu->AppendSeparator();

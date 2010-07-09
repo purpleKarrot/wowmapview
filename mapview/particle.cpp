@@ -30,7 +30,6 @@ T lifeRamp(float life, float mid, const T &a, const T &b, const T &c)
 	else return interpolate<T>((life-mid) / (1.0f-mid),b,c);
 }
 
-
 void ParticleSystem::init(MPQFile &f, ModelParticleEmitterDef &mta, int *globals)
 {
 	speed.init	 (mta.EmissionSpeed, f, globals);
@@ -142,7 +141,7 @@ void ParticleSystem::update(float dt)
 		float ftospawn = (dt * frate / flife) + rem;
 		if (ftospawn < 1.0f) {
 			rem = ftospawn;
-			if (rem<0) 
+			if (rem < 0) 
 				rem = 0;
 		} else {
 			int tospawn = (int)ftospawn;
@@ -152,7 +151,6 @@ void ParticleSystem::update(float dt)
 
 			rem = ftospawn - (float)tospawn;
 
-			
 			float w = areal.getValue(manim, mtime) * 0.5f;
 			float l = areaw.getValue(manim, mtime) * 0.5f;
 			float spd = speed.getValue(manim, mtime);
@@ -253,10 +251,6 @@ void ParticleSystem::draw()
 	default:
 		break;
 	}
-	
-	//glDisable(GL_LIGHTING);
-	//glDisable(GL_CULL_FACE);
-	//glDepthMask(GL_FALSE);
 
 	texture.get().bind();
 

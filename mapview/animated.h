@@ -20,9 +20,6 @@ inline T interpolate(const float r, const T &v1, const T &v2)
 template<class T>
 inline T interpolateHermite(const float r, const T &v1, const T &v2, const T &in, const T &out)
 {
-	// dummy
-    //return interpolate<T>(r,v1,v2);
-
 	// basis functions
 	float h1 = 2.0f*r*r*r - 3.0f*r*r + 1.0f;
 	float h2 = -2.0f*r*r*r + 3.0f*r*r;
@@ -88,11 +85,7 @@ public:
 	}
 };
 
-#ifdef LESS_MEMORY
-#define	MAX_ANIMATED	1
-#else
 #define	MAX_ANIMATED	500
-#endif
 /*
 	Generic animated value class:
 
@@ -117,11 +110,6 @@ public:
 
 	bool uses(unsigned int anim)
 	{
-#ifdef LESS_MEMORY
-		if (anim >= MAX_ANIMATED)
-			anim = 0;
-#endif
-
 		if (seq>-1)
 			anim = 0;
 		return (data[anim].size() > 0);
@@ -129,11 +117,6 @@ public:
 
 	T getValue(int anim, int time)
 	{
-#ifdef LESS_MEMORY
-		if (anim >= MAX_ANIMATED)
-			anim = 0;
-#endif
-
 		// obtain a time value and a data range
 		if (seq>-1) {
 			// TODO
@@ -192,10 +175,6 @@ public:
 		if( b.nTimes == 0 )
 			return;
 
-#ifdef LESS_MEMORY
-		sizes = b.nTimes = b.nKeys = MAX_ANIMATED;
-#endif
-
 		for(size_t j=0; j < b.nTimes; j++) {
 			AnimationBlockHeader* pHeadTimes = (AnimationBlockHeader*)(f.getBuffer() + b.ofsTimes + j*sizeof(AnimationBlockHeader));
 		
@@ -240,10 +219,6 @@ public:
 		sizes = b.nTimes;
 		if( b.nTimes == 0 )
 			return;
-
-#ifdef LESS_MEMORY
-		sizes = b.nTimes = b.nKeys = MAX_ANIMATED;
-#endif
 
 		for(size_t j=0; j < b.nTimes; j++) {
 			AnimationBlockHeader* pHeadTimes = (AnimationBlockHeader*)(f.getBuffer() + b.ofsTimes + j*sizeof(AnimationBlockHeader));

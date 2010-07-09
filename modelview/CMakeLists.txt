@@ -8,7 +8,6 @@ include(${wxWidgets_USE_FILE})
 find_package(GLEW REQUIRED)
 include_directories(${GLEW_INCLUDE_PATH})
 
-add_definitions(-DWotLK)
 add_definitions(-D_LINUX)
 add_definitions(-D_LINUX32)
 

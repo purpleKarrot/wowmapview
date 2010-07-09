@@ -305,6 +305,6 @@ void Liquid::initTextures(const char *basename, int first, int last)
 	char buf[256];
 	for (int i=first; i<=last; i++) {
 		sprintf(buf, "%s.%d.blp", basename, i);
-		textures.push_back(wow::Texture(buf));
+		textures.push_back(wow::texture(buf));
 	}
 }

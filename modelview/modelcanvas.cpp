@@ -62,7 +62,6 @@ ModelCanvas::ModelCanvas(wxWindow *parent, VideoCaps *caps)
 
 	// Set all our pointers to null
 	model =	0;			// Main model.
-	wmo = 0;			// world map object model
 	adt = 0;			// ADT
 	animControl = 0;
 	curAtt = 0;			// Current Attachment
@@ -144,7 +143,7 @@ Attachment* ModelCanvas::LoadModel(const char *fn)
 	clearAttachments();
 	root->model = NULL;
 
-	wxDELETE(wmo);
+	wmo.reset();
 
 	model = new Model(fn, true);
 	if (!model->ok) {
@@ -164,7 +163,7 @@ Attachment* ModelCanvas::LoadCharModel(const char *fn)
 	clearAttachments();
 	root->model = NULL;
 
-	wxDELETE(wmo);
+	wmo.reset();
 
 	// Create new one
 	model = new Model(fn, true);
@@ -203,11 +202,8 @@ void ModelCanvas::LoadADT(const std::string& param)
 
 void ModelCanvas::LoadWMO(const std::string& fn)
 {
-	if (!wmo)
-	{
-		wmo = new WMO(fn);
-		root->model = wmo;
-	}
+	wmo.reset(new WMO(fn));
+	root->model = wmo.get();
 }
 
 void ModelCanvas::clearAttachments()

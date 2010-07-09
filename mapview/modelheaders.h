@@ -98,7 +98,6 @@ struct ModelHeader {
 	uint32 ofsRibbonEmitters; // Things swirling around. See the CoT-entrance for light-trails.
 	uint32 nParticleEmitters; // V, Effects
 	uint32 ofsParticleEmitters; // Spells and weapons, doodads and loginscreens use them. Blood dripping of a blade? Particles.
-
 };
 
 // block B - animations
@@ -109,8 +108,9 @@ struct ModelAnimation {
 
 	float moveSpeed;
 
-	uint32 loopType;
 	uint32 flags;
+	uint16 probability; // This is used to determine how often the animation is played. For all animations of the same type, this adds up to 0x7FFF (32767).
+	uint16 unused;
 	uint32 d1;
 	uint32 d2;
 	uint32 playSpeed;  // note: this can't be play speed because it's 0 for some models
@@ -138,12 +138,19 @@ struct AnimationBlock {
 	uint32 ofsKeys;
 };
 
+struct FakeAnimationBlock {
+	uint32 nTimes;
+	uint32 ofsTimes;
+	uint32 nKeys;
+	uint32 ofsKeys;
+};
+
 #define	MODELBONE_BILLBOARD	8
 #define	MODELBONE_TRANSFORM	512
 // block E - bones
 struct ModelBoneDef {
-	int32 keyBoneId;
-	int32 flags;
+	int32 keyboneid; // Back-reference to the key bone lookup table. -1 if this is no key bone.
+	int32 flags; // Only known flags: 8 - billboarded and 512 - transformed
 	int16 parent; // parent bone index
 	int16 geoid; // A geoset for this bone.
 	int32 unknown; // new int added to the bone definitions.  Added in WoW 2.0
@@ -207,14 +214,15 @@ struct ModelTexUnit{
 	uint16 mode;		// See below.
 	uint16 textureid;	// Index into Texture lookup table
 	uint16 texunit2;	// copy of texture unit value?
-	uint16 transid;		// transparency id (index into transparency list)
-	uint16 texanimid;	// texture animation id
+	uint16 transid;		// Index into transparency lookup table.
+	uint16 texanimid;	// Index into uvanimation lookup table. 
 };
 
 enum TextureFlags {
 	TEXTURE_WRAPX=1,
 	TEXTURE_WRAPY
 };
+
 /*
 Shader thingey
 Its actually two uint8s defining the shader used. Everything below this is in binary. X represents a variable digit.
@@ -259,6 +267,7 @@ Mode   Shading     String
 #define	RENDERFLAGS_TWOSIDED	4
 #define	RENDERFLAGS_BILLBOARD	8
 #define	RENDERFLAGS_ZBUFFERED	16
+
 // block X - render flags
 struct ModelRenderFlags {
 	uint16 flags;
@@ -266,12 +275,15 @@ struct ModelRenderFlags {
 };
 
 // block G - color defs
+// For some swirling portals and volumetric lights, these define vertex colors. 
+// Referenced from the Texture Unit blocks in the LOD part. Contains a separate timeline for transparency values. 
+// If no animation is used, the given value is constant.
 struct ModelColorDef {
-	AnimationBlock color;
-	AnimationBlock opacity;
+	AnimationBlock color; // (short, vec3f) Three floats. One for each color.
+	AnimationBlock opacity; // (short, short) 0 - transparent, 0x7FFF - opaque.
 };
 
-// block H - transp defs
+// block H - transparency defs
 struct ModelTransDef {
 	AnimationBlock trans;
 };
@@ -288,34 +300,30 @@ enum ModelLightTypes {
 	MODELLIGHT_DIRECTIONAL=0,
 	MODELLIGHT_POINT
 };
+
 struct ModelLightDef {
-	int16 type;
-	int16 bone;
-	Vec3D pos;
-	AnimationBlock ambColor;
-	AnimationBlock ambIntensity;
-	AnimationBlock color;
-	AnimationBlock intensity;
-	AnimationBlock attStart;
-	AnimationBlock attEnd;
-	AnimationBlock unk1;
+	int16 type; // 0: Directional, 1: Point light
+	int16 bone; // If its attached to a bone, this is the bone. Else here is a nice -1.
+	Vec3D pos; // Position, Where is this light?
+	AnimationBlock ambientColor; // The ambient color. Three floats for RGB.
+	AnimationBlock ambientIntensity; // A float for the intensity.
+	AnimationBlock diffuseColor; // The diffuse color. Three floats for RGB.
+	AnimationBlock diffuseIntensity; // A float for the intensity again.
+	AnimationBlock attenuationStart; // This defines, where the light starts to be.
+	AnimationBlock attenuationEnd; // And where it stops.
+	AnimationBlock useAttenuation; // Its an integer and usually 1.
 };
 
 struct ModelCameraDef {
-	int32 id;
-	float fov, farclip, nearclip;
-	AnimationBlock transPos;
-	Vec3D pos;
-	AnimationBlock transTarget;
-	Vec3D target;
-	AnimationBlock rot;
-};
-
-struct FakeAnimationBlock {
-	uint32 nTimes;
-	uint32 ofsTimes;
-	uint32 nKeys;
-	uint32 ofsKeys;
+	int32 id; // 0 is potrait camera, 1 characterinfo camera; -1 if none; referenced in CamLookup_Table
+	float fov; // No radians, no degrees. Multiply by 35 to get degrees.
+	float farclip; // Where it stops to be drawn.
+	float nearclip; // Far and near. Both of them.
+	AnimationBlock transPos; // How the cameras position moves. Should be 3*3 floats. (? WoW parses 36 bytes = 3*3*sizeof(float))
+	Vec3D pos; // float, Where the camera is located.
+	AnimationBlock transTarget; // How the target moves. Should be 3*3 floats. (?)
+	Vec3D target; // float, Where the camera points to.
+	AnimationBlock rot; // The camera can have some roll-effect. Its 0 to 2*Pi.
 };
 
 struct ModelParticleParams {
@@ -352,13 +360,16 @@ struct ModelParticleEmitterDef {
 	int32 nParticleFileName;
 	int32 ofsParticleFileName; // TODO
 	int8 blend;
-	int8 EmitterType;
-	int16 ParticleColor;
-	int8 ParticleType;
-	int8 HeadorTail;
-	int16 TextureTileRotation;
-	int16 cols;
-	int16 rows;
+	int8 EmitterType; // EmitterType	 1 - Plane (rectangle), 2 - Sphere, 3 - Spline? (can't be bothered to find one)
+	int16 ParticleColor; // This one is used so you can assign a color to specific particles. They loop over all 
+						 // particles and compare +0x2A to 11, 12 and 13. If that matches, the colors from the dbc get applied.
+	int8 ParticleType; // 0 "normal" particle, 
+					   // 1 large quad from the particle's origin to its position (used in Moonwell water effects)
+					   // 2 seems to be the same as 0 (found some in the Deeprun Tram blinky-lights-sign thing)
+	int8 HeadorTail; // 0 - Head, 1 - Tail, 2 - Both
+	int16 TextureTileRotation; // TODO, Rotation for the texture tile. (Values: -1,0,1)
+	int16 cols; // How many different frames are on that texture? People should learn what rows and cols are.
+	int16 rows; // Its different everywhere. I just took it random.
 	AnimationBlock EmissionSpeed; // All of the following blocks should be floats.
 	AnimationBlock SpeedVariation; // Variation in the flying-speed. (range: 0 to 1)
 	AnimationBlock VerticalRange; // Drifting away vertically. (range: 0 to pi)
@@ -375,7 +386,6 @@ struct ModelParticleEmitterDef {
 	AnimationBlock en;
 };
 
-
 struct ModelRibbonEmitterDef {
 	int32 id;
 	int32 bone;
@@ -385,18 +395,18 @@ struct ModelRibbonEmitterDef {
 	int32 nUnknown;
 	int32 ofsUnknown;
 	AnimationBlock color;
-	AnimationBlock opacity;
-	AnimationBlock above;
-	AnimationBlock below;
-	float res, length, Emissionangle;
+	AnimationBlock opacity; // And an alpha value in a short, where: 0 - transparent, 0x7FFF - opaque.
+	AnimationBlock above; // The height above.
+	AnimationBlock below; // The height below. Do not set these to the same!
+	float res; // This defines how smooth the ribbon is. A low value may produce a lot of edges.
+	float length; // The length aka Lifespan.
+	float Emissionangle; // use arcsin(val) to get the angle in degree
 	int16 s1, s2;
-	AnimationBlock unk1;
-	AnimationBlock unk2;
-	int32 unknown;
+	AnimationBlock unk1; // (short)
+	AnimationBlock unk2; // (boolean)
+	int32 unknown; // This looks much like just some Padding to the fill up the 0x10 Bytes, always 0
 };
 
 
 #pragma pack(pop)
-
-
 #endif

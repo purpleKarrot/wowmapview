@@ -3,26 +3,6 @@
 
 #pragma pack(push,1)
 
-struct Vertex {
-    float tu, tv;
-    float x, y, z;
-};
-
-struct CharModelDetails {
-	bool closeRHand;
-	bool closeLHand;
-
-	bool isChar;
-	bool isMounted;
-
-	void Reset() {
-		closeRHand = false;
-		closeLHand = false;
-		isChar = false;
-		isMounted = false;
-	}
-};
-
 //float floats[14];
 struct PhysicsSettings {
 	Vec3D VertexBox[2];
@@ -111,16 +91,32 @@ struct ModelHeader {
 	uint32 ofsRibbonEmitters; // Things swirling around. See the CoT-entrance for light-trails.
 	uint32 nParticleEmitters; // V, Effects
 	uint32 ofsParticleEmitters; // Spells and weapons, doodads and loginscreens use them. Blood dripping of a blade? Particles.
-
 };
 
+// block B - animations
+struct ModelAnimationWotLK {
+	uint16 animID;
+	uint16 subAnimID;
+	uint32 length;
 
-#define	ANIMATION_HANDSCLOSED	15
-#define	ANIMATION_MOUNT			91
-#define	ANIMATION_LOOPED		0x20 // flags
-// block B - animations, size 68 bytes, WotLK 64 bytes
+	float moveSpeed;
+
+	uint32 flags;
+	uint16 probability; // This is used to determine how often the animation is played. For all animations of the same type, this adds up to 0x7FFF (32767).
+	uint16 unused;
+	uint32 d1;
+	uint32 d2;
+	uint32 playSpeed;  // note: this can't be play speed because it's 0 for some models
+
+	Vec3D boxA, boxB; // Minimum Extent, Maximum Extend
+	float rad; // Bounds Radius
+
+	int16 NextAnimation;
+	int16 Index;
+};
+
 struct ModelAnimation {
-	uint32 animID; // AnimationDataDB.ID
+	uint32 animID;
 	uint32 timeStart;
 	uint32 timeEnd;
 
@@ -140,25 +136,10 @@ struct ModelAnimation {
 	int16 Index;
 };
 
-struct ModelAnimationWotLK {
-	int16 animID; // AnimationDataDB.ID
-	int16 subAnimID;
-	uint32 length;
-
-	float moveSpeed;
-
-	uint32 flags;
-	uint16 probability; // This is used to determine how often the animation is played. For all animations of the same type, this adds up to 0x7FFF (32767).
-	uint16 unused;
-	uint32 d1;
-	uint32 d2;
-	uint32 playSpeed;  // note: this can't be play speed because it's 0 for some models
-
-	Vec3D boxA, boxB; // Minimum Extent, Maximum Extend
-	float rad;  // Bounds Radius
-
-	int16 NextAnimation;
-	int16 Index;
+struct AnimationBlockHeader
+{
+	uint32 nEntrys;
+	uint32 ofsEntrys;
 };
 
 // sub-block in block E - animation data
@@ -171,20 +152,12 @@ struct AnimationBlock {
 	uint32 ofsKeys;
 };
 
-#ifdef WotLK
 struct FakeAnimationBlock {
 	uint32 nTimes;
 	uint32 ofsTimes;
 	uint32 nKeys;
 	uint32 ofsKeys;
 };
-
-struct AnimationBlockHeader
-{
-	uint32 nEntrys;
-	uint32 ofsEntrys;
-};
-#endif
 
 #define	MODELBONE_BILLBOARD	8
 #define	MODELBONE_TRANSFORM	512
@@ -202,9 +175,7 @@ struct ModelBoneDef {
 };
 
 struct ModelTexAnimDef {
-	AnimationBlock trans; // (short, vec3f)
-	AnimationBlock rot; // (short, vec4s)
-	AnimationBlock scale; // (short, vec3f)
+	AnimationBlock trans, rot, scale;
 };
 
 struct ModelVertex {
@@ -260,6 +231,12 @@ struct ModelTexUnit{
 	uint16 transid;		// Index into transparency lookup table.
 	uint16 texanimid;	// Index into uvanimation lookup table. 
 };
+
+enum TextureFlags {
+	TEXTURE_WRAPX=1,
+	TEXTURE_WRAPY
+};
+
 /*
 Shader thingey
 Its actually two uint8s defining the shader used. Everything below this is in binary. X represents a variable digit.
@@ -304,11 +281,10 @@ Mode   Shading     String
 #define	RENDERFLAGS_TWOSIDED	4
 #define	RENDERFLAGS_BILLBOARD	8
 #define	RENDERFLAGS_ZBUFFERED	16
+
 // block X - render flags
 struct ModelRenderFlags {
 	uint16 flags;
-	//unsigned char f1;
-	//unsigned char f2;
 	uint16 blend;
 };
 
@@ -332,6 +308,11 @@ struct ModelTextureDef {
 	uint32 flags;
 	uint32 nameLen;
 	uint32 nameOfs;
+};
+
+enum ModelLightTypes {
+	MODELLIGHT_DIRECTIONAL=0,
+	MODELLIGHT_POINT
 };
 
 struct ModelLightDef {
@@ -359,24 +340,6 @@ struct ModelCameraDef {
 	AnimationBlock rot; // The camera can have some roll-effect. Its 0 to 2*Pi.
 };
 
-
-#ifndef WotLK
-struct ModelParticleParams {
-	float mid;
-	uint32 colors[3];
-	float sizes[3];
-	int16 d[10];
-	float unk[3];
-	float scales[3];
-	float slowdown;
-	float rotation;	//Sprite Rotation
-	float unknown;
-	float Rot1[3];	//Model Rotation 1
-	float Rot2[3];	//Model Rotation 2
-	float Trans[3];	//Model Translation
-	float f2[6];
-};
-#else
 struct ModelParticleParams {
 	FakeAnimationBlock colors; 	// (short, vec3f)	This one points to 3 floats defining red, green and blue.
 	FakeAnimationBlock opacity;      // (short, short)		Looks like opacity (short), Most likely they all have 3 timestamps for {start, middle, end}.
@@ -397,7 +360,6 @@ struct ModelParticleParams {
 	int32 nUnknownReference;
 	int32 ofsUnknownReferenc;
 };
-#endif
 
 #define	MODELPARTICLE_DONOTTRAIL			0x10
 #define	MODELPARTICLE_DONOTBILLBOARD	0x1000
@@ -411,12 +373,6 @@ struct ModelParticleEmitterDef {
 	int32 ofsModelFileName;
 	int32 nParticleFileName;
 	int32 ofsParticleFileName; // TODO
-#ifndef WotLK
-	int16 blend;
-	int16 EmitterType;
-	int16 ParticleType;
-	int16 TextureTileRotation;
-#else
 	int8 blend;
 	int8 EmitterType; // EmitterType	 1 - Plane (rectangle), 2 - Sphere, 3 - Spline? (can't be bothered to find one)
 	int16 ParticleColor; // This one is used so you can assign a color to specific particles. They loop over all 
@@ -426,7 +382,6 @@ struct ModelParticleEmitterDef {
 					   // 2 seems to be the same as 0 (found some in the Deeprun Tram blinky-lights-sign thing)
 	int8 HeadorTail; // 0 - Head, 1 - Tail, 2 - Both
 	int16 TextureTileRotation; // TODO, Rotation for the texture tile. (Values: -1,0,1)
-#endif
 	int16 cols; // How many different frames are on that texture? People should learn what rows and cols are.
 	int16 rows; // Its different everywhere. I just took it random.
 	AnimationBlock EmissionSpeed; // All of the following blocks should be floats.
@@ -444,7 +399,6 @@ struct ModelParticleEmitterDef {
 	ModelParticleParams p;
 	AnimationBlock en;
 };
-
 
 struct ModelRibbonEmitterDef {
 	int32 id;
@@ -464,9 +418,7 @@ struct ModelRibbonEmitterDef {
 	int16 s1, s2;
 	AnimationBlock unk1; // (short)
 	AnimationBlock unk2; // (boolean)
-	#ifdef WotLK
 	int32 unknown; // This looks much like just some Padding to the fill up the 0x10 Bytes, always 0
-	#endif
 };
 
 /* 
