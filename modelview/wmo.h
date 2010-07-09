@@ -20,21 +20,24 @@ class WMOInstance;
 class WMOManager;
 //class Liquid;
 
-struct WMOBatch {
+struct WMOBatch
+{
 	signed char bytes[12];
 	unsigned int indexStart;
 	unsigned short indexCount, vertexStart, vertexEnd;
 	unsigned char flags, texture;
 };
 
-struct WMOVertColor{
+struct WMOVertColor
+{
 	uint8 b, g, r, a;
 };
 
-class WMOGroup {
+class WMOGroup
+{
 	WMO *wmo;
 	int flags;
-	GLuint dl,dl_light;
+	GLuint dl, dl_light;
 	Vec3D center;
 	float rad;
 	int num;
@@ -54,8 +57,8 @@ public:
 	WMOVertColor *VertexColors;
 	uint32 *IndiceToVerts;
 
-	Vec3D v1,v2;
-	Vec3D b1,b2;
+	Vec3D v1, v2;
+	Vec3D b1, b2;
 	Vec3D vmin, vmax;
 	bool indoor, hascv;
 	bool visible;
@@ -64,7 +67,11 @@ public:
 	bool outdoorLights;
 	std::string name, desc;
 
-	WMOGroup() : dl(0), ddr(0), vertices(NULL), normals(NULL), texcoords(NULL), indices(NULL), materials(NULL), batches(NULL) {}
+	WMOGroup() :
+		dl(0), ddr(0), vertices(NULL), normals(NULL), texcoords(NULL), indices(
+			NULL), materials(NULL), batches(NULL)
+	{
+	}
 	~WMOGroup();
 	void init(WMO *wmo, MPQFile &f, int num, char *names);
 	void initDisplayList();
@@ -79,7 +86,8 @@ public:
 };
 
 #define	WMO_MATERIAL_CULL	0x04
-struct WMOMaterial {
+struct WMOMaterial
+{
 	int flags;
 	int SpecularMode;
 	int transparent; // Blending: 0 for opaque, 1 for transparent
@@ -89,20 +97,18 @@ struct WMOMaterial {
 	int nameEnd; // Start position for the second texture filename in the MOTX data block
 	unsigned int color2;
 	unsigned int flag2;
-	float f1,f2;
+	float f1, f2;
 	int dx[5];
 	// read up to here -_-
 	TextureID tex;
 };
 
-enum LightType 
+enum LightType
 {
-	OMNI_LGT,
-	SPOT_LGT,
-	DIRECT_LGT,
-	AMBIENT_LGT
+	OMNI_LGT, SPOT_LGT, DIRECT_LGT, AMBIENT_LGT
 };
-struct WMOLight {
+struct WMOLight
+{
 	unsigned int lighttype, type, useatten, color;
 	Vec3D pos;
 	float intensity;
@@ -118,36 +124,42 @@ struct WMOLight {
 	static void setupOnce(GLint light, Vec3D dir, Vec3D lcol);
 };
 
-struct WMOPV {
-	Vec3D a,b,c,d;
+struct WMOPV
+{
+	Vec3D a, b, c, d;
 };
 
-struct WMOPR {
+struct WMOPR
+{
 	short portal; // Portal index
 	short group; // WMO group index
 	short dir; // 1 or -1
 	short reserved; // always 0
 };
 
-struct WMOVB {
+struct WMOVB
+{
 	unsigned short firstVertex;
 	unsigned short count;
 };
 
-struct WMODoodadSet {
+struct WMODoodadSet
+{
 	char name[0x14]; // set name
 	int start; // index of first doodad instance in this set
 	int size; // number of doodad instances in this set
 	int unused; // unused? (always 0)
 };
 
-struct WMOLiquidHeader {
+struct WMOLiquidHeader
+{
 	int X, Y, A, B;
 	Vec3D pos;
 	short type;
 };
 
-struct WMOFog {
+struct WMOFog
+{
 	unsigned int flags;
 	Vec3D pos;
 	float r1; // Smaller radius
@@ -164,7 +176,8 @@ struct WMOFog {
 	void setup();
 };
 
-class WMOModelInstance {
+class WMOModelInstance
+{
 public:
 	// header
 	Vec3D pos;
@@ -172,7 +185,7 @@ public:
 	Vec3D dir;
 	float sc;
 	unsigned int d1;
-	
+
 	Model *model;
 	std::string filename;
 	int id;
@@ -182,15 +195,18 @@ public:
 	Vec3D ldir;
 	Vec3D lcol;
 
-	WMOModelInstance() {}
-    void init(char *fname, MPQFile &f);
+	WMOModelInstance()
+	{
+	}
+	void init(char *fname, MPQFile &f);
 	void draw();
 
 	void loadModel(ModelManager &mm);
 	void unloadModel(ModelManager &mm);
 };
 
-struct WMOHeader {
+struct WMOHeader
+{
 	int nTextures; // number of materials
 	int nGroups; // number of WMO groups
 	int nP; // number of portals
@@ -205,7 +221,8 @@ struct WMOHeader {
 	int LiquidType;
 };
 
-class WMO: public ManagedItem, public Displayable {
+class WMO: public ManagedItem, public Displayable
+{
 public:
 	//WMOHeader header;
 	int nTextures; // number of materials
@@ -246,14 +263,14 @@ public:
 
 	WMO(std::string name);
 	~WMO();
-	
+
 	int doodadset;
 	bool includeDefaultDoodads;
-	
+
 	void draw();
 	void drawSkybox();
 	void drawPortals();
-	
+
 	void update(int dt);
 
 	void loadGroup(int id);

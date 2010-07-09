@@ -8,13 +8,13 @@
 
 #define	CHUNKS_IN_TILE	16
 
-#include "video.h"
 #include "mpq.hpp"
 #include "wmo.h"
 #include "model.h"
 #include "liquid.h"
 #include <vector>
 #include <string>
+#include "texture.hpp"
 
 class MapTile;
 class MapChunk;
@@ -191,7 +191,6 @@ public:
 	int nWMO;
 	int nMDX;
 
-	wxString name;
 	int x, z;
 	bool ok;
 	bool mBigAlpha;

@@ -10,7 +10,7 @@ struct LiquidVertex
 	float h;
 };
 
-void Liquid::initFromTerrain(MPQFile &f, int flags)
+void Liquid::initFromTerrain(MPQFile& f, int flags)
 {
 	texRepeats = 4.0f;
 	/*
@@ -48,7 +48,7 @@ void Liquid::initFromTerrain(MPQFile &f, int flags)
 	trans = false;
 }
 
-void Liquid::initFromWMO(MPQFile &f, WMOMaterial &mat, bool indoor)
+void Liquid::initFromWMO(MPQFile& f, WMOMaterial& mat, bool indoor)
 {
 	texRepeats = 4.0f;
 	ydir = -1.0f;

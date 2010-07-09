@@ -2,12 +2,13 @@
 #include "modelviewer.h"
 #include "globalvars.h"
 #include "maptile.h"
-//#include "world.h"
 #include "vec3d.h"
 //#include "video.h"
 #include "shaders.h"
 #include <cassert>
 #include <algorithm>
+#include <cstdio>
+#include <cstring>
 
 struct WaterTile
 {
@@ -322,7 +323,7 @@ MapTile::MapTile(wxString filename) :
 	xbase = x * TILESIZE;
 	zbase = z * TILESIZE;
 	// TODO: get bigAlpha from world
-	// mBigAlpha=bigAlpha;
+	// mBigAlpha = bigAlpha;
 	viewpos.x = 14937.999f + 200.0f;
 	viewpos.y = -260.0f + 200.0f;
 	viewpos.z = 18400.0f;
@@ -355,7 +356,6 @@ MapTile::MapTile(wxString filename) :
 		return;
 	}
 
-	name = filename;
 	char fourcc[5];
 	uint32 size;
 
@@ -410,7 +410,7 @@ MapTile::MapTile(wxString filename) :
 				}
 			}
 			else
-				wxLogMessage(_T("Error: wrong MCIN chunk %d."), size);
+				printf("Error: wrong MCIN chunk %d.\n", size);
 		}
 		else if (strncmp(fourcc, "MTEX", 4) == 0)
 		{
@@ -430,14 +430,11 @@ MapTile::MapTile(wxString filename) :
 				p += strlen(p) + 1;
 				fixname(texpath);
 
-				if (video.supportShaders)
-				{
-					std::string texshader = texpath;
-					// load the specular texture instead
-					texshader.insert(texshader.length() - 4, "_s");
-					if (FS().exists(texshader.c_str()))
-						texpath = texshader;
-				}
+				std::string texshader = texpath;
+				// load the specular texture instead
+				texshader.insert(texshader.length() - 4, "_s");
+				if (FS().exists(texshader.c_str()))
+					texpath = texshader;
 
 				textures.push_back(wow::texture(texpath));
 			}
@@ -546,16 +543,16 @@ MapTile::MapTile(wxString filename) :
 			 -MaiN
 			 */
 			// model instance data
-			/*
-			 // TODO
-			 nMDX = (int)size / 36;
-			 for (int i=0; i<nMDX; i++) {
-			 int id;
-			 f.read(&id, 4);
-			 Model *model = (Model*)gWorld->modelmanager.items[gWorld->modelmanager.get(models[id])];
-			 ModelInstance inst(model, f);
-			 modelis.push_back(inst);
-			 }
+			/* TODO
+			nMDX = (int) size / 36;
+			for (int i = 0; i < nMDX; i++)
+			{
+				int id;
+				f.read(&id, 4);
+				Model *model = (Model*)gWorld->modelmanager.items[gWorld->modelmanager.get(models[id])];
+				ModelInstance inst(model, f);
+				modelis.push_back(inst);
+			}
 			 */
 		}
 		else if (strncmp(fourcc, "MODF", 4) == 0)
@@ -600,16 +597,16 @@ MapTile::MapTile(wxString filename) :
 			 The unique identifier is important for WMOs, because multiple map tiles might want to draw the same WMO. This identifier is used to ensure that each specific instance can only be drawn once. (a unique identifier is required because the model name is not usable for this purpose, since it is possible to have more than one instance of the same WMO, like some bridges in Darkshore)
 			 */
 			// wmo instance data
-			/* 
-			 // TODO
-			 nWMO = (int)size / 64;
-			 for (int i=0; i<nWMO; i++) {
-			 int id;
-			 f.read(&id, 4);
-			 WMO *wmo = (WMO*)gWorld->wmomanager.items[gWorld->wmomanager.get(wmos[id])];
-			 WMOInstance inst(wmo, f);
-			 wmois.push_back(inst);
-			 }
+			/*  TODO
+			nWMO = (int) size / 64;
+			for (int i = 0; i < nWMO; i++)
+			{
+				int id;
+				f.read(&id, 4);
+				WMO *wmo = (WMO*)gWorld->wmomanager.items[gWorld->wmomanager.get(wmos[id])];
+				WMOInstance inst(wmo, f);
+			 	wmois.push_back(inst);
+			}
 			 */
 		}
 		else if (strncmp(fourcc, "MH2O", 4) == 0)
@@ -773,7 +770,7 @@ MapTile::MapTile(wxString filename) :
 		}
 		else
 		{
-			wxLogMessage(_T("No implement tile chunk %s [%d]."), fourcc, size);
+			printf("No implement tile chunk %s [%d].\n", fourcc, size);
 		}
 
 		f.seek((int) nextpos);
@@ -805,7 +802,7 @@ MapTile::~MapTile()
 	if (!ok)
 		return;
 
-	wxLogMessage(_T("Unloading tile %d,%d"), x, z);
+	printf("Unloading tile %d,%d\n", x, z);
 
 	topnode.cleanup();
 
@@ -992,8 +989,8 @@ struct MCLY
 	uint32 textureId;
 	uint32 flags;
 	uint32 offsetInMCAL;
-	int16 effectId;
-	int16 padding;
+	int16_t effectId;
+	int16_t padding;
 };
 
 /*
@@ -1048,7 +1045,7 @@ void MapChunk::init(MapTile* mt, MPQFile &f, bool bigAlpha)
 
 	if (strncmp(fcc, "MCNK", 4) != 0 || size == 0)
 	{
-		wxLogMessage(_T("Error: mcnk main chunk %s [%d]."), fcc, size);
+		printf("Error: mcnk main chunk %s [%d].\n", fcc, size);
 		return;
 	}
 
@@ -1125,11 +1122,8 @@ void MapChunk::init(MapTile* mt, MPQFile &f, bool bigAlpha)
 	vmax = Vec3D(-9999999.0f, -9999999.0f, -9999999.0f);
 
 	//unsigned char *blendbuf;
-	if (video.supportShaders)
-	{
-		//blendbuf = new unsigned char[64*64*4];
-		memset(blendbuf, 0, 64 * 64 * 4);
-	}
+	//blendbuf = new unsigned char[64*64*4];
+	memset(blendbuf, 0, 64 * 64 * 4);
 
 	while (f.getPos() < lastpos)
 	{
@@ -1195,9 +1189,8 @@ void MapChunk::init(MapTile* mt, MPQFile &f, bool bigAlpha)
 
 		if (fcc[0] != 'M' || f.getPos() > f.getSize())
 		{
-			wxLogMessage(
-				_T("Error: mcnk chunk initial error, fcc: %s, size: %d, pos: %d, size: %d."),
-				fcc, size, f.getPos(), f.getSize());
+			printf("Error: mcnk chunk initial error, "
+				"fcc: %s, size: %d, pos: %d, size: %d.\n", fcc, size, f.getPos(), f.getSize());
 			break;
 		}
 
@@ -1288,7 +1281,7 @@ void MapChunk::init(MapTile* mt, MPQFile &f, bool bigAlpha)
 			 Complete and right as of 19-AUG-09 (3.0.9 or higher)
 			 Texture layer definitions for this map chunk. 16 bytes per layer, up to 4 layers.
 			 Every texture layer other than the first will have an alpha map to specify blending amounts. The first layer is rendered with full opacity. To know which alphamap is used, there is an offset into the MCAL chunk. That one is relative to MCAL.
-			 You can animate these by setting the flags. Only simple linear animations are possible. You can specify the direction in 45�X steps and the speed.
+			 You can animate these by setting the flags. Only simple linear animations are possible. You can specify the direction in 45 deg steps and the speed.
 			 The textureId is just the array index of the filename array in the MTEX chunk.
 			 For getting the right feeling when walking, you should set the effectId which links to GroundEffectTexture.dbc. It defines the little detaildoodads as well as the footstep sounds and if footprints are visible. You only need to have the upper layer with an id and you can set the id to -1 (int16!) to have no detaildoodads and footsteps at all (?).
 			 Introduced in Wrath of the Lich King, terrain can now reflect a skybox. This is used for icecubes made out of ADTs to reflect something. You need to have the MTFX chunk in, if you want that. Look at an skybox Blizzard made to see how you should do it.
@@ -1301,9 +1294,9 @@ void MapChunk::init(MapTile* mt, MPQFile &f, bool bigAlpha)
 			 010h
 			 };
 			 Flag	 Description
-			 0x001	 Animation: Rotate 45�X clockwise.
-			 0x002	 Animation: Rotate 90�X clockwise.
-			 0x004	 Animation: Rotate 180�X clockwise.
+			 0x001	 Animation: Rotate 45deg clockwise.
+			 0x002	 Animation: Rotate 90deg clockwise.
+			 0x004	 Animation: Rotate 180deg clockwise.
 			 0x008	 Animation: Make this faster.
 			 0x010	 Animation: Faster!!
 			 0x020	 Animation: Faster!!!!
@@ -1507,12 +1500,9 @@ void MapChunk::init(MapTile* mt, MPQFile &f, bool bigAlpha)
 					glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,
 						GL_CLAMP_TO_EDGE);
 
-					if (video.supportShaders)
+					for (int p = 0; p < 64 * 64; p++)
 					{
-						for (int p = 0; p < 64 * 64; p++)
-						{
-							blendbuf[p * 4 + i - 1] = amap[p];
-						}
+						blendbuf[p * 4 + i - 1] = amap[p];
 					}
 				}
 
@@ -1550,12 +1540,9 @@ void MapChunk::init(MapTile* mt, MPQFile &f, bool bigAlpha)
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-			if (video.supportShaders)
+			for (int p = 0; p < 64 * 64; p++)
 			{
-				for (int p = 0; p < 64 * 64; p++)
-				{
-					blendbuf[p * 4 + 3] = sbuf[p];
-				}
+				blendbuf[p * 4 + 3] = sbuf[p];
 			}
 		}
 		else if (strncmp(fcc, "MCLQ", 4) == 0)
@@ -1634,14 +1621,14 @@ void MapChunk::init(MapTile* mt, MPQFile &f, bool bigAlpha)
 		}
 		else
 		{
-			wxLogMessage(_T("No implement mcnk subchunk %s [%d]."), fcc, size);
+			printf("No implement mcnk subchunk %s [%d].\n", fcc, size);
 		}
 		f.seek((int) nextpos);
 	}
 
 	// create vertex buffers
-	glGenBuffersARB(1, &vertices);
-	glGenBuffersARB(1, &normals);
+	glGenBuffers(1, &vertices);
+	glGenBuffers(1, &normals);
 
 	glBindBufferARB(GL_ARRAY_BUFFER_ARB, vertices);
 	glBufferDataARB(GL_ARRAY_BUFFER_ARB, mapbufsize * 3 * sizeof(float), tv,
@@ -1653,29 +1640,20 @@ void MapChunk::init(MapTile* mt, MPQFile &f, bool bigAlpha)
 
 	if (hasholes)
 		initStrip(holes);
-	/*
-	 else {
-	 strip = maptile->mapstrip2;
-	 striplen = stripsize2;
-	 }
-	 */
 
 	this->mt = mt;
 
 	vcenter = (vmin + vmax) * 0.5f;
 
-	if (video.supportShaders)
-	{
-		glGenTextures(1, &blend);
-		glBindTexture(GL_TEXTURE_2D, blend);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 64, 64, 0, GL_RGBA,
-			GL_UNSIGNED_BYTE, blendbuf);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		//delete[] blendbuf;
-	}
+	glGenTextures(1, &blend);
+	glBindTexture(GL_TEXTURE_2D, blend);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 64, 64, 0, GL_RGBA,
+		GL_UNSIGNED_BYTE, blendbuf);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	//delete[] blendbuf;
 
 #if 0
 	deleted=false;
@@ -1895,11 +1873,11 @@ void MapChunk::draw()
 		 unit 4 - texture layer 3
 		 */
 		// base layer
-		glActiveTextureARB(GL_TEXTURE0_ARB);
+		glActiveTexture(GL_TEXTURE0);
 		textures[0].get().bind();
 		// shadow map
 		// TODO: handle case when there is no shadowmap?
-		glActiveTextureARB(GL_TEXTURE1_ARB);
+		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, blend);
 		// blended layers
 		for (int i = 1; i < nTextures; i++)
@@ -1913,10 +1891,9 @@ void MapChunk::draw()
 		terrainShaders[nTextures - 1]->bind();
 		// setup shadow color as local parameter:
 		//Vec3D shc = gWorld->skies->colorSet[SHADOW_COLOR] * 0.3f;
-		//glProgramLocalParameter4fARB(GL_FRAGMENT_PROGRAM_ARB, 0, shc.x,shc.y,shc.z,1);
-		glProgramLocalParameter4fARB(GL_FRAGMENT_PROGRAM_ARB, 0, 0.09f, 0.07f,
-			0.05f, 0.9f);
-		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		//glProgramLocalParameter4fARB(GL_FRAGMENT_PROGRAM_ARB, 0, shc.x, shc.y, shc.z, 1);
+		glProgramLocalParameter4fARB(GL_FRAGMENT_PROGRAM_ARB, 0, 0.09f, 0.07f, 0.05f, 0.9f);
+
 		glDrawElements(GL_TRIANGLE_STRIP, striplen, GL_UNSIGNED_SHORT, strip);
 
 		terrainShaders[nTextures - 1]->unbind();
@@ -1930,7 +1907,7 @@ void MapChunk::draw()
 		glEnable(GL_TEXTURE_2D);
 		textures[0].get().bind();
 
-		glActiveTextureARB(GL_TEXTURE1_ARB);
+		glActiveTexture(GL_TEXTURE1);
 		glDisable(GL_TEXTURE_2D);
 
 		glDisable(GL_BLEND);
@@ -1956,12 +1933,10 @@ void MapChunk::draw()
 
 			// if we loaded a texture with specular maps, setup the texenv
 			// to replace our alpha channel instead of modulating it
-			if (video.supportShaders)
-				glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 			drawPass(animated[i + 1]);
 			// back to normal
-			if (video.supportShaders)
-				glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
 		}
 
@@ -2025,9 +2000,9 @@ void MapChunk::draw()
 
 void MapChunk::drawNoDetail()
 {
-	glActiveTextureARB(GL_TEXTURE1_ARB);
+	glActiveTexture(GL_TEXTURE1);
 	glDisable(GL_TEXTURE_2D);
-	glActiveTextureARB(GL_TEXTURE0_ARB);
+	glActiveTexture(GL_TEXTURE0);
 	glDisable(GL_TEXTURE_2D);
 	glDisable(GL_LIGHTING);
 
@@ -2054,18 +2029,17 @@ void MapChunk::drawNoDetail()
 
 void MapChunk::drawWater()
 {
-	if (wTextures.size() == 0)
+	if (wTextures.empty())
 		return;
 
-	glActiveTextureARB(GL_TEXTURE1_ARB);
+	glActiveTexture(GL_TEXTURE1);
 	glDisable(GL_TEXTURE_2D);
-	glActiveTextureARB(GL_TEXTURE0_ARB);
+	glActiveTexture(GL_TEXTURE0);
 	glDisable(GL_TEXTURE_2D);
 
 	//size_t texidx = (size_t)(gWorld->animtime / 60.0f) % wTextures.size();
 	size_t texidx = 0;
 	wTextures[texidx].get().bind();
-	//glBindTexture(GL_TEXTURE_2D, gWorld->water);
 
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 

@@ -236,7 +236,7 @@ MapTile::MapTile(int x0, int z0, char* filename, bool bigAlpha) :
 	zbase = z0 * TILESIZE;
 	mBigAlpha = bigAlpha;
 
-	gLog("Loading tile %d,%d\n", x0, z0);
+	printf("Loading tile %d,%d\n", x0, z0);
 
 	// [FLOW] DON'T REMOVE i use this file extraction method to debug the adt format
 	/*
@@ -256,7 +256,7 @@ MapTile::MapTile(int x0, int z0, char* filename, bool bigAlpha) :
 	ok = !f.isEof();
 	if (!ok)
 	{
-		gLog("Error: loading %s\n", filename);
+		printf("Error: loading %s\n", filename);
 		return;
 	}
 
@@ -313,8 +313,8 @@ MapTile::MapTile(int x0, int z0, char* filename, bool bigAlpha) :
 					f.seekRelative(8);
 				}
 			}
-				else
-				gLog("Error: wrong MCIN chunk %d.\n", size);
+			else
+				printf("Error: wrong MCIN chunk %d.\n", size);
 		}
 		else if (strncmp(fourcc, "MTEX", 4) == 0)
 		{
@@ -339,7 +339,7 @@ MapTile::MapTile(int x0, int z0, char* filename, bool bigAlpha) :
 				if (FS().exists(texshader.c_str()))
 					texpath = texshader;
 
-				textures.push_back(wow::texture(texpath.c_str()));
+				textures.push_back(wow::texture(texpath));
 			}
 			delete[] buf;
 		}
@@ -612,7 +612,7 @@ MapTile::MapTile(int x0, int z0, char* filename, bool bigAlpha) :
 					}
 					else if (mh2oi->ofsHeigthAlpha != 0)
 					{
-						gLog("Unknown flag combination: %s.\n", filename);
+						printf("Unknown flag combination: %s.\n", filename);
 					}
 
 					chunks[i / CHUNKS_IN_TILE][i % CHUNKS_IN_TILE].waterLayer.push_back(
@@ -658,7 +658,7 @@ MapTile::MapTile(int x0, int z0, char* filename, bool bigAlpha) :
 		}
 		else
 		{
-			gLog("No implement tile chunk %s [%d].\n", fourcc, size);
+			printf("No implement tile chunk %s [%d].\n", fourcc, size);
 		}
 
 		f.seek((int) nextpos);
@@ -690,7 +690,7 @@ MapTile::~MapTile()
 	if (!ok)
 		return;
 
-	gLog("Unloading tile %d,%d\n", x, z);
+	printf("Unloading tile %d,%d\n", x, z);
 
 	topnode.cleanup();
 
@@ -861,7 +861,7 @@ struct MCLY
  0x40		MCCV chunk available
  0x8000		Unknown, but heavily used in TBC.
  */
-void MapChunk::initTextures(const char *basename, int first, int last)
+void MapChunk::initTextures(const char* basename, int first, int last)
 {
 	char buf[256];
 	for (int i = first; i <= last; i++)
@@ -889,7 +889,7 @@ void MapChunk::init(MapTile* mt, MPQFile &f, bool bigAlpha)
 
 	if (strncmp(fcc, "MCNK", 4) != 0 || size == 0)
 	{
-		gLog("Error: mcnk main chunk %s [%d].\n", fcc, size);
+		printf("Error: mcnk main chunk %s [%d].\n", fcc, size);
 		return;
 	}
 
@@ -1033,9 +1033,8 @@ void MapChunk::init(MapTile* mt, MPQFile &f, bool bigAlpha)
 
 		if (fcc[0] != 'M' || f.getPos() > f.getSize())
 		{
-			gLog(
-				"Error: mcnk chunk initial error, fcc: %s, size: %d, pos: %d, size: %d.\n",
-				fcc, size, f.getPos(), f.getSize());
+			printf("Error: mcnk chunk initial error, "
+				"fcc: %s, size: %d, pos: %d, size: %d.\n", fcc, size, f.getPos(), f.getSize());
 			break;
 		}
 
@@ -1126,7 +1125,7 @@ void MapChunk::init(MapTile* mt, MPQFile &f, bool bigAlpha)
 			 Complete and right as of 19-AUG-09 (3.0.9 or higher)
 			 Texture layer definitions for this map chunk. 16 bytes per layer, up to 4 layers.
 			 Every texture layer other than the first will have an alpha map to specify blending amounts. The first layer is rendered with full opacity. To know which alphamap is used, there is an offset into the MCAL chunk. That one is relative to MCAL.
-			 You can animate these by setting the flags. Only simple linear animations are possible. You can specify the direction in 45�X steps and the speed.
+			 You can animate these by setting the flags. Only simple linear animations are possible. You can specify the direction in 45 deg steps and the speed.
 			 The textureId is just the array index of the filename array in the MTEX chunk.
 			 For getting the right feeling when walking, you should set the effectId which links to GroundEffectTexture.dbc. It defines the little detaildoodads as well as the footstep sounds and if footprints are visible. You only need to have the upper layer with an id and you can set the id to -1 (int16!) to have no detaildoodads and footsteps at all (?).
 			 Introduced in Wrath of the Lich King, terrain can now reflect a skybox. This is used for icecubes made out of ADTs to reflect something. You need to have the MTFX chunk in, if you want that. Look at an skybox Blizzard made to see how you should do it.
@@ -1139,9 +1138,9 @@ void MapChunk::init(MapTile* mt, MPQFile &f, bool bigAlpha)
 			 010h
 			 };
 			 Flag	 Description
-			 0x001	 Animation: Rotate 45�X clockwise.
-			 0x002	 Animation: Rotate 90�X clockwise.
-			 0x004	 Animation: Rotate 180�X clockwise.
+			 0x001	 Animation: Rotate 45deg clockwise.
+			 0x002	 Animation: Rotate 90deg clockwise.
+			 0x004	 Animation: Rotate 180deg clockwise.
 			 0x008	 Animation: Make this faster.
 			 0x010	 Animation: Faster!!
 			 0x020	 Animation: Faster!!!!
@@ -1466,7 +1465,7 @@ void MapChunk::init(MapTile* mt, MPQFile &f, bool bigAlpha)
 		}
 		else
 		{
-			gLog("No implement mcnk subchunk %s [%d].\n", fcc, size);
+			printf("No implement mcnk subchunk %s [%d].\n", fcc, size);
 		}
 		f.seek((int) nextpos);
 	}
@@ -1485,12 +1484,6 @@ void MapChunk::init(MapTile* mt, MPQFile &f, bool bigAlpha)
 
 	if (hasholes)
 		initStrip(holes);
-	/*
-	 else {
-	 strip = gWorld->mapstrip;
-	 striplen = 16*18 + 7*2 + 8*2; //stripsize;
-	 }
-	 */
 
 	this->mt = mt;
 
@@ -1634,8 +1627,8 @@ void MapChunk::drawPass(int anim)
 {
 	if (anim)
 	{
-		glActiveTextureARB( GL_TEXTURE0_ARB);
-		glMatrixMode( GL_TEXTURE);
+		glActiveTextureARB(GL_TEXTURE0_ARB);
+		glMatrixMode(GL_TEXTURE);
 		glPushMatrix();
 
 		// note: this is ad hoc and probably completely wrong
@@ -1657,8 +1650,8 @@ void MapChunk::drawPass(int anim)
 	if (anim)
 	{
 		glPopMatrix();
-		glMatrixMode( GL_MODELVIEW);
-		glActiveTextureARB( GL_TEXTURE1_ARB);
+		glMatrixMode(GL_MODELVIEW);
+		glActiveTextureARB(GL_TEXTURE1_ARB);
 	}
 }
 
@@ -1722,11 +1715,11 @@ void MapChunk::draw()
 		 unit 4 - texture layer 3
 		 */
 		// base layer
-		glActiveTextureARB( GL_TEXTURE0_ARB);
+		glActiveTexture(GL_TEXTURE0);
 		textures[0].get().bind();
 		// shadow map
 		// TODO: handle case when there is no shadowmap?
-		glActiveTextureARB( GL_TEXTURE1_ARB);
+		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, blend);
 		// blended layers
 		for (int i = 1; i < nTextures; i++)
@@ -1740,33 +1733,32 @@ void MapChunk::draw()
 		terrainShaders[nTextures - 1]->bind();
 		// setup shadow color as local parameter:
 		Vec3D shc = gWorld->skies->colorSet[SHADOW_COLOR] * 0.3f;
-		glProgramLocalParameter4fARB(GL_FRAGMENT_PROGRAM_ARB, 0, shc.x, shc.y,
-			shc.z, 1);
+		glProgramLocalParameter4fARB(GL_FRAGMENT_PROGRAM_ARB, 0, shc.x, shc.y, shc.z, 1);
 
 		glDrawElements(GL_TRIANGLE_STRIP, striplen, GL_UNSIGNED_SHORT, strip);
-		terrainShaders[nTextures - 1]->unbind();
 
+		terrainShaders[nTextures - 1]->unbind();
 	}
 	else
 	{
 		// FIXED-FUNCTION
 
 		// first pass: base texture
-		glActiveTextureARB( GL_TEXTURE0_ARB);
-		glEnable( GL_TEXTURE_2D);
+		glActiveTexture(GL_TEXTURE0_ARB);
+		glEnable(GL_TEXTURE_2D);
 		textures[0].get().bind();
 
-		glActiveTextureARB( GL_TEXTURE1_ARB);
+		glActiveTexture(GL_TEXTURE1);
 		glDisable(GL_TEXTURE_2D);
 
-		glDisable( GL_BLEND);
+		glDisable(GL_BLEND);
 		drawPass(animated[0]);
 		glEnable(GL_BLEND);
 
 		if (nTextures > 1)
 		{
 			//glDepthFunc(GL_EQUAL); // GL_LEQUAL is fine too...?
-			glDepthMask( GL_FALSE);
+			glDepthMask(GL_FALSE);
 		}
 
 		// additional passes: if required
@@ -1792,13 +1784,13 @@ void MapChunk::draw()
 		if (nTextures > 1)
 		{
 			//glDepthFunc(GL_LEQUAL);
-			glDepthMask( GL_TRUE);
+			glDepthMask(GL_TRUE);
 		}
 
 		// shadow map
 		glActiveTextureARB(GL_TEXTURE0_ARB);
 		glDisable(GL_TEXTURE_2D);
-		glDisable( GL_LIGHTING);
+		glDisable(GL_LIGHTING);
 
 		Vec3D shc = gWorld->skies->colorSet[SHADOW_COLOR] * 0.3f;
 		//glColor4f(0,0,0,1);
@@ -1849,11 +1841,11 @@ void MapChunk::draw()
 
 void MapChunk::drawNoDetail()
 {
-	glActiveTextureARB( GL_TEXTURE1_ARB);
-	glDisable( GL_TEXTURE_2D);
-	glActiveTextureARB( GL_TEXTURE0_ARB);
+	glActiveTexture(GL_TEXTURE1);
 	glDisable(GL_TEXTURE_2D);
-	glDisable( GL_LIGHTING);
+	glActiveTexture(GL_TEXTURE0);
+	glDisable(GL_TEXTURE_2D);
+	glDisable(GL_LIGHTING);
 
 	glColor3fv(gWorld->skies->colorSet[FOG_COLOR]);
 	//glColor3f(1,0,0);
@@ -1862,9 +1854,8 @@ void MapChunk::drawNoDetail()
 	// low detail version
 	glBindBufferARB(GL_ARRAY_BUFFER_ARB, vertices);
 	glVertexPointer(3, GL_FLOAT, 0, 0);
-	glDisableClientState( GL_NORMAL_ARRAY);
-	glDrawElements(GL_TRIANGLE_STRIP, stripsize, GL_UNSIGNED_SHORT,
-		gWorld->mapstrip);
+	glDisableClientState(GL_NORMAL_ARRAY);
+	glDrawElements(GL_TRIANGLE_STRIP, stripsize, GL_UNSIGNED_SHORT, gWorld->mapstrip);
 	glEnableClientState(GL_NORMAL_ARRAY);
 
 	glColor4f(1, 1, 1, 1);
@@ -1882,9 +1873,9 @@ void MapChunk::drawWater()
 	if (wTextures.empty())
 		return;
 
-	glActiveTexture( GL_TEXTURE1);
-	glDisable( GL_TEXTURE_2D);
-	glActiveTexture( GL_TEXTURE0);
+	glActiveTexture(GL_TEXTURE1);
+	glDisable(GL_TEXTURE_2D);
+	glActiveTexture(GL_TEXTURE0);
 	glDisable(GL_TEXTURE_2D);
 
 	size_t texidx = (size_t)(gWorld->animtime / 60.0f) % wTextures.size();
@@ -1953,7 +1944,7 @@ void MapChunk::drawWater()
 
 					//glColor4f(1.0f, 1.0f, 1.0f);
 
-					glBegin( GL_QUADS);
+					glBegin(GL_QUADS);
 
 					if (asd == 0)
 						glColor4f(0, 1.0f, 0.9f, a1);

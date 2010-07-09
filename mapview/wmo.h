@@ -13,11 +13,11 @@ class WMOGroup;
 class WMOInstance;
 class Liquid;
 
-
-class WMOGroup {
+class WMOGroup
+{
 	WMO *wmo;
 	int flags;
-	Vec3D v1,v2;
+	Vec3D v1, v2;
 	int nTriangles, nVertices;
 	//GLuint dl,dl_light;
 	Vec3D center;
@@ -28,9 +28,9 @@ class WMOGroup {
 	unsigned int nBatches;
 	short *ddr;
 	Liquid *lq;
-	std::vector< std::pair<GLuint, int> > lists;
+	std::vector<std::pair<GLuint, int> > lists;
 public:
-	Vec3D b1,b2;
+	Vec3D b1, b2;
 	Vec3D vmin, vmax;
 	bool indoor, hascv;
 	bool visible;
@@ -38,7 +38,10 @@ public:
 	bool outdoorLights;
 	std::string name;
 
-	WMOGroup():nBatches(0) {}
+	WMOGroup() :
+		nBatches(0)
+	{
+	}
 	~WMOGroup();
 	void init(WMO *wmo, MPQFile &f, int num, char *names);
 	void initDisplayList();
@@ -49,7 +52,8 @@ public:
 	void setupFog();
 };
 
-struct WMOMaterial {
+struct WMOMaterial
+{
 	int flags;
 	int specular;
 	int transparent; // Blending: 0 for opaque, 1 for transparent
@@ -68,15 +72,13 @@ struct WMOMaterial {
 	wow::texture tex;
 };
 
-enum LightType 
+enum LightType
 {
-	OMNI_LGT,
-	SPOT_LGT,
-	DIRECT_LGT,
-	AMBIENT_LGT
+	OMNI_LGT, SPOT_LGT, DIRECT_LGT, AMBIENT_LGT
 };
 
-struct WMOLight {
+struct WMOLight
+{
 	uint8_t LightType;
 	uint8_t type;
 	uint8_t useAtten;
@@ -96,28 +98,33 @@ struct WMOLight {
 	static void setupOnce(GLint light, Vec3D dir, Vec4D lcol);
 };
 
-struct WMOPV {
-	Vec3D a,b,c,d;
+struct WMOPV
+{
+	Vec3D a, b, c, d;
 };
 
-struct WMOPR {
+struct WMOPR
+{
 	short portal, group, dir, reserved;
 };
 
-struct WMODoodadSet {
+struct WMODoodadSet
+{
 	char name[0x14]; // Set name
 	int start; // index of first doodad instance in this set
 	int size; // number of doodad instances in this set
 	int unused; // always 0
 };
 
-struct WMOLiquidHeader {
+struct WMOLiquidHeader
+{
 	int X, Y, A, B;
 	Vec3D pos;
 	short type;
 };
 
-struct WMOFog {
+struct WMOFog
+{
 	unsigned int flags;
 	Vec3D pos;
 	float r1; // Smaller radius
@@ -135,15 +142,16 @@ struct WMOFog {
 };
 
 //! http://www.madx.dk/wowdev/wiki/index.php?title=WMO
-class WMO {
+class WMO
+{
 public:
 	WMOGroup *groups;
 	int nTextures, nGroups, nP, nLights, nModels, nDoodads, nDoodadSets, nX;
 	WMOMaterial *mat;
-	Vec3D v1,v2;
+	Vec3D v1, v2;
 	int LiquidType;
 	bool ok;
-//	std::vector<wow::Texture> textures;
+	//	std::vector<wow::Texture> textures;
 	std::vector<std::string> models;
 	std::vector<ModelInstance> modelis;
 
@@ -160,9 +168,9 @@ public:
 
 	WMO(std::string name);
 	~WMO();
-	void draw(int doodadset, const Vec3D& ofs, const float rot)const;
+	void draw(int doodadset, const Vec3D& ofs, const float rot) const;
 	//void drawPortals();
-	void drawSkybox()const;
+	void drawSkybox() const;
 };
 
 namespace wow

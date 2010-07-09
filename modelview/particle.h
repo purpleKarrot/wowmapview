@@ -11,9 +11,10 @@ class RibbonEmitter;
 
 #include <list>
 
-struct Particle {
+struct Particle
+{
 	Vec3D pos, speed, down, origin, dir;
-	Vec3D	corners[4];
+	Vec3D corners[4];
 	//Vec3D tpos;
 	float size, life, maxlife;
 	unsigned int tile;
@@ -22,32 +23,50 @@ struct Particle {
 
 typedef std::list<Particle> ParticleList;
 
-class ParticleEmitter {
+class ParticleEmitter
+{
 protected:
 	ParticleSystem *sys;
 public:
-	ParticleEmitter(ParticleSystem *sys): sys(sys) {}
-	virtual Particle newParticle(int anim, int time, float w, float l, float spd, float var, float spr, float spr2) = 0;
+	ParticleEmitter(ParticleSystem *sys) :
+		sys(sys)
+	{
+	}
+	virtual Particle newParticle(int anim, int time, float w, float l,
+		float spd, float var, float spr, float spr2) = 0;
 };
 
-class PlaneParticleEmitter: public ParticleEmitter {
+class PlaneParticleEmitter: public ParticleEmitter
+{
 public:
-	PlaneParticleEmitter(ParticleSystem *sys): ParticleEmitter(sys) {}
-	Particle newParticle(int anim, int time, float w, float l, float spd, float var, float spr, float spr2);
+	PlaneParticleEmitter(ParticleSystem *sys) :
+		ParticleEmitter(sys)
+	{
+	}
+	Particle newParticle(int anim, int time, float w, float l, float spd,
+		float var, float spr, float spr2);
 };
 
-class SphereParticleEmitter: public ParticleEmitter {
+class SphereParticleEmitter: public ParticleEmitter
+{
 public:
-	SphereParticleEmitter(ParticleSystem *sys): ParticleEmitter(sys) {}
-	Particle newParticle(int anim, int time, float w, float l, float spd, float var, float spr, float spr2);
+	SphereParticleEmitter(ParticleSystem *sys) :
+		ParticleEmitter(sys)
+	{
+	}
+	Particle newParticle(int anim, int time, float w, float l, float spd,
+		float var, float spr, float spr2);
 };
 
-struct TexCoordSet {
-    Vec2D tc[4];
+struct TexCoordSet
+{
+	Vec2D tc[4];
 };
 
-class ParticleSystem {
-	Animated<float> speed, variation, spread, lat, gravity, lifespan, rate, areal, areaw, deacceleration;
+class ParticleSystem
+{
+	Animated<float> speed, variation, spread, lat, gravity, lifespan, rate,
+		areal, areaw, deacceleration;
 	Animated<uint8_t> enabled;
 	Vec4D colors[3];
 	float sizes[3];
@@ -76,7 +95,8 @@ public:
 	Model *model;
 	float tofs;
 
-	ParticleSystem(): emitter(0), mid(0), rem(0)
+	ParticleSystem() :
+		emitter(0), mid(0), rem(0)
 	{
 		blend = 0;
 		order = 0;
@@ -93,7 +113,10 @@ public:
 		rotation = 0;
 		tofs = 0;
 	}
-	~ParticleSystem() { delete emitter; }
+	~ParticleSystem()
+	{
+		delete emitter;
+	}
 
 	void init(MPQFile &f, ModelParticleEmitterDef &mta, uint32_t* globals);
 	void update(float dt);
@@ -105,13 +128,14 @@ public:
 	friend class SphereParticleEmitter;
 };
 
-
-struct RibbonSegment {
+struct RibbonSegment
+{
 	Vec3D pos, up, back;
-	float len,len0;
+	float len, len0;
 };
 
-class RibbonEmitter {
+class RibbonEmitter
+{
 	Animated<Vec3D> color;
 	AnimatedShort opacity;
 	Animated<float> above, below;
@@ -124,7 +148,7 @@ class RibbonEmitter {
 	int manim, mtime;
 	float length, seglen;
 	int numsegs;
-	
+
 	Vec3D tpos;
 	Vec4D tcolor;
 	float tabove, tbelow;
@@ -140,7 +164,5 @@ public:
 	void setup(int anim, int time);
 	void draw();
 };
-
-
 
 #endif
