@@ -77,10 +77,10 @@ enum LightType
 };
 
 struct WMOLight {
-	uint8 LightType;
-	uint8 type;
-	uint8 useAtten;
-	uint8 pad;
+	uint8_t LightType;
+	uint8_t type;
+	uint8_t useAtten;
+	uint8_t pad;
 	unsigned int color;
 	Vec3D pos;
 	float intensity;
@@ -184,13 +184,13 @@ public:
 	Vec3D pos;
 
 private:
-	uint32 id;
+	uint32_t id;
 	Vec3D dir;
 	Vec3D pos2, pos3;
-	uint16 flags;
-	uint16 doodadset;
-	uint16 nameset;
-	uint16 unk;
+	uint16_t flags;
+	uint16_t doodadset;
+	uint16_t nameset;
+	uint16_t unk;
 };
 
 #endif

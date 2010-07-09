@@ -9,8 +9,8 @@ class RibbonEmitter;
 
 #include <list>
 
-Vec4D fromARGB(uint32 color);
-Vec4D fromBGRA(uint32 color);
+Vec4D fromARGB(uint32_t color);
+Vec4D fromBGRA(uint32_t color);
 
 struct Particle {
 	Vec3D pos, speed, down, origin, dir;
@@ -49,7 +49,7 @@ struct TexCoordSet {
 
 class ParticleSystem {
 	Animated<float> speed, variation, spread, lat, gravity, lifespan, rate, areal, areaw, deacceleration;
-	Animated<uint8> enabled;
+	Animated<uint8_t> enabled;
 	Vec4D colors[3];
 	float sizes[3];
 	float mid, slowdown, rotation;
@@ -68,8 +68,8 @@ class ParticleSystem {
 	//bool transform;
 
 	// unknown parameters omitted for now ...
-	int32 flags;
-	int16 pType;
+	int32_t flags;
+	int16_t pType;
 
 	Bone *parent;
 

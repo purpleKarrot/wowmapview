@@ -222,11 +222,11 @@ public:
 
 		for(size_t j=0; j < b.nTimes; j++) {
 			AnimationBlockHeader* pHeadTimes = (AnimationBlockHeader*)(f.getBuffer() + b.ofsTimes + j*sizeof(AnimationBlockHeader));
-			uint32 *ptimes;
+			uint32_t *ptimes;
 			if (animfiles[j].getSize() > 0)
-				ptimes = (uint32*)(animfiles[j].getBuffer() + pHeadTimes->ofsEntrys);
+				ptimes = (uint32_t*)(animfiles[j].getBuffer() + pHeadTimes->ofsEntrys);
 			else
-				ptimes = (uint32*)(f.getBuffer() + pHeadTimes->ofsEntrys);
+				ptimes = (uint32_t*)(f.getBuffer() + pHeadTimes->ofsEntrys);
 			for (size_t i=0; i < pHeadTimes->nEntrys; i++)
 				times[j].push_back(ptimes[i]);
 		}

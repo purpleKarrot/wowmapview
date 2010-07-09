@@ -783,8 +783,8 @@ struct MCLY
 	uint32 textureId;
 	uint32 flags;
 	uint32 offsetInMCAL;
-	int16 effectId;
-	int16 padding;
+	int16_t effectId;
+	int16_t padding;
 };
 
 /*

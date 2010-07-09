@@ -27,8 +27,8 @@ AnimManager::AnimManager(ModelAnimation *anim) {
 	animList[0].Loops = 0;
 
 	if (anims != NULL) { 
-		Frame = anims[0].timeStart;
-		TotalFrames = anims[0].timeEnd - anims[0].timeStart;
+		Frame = 0;
+		TotalFrames = anims[0].length;
 	} else {
 		Frame = 0;
 		TotalFrames = 0;
@@ -66,8 +66,8 @@ void AnimManager::Set(short index, unsigned int id, short loops) {
 	if (index == 0) {
 		Count = 1;
 		PlayIndex = index;
-		Frame = anims[id].timeStart;
-		TotalFrames = anims[id].timeEnd - anims[id].timeStart;
+		Frame = 0;
+		TotalFrames = anims[id].length;
 	}
 
 	if (index+1 > Count)
@@ -78,8 +78,8 @@ void AnimManager::Play() {
 	PlayIndex = 0;
 	//if (Frame == 0 && PlayID == 0) {
 		CurLoop = animList[PlayIndex].Loops;
-		Frame = anims[animList[PlayIndex].AnimID].timeStart;
-		TotalFrames = anims[animList[PlayIndex].AnimID].timeEnd - anims[animList[PlayIndex].AnimID].timeStart;
+		Frame = 0;
+		TotalFrames = anims[animList[PlayIndex].AnimID].length;
 	//}
 
 	Paused = false;
@@ -89,7 +89,7 @@ void AnimManager::Play() {
 void AnimManager::Stop() {
 	Paused = true;
 	PlayIndex = 0;
-	Frame = anims[animList[0].AnimID].timeStart;
+	Frame = 0;
 	CurLoop = animList[0].Loops;
 }
 
@@ -121,7 +121,7 @@ void AnimManager::Next() {
 		}
 	}
 	
-	Frame = anims[animList[PlayIndex].AnimID].timeStart;
+	Frame = 0;
 	TotalFrames = GetFrameCount();
 }
 
@@ -139,7 +139,7 @@ void AnimManager::Prev() {
 		CurLoop++;
 	}
 
-	Frame = anims[animList[PlayIndex].AnimID].timeEnd;
+	Frame = anims[animList[PlayIndex].AnimID].length;
 	TotalFrames = GetFrameCount();
 }
 
@@ -153,10 +153,10 @@ int AnimManager::Tick(int time) {
 	if (AnimIDMouth > -1) {
 		FrameMouth += (time*mouthSpeed);
 
-		if (FrameMouth >= anims[AnimIDMouth].timeEnd) {
-			FrameMouth -= (anims[AnimIDMouth].timeEnd - anims[AnimIDMouth].timeStart);
-		} else if (FrameMouth < anims[AnimIDMouth].timeStart) {
-			FrameMouth += (anims[AnimIDMouth].timeEnd - anims[AnimIDMouth].timeStart);
+		if (FrameMouth >= anims[AnimIDMouth].length) {
+			FrameMouth -= (anims[AnimIDMouth].length);
+		} else if (FrameMouth < 0) {
+			FrameMouth += (anims[AnimIDMouth].length);
 		}
 	}
 
@@ -164,17 +164,17 @@ int AnimManager::Tick(int time) {
 	if (AnimIDSecondary > -1) {
 		FrameSecondary += (time*Speed);
 
-		if (FrameSecondary >= anims[AnimIDSecondary].timeEnd) {
-			FrameSecondary -= (anims[AnimIDSecondary].timeEnd - anims[AnimIDSecondary].timeStart);
-		} else if (FrameSecondary < anims[AnimIDSecondary].timeStart) {
-			FrameSecondary += (anims[AnimIDSecondary].timeEnd - anims[AnimIDSecondary].timeStart);
+		if (FrameSecondary >= anims[AnimIDSecondary].length) {
+			FrameSecondary -= (anims[AnimIDSecondary].length);
+		} else if (FrameSecondary < 0) {
+			FrameSecondary += (anims[AnimIDSecondary].length);
 		}
 	}
 
-	if (Frame >= anims[animList[PlayIndex].AnimID].timeEnd) {
+	if (Frame >= anims[animList[PlayIndex].AnimID].length) {
 		Next();
 		return 1;
-	} else if (Frame < anims[animList[PlayIndex].AnimID].timeStart) {
+	} else if (Frame < 0) {
 		Prev();
 		return 1;
 	}
@@ -183,7 +183,7 @@ int AnimManager::Tick(int time) {
 }
 
 unsigned int AnimManager::GetFrameCount() {
-	return (anims[animList[PlayIndex].AnimID].timeEnd - anims[animList[PlayIndex].AnimID].timeStart);
+	return (anims[animList[PlayIndex].AnimID].length);
 }
 
 
@@ -191,16 +191,16 @@ void AnimManager::NextFrame()
 {
 	//AnimateParticles();
 	int id = animList[PlayIndex].AnimID;
-	Frame += int((anims[id].timeEnd - anims[id].timeStart) / 60);
-	TimeDiff = int((anims[id].timeEnd - anims[id].timeStart) / 60);
+	Frame += int((anims[id].length) / 60);
+	TimeDiff = int((anims[id].length) / 60);
 }
 
 void AnimManager::PrevFrame()
 {
 	//AnimateParticles();
 	int id = animList[PlayIndex].AnimID;
-	Frame -= int((anims[id].timeEnd - anims[id].timeStart) / 60);
-	TimeDiff = int((anims[id].timeEnd - anims[id].timeStart) / 60) * -1;
+	Frame -= int((anims[id].length) / 60);
+	TimeDiff = int((anims[id].length) / 60) * -1;
 }
 
 void AnimManager::SetFrame(unsigned int f)
@@ -962,14 +962,13 @@ void Model::initAnimated(MPQFile &f)
 	if (header.nAnimations > 0) {
 		anims = new ModelAnimation[header.nAnimations];
 
-		ModelAnimationWotLK animsWotLK;
+		ModelAnimation animsWotLK;
 		char tempname[256];
 		animfiles = new MPQFile[header.nAnimations];
 		for(size_t i=0; i<header.nAnimations; i++) {
-			memcpy(&animsWotLK, f.getBuffer() + header.ofsAnimations + i*sizeof(ModelAnimationWotLK), sizeof(ModelAnimationWotLK));
+			memcpy(&animsWotLK, f.getBuffer() + header.ofsAnimations + i*sizeof(ModelAnimation), sizeof(ModelAnimation));
 			anims[i].animID = animsWotLK.animID;
-			anims[i].timeStart = 0;
-			anims[i].timeEnd = animsWotLK.length;
+			anims[i].length = animsWotLK.length;
 			anims[i].moveSpeed = animsWotLK.moveSpeed;
 			anims[i].flags = animsWotLK.flags;
 			anims[i].probability = animsWotLK.probability;
@@ -1303,7 +1302,7 @@ void Model::calcBones(int anim, int time)
 		
 		if (charModelDetails.closeRHand) {
 			a = closeFistID;
-			t = anims[closeFistID].timeStart+1;
+			t = 1;
 		} else {
 			a = anim;
 			t = time;
@@ -1316,7 +1315,7 @@ void Model::calcBones(int anim, int time)
 
 		if (charModelDetails.closeLHand) {
 			a = closeFistID;
-			t = anims[closeFistID].timeStart+1;
+			t = 1;
 		} else {
 			a = anim;
 			t = time;
@@ -1347,14 +1346,13 @@ void Model::animate(int anim)
 	int t=0;
 	
 	ModelAnimation &a = anims[anim];
-	int tmax = (a.timeEnd-a.timeStart);
+	int tmax = (a.length);
 	if (tmax==0) 
 		tmax = 1;
 
 	if (isWMO == true) {
 		t = globalTime;
 		t %= tmax;
-		t += a.timeStart;
 	} else
 		t = animManager->GetFrame();
 	
@@ -1413,7 +1411,7 @@ void Model::animate(int anim)
 
 	for (size_t i=0; i<header.nParticleEmitters; i++) {
 		// random time distribution for teh win ..?
-		int pt = a.timeStart + (t + (int)(tmax*particleSystems[i].tofs)) % tmax;
+		int pt = (t + (int)(tmax*particleSystems[i].tofs)) % tmax;
 		particleSystems[i].setup(anim, pt);
 	}
 

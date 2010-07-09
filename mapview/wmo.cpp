@@ -385,10 +385,10 @@ struct WMOGroupHeader {
 	short portalCount; // Number of items used from the MOPR chunk
 	short batches[4];
 	uint8 fogs[4]; // Up to four indices into the WMO fog list
-	int32 unk1; // LiquidType related, see below in the MLIQ chunk.
-	int32 id; // WMO group ID (column 4 in WMOAreaTable.dbc)
-	int32 unk2; // Always 0?
-	int32 unk3; // Always 0?
+	int32_t unk1; // LiquidType related, see below in the MLIQ chunk.
+	int32_t id; // WMO group ID (column 4 in WMOAreaTable.dbc)
+	int32_t unk2; // Always 0?
+	int32_t unk3; // Always 0?
 };
 
 struct SMOPoly {

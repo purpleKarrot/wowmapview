@@ -233,7 +233,7 @@ void AnimControl::UpdateModel(Model *m)
 		animCList->Select(selectAnim); // anim position in selection
 		animCList->Show(true);
 
-		frameSlider->SetRange(g_selModel->anims[useanim].timeStart, g_selModel->anims[useanim].timeEnd);
+		frameSlider->SetRange(0, g_selModel->anims[useanim].length);
 		frameSlider->SetTickFreq(g_selModel->anims[useanim].playSpeed, 1);
 		
 		g_selModel->animManager->Set(0, useanim, 0);
@@ -878,7 +878,7 @@ void AnimControl::OnAnim(wxCommandEvent &event)
 #endif
 				g_selModel->animManager->Play();
 				
-				frameSlider->SetRange(g_selModel->anims[selectedAnim].timeStart, g_selModel->anims[selectedAnim].timeEnd);
+				frameSlider->SetRange(0, g_selModel->anims[selectedAnim].length);
 				frameSlider->SetTickFreq(g_selModel->anims[selectedAnim].playSpeed, 1);
 			}
 		}
@@ -1007,7 +1007,7 @@ void AnimControl::SetAnimFrame(int frame)
 
 	g_selModel->animManager->SetFrame((unsigned int) frame);
 	
-	int frameNum = (frame - g_selModel->anims[g_selModel->currentAnim].timeStart);
+	int frameNum = (frame);
 
 	frameLabel->SetLabel(wxString::Format(_T("Frame: %i"), frameNum));
 	frameSlider->SetValue(frame);

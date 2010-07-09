@@ -76,14 +76,14 @@ enum BlendModes {
 };
 
 struct ModelRenderPass {
-	uint16 indexStart, indexCount, vertexStart, vertexEnd;
+	uint16_t indexStart, indexCount, vertexStart, vertexEnd;
 	//TextureID texture, texture2;
 	int tex;
 	bool usetex2, useEnvMap, cull, trans, unlit, noZWrite, billboard;
 	float p;
 	
-	int16 texanim, color, opacity, blendmode;
-	int16 order;
+	int16_t texanim, color, opacity, blendmode;
+	int16_t order;
 
 	// Geoset ID
 	int geoset;
@@ -147,7 +147,7 @@ class Model {
 
 	ModelVertex *origVertices;
 	mutable Vec3D *vertices, *normals;
-	uint16 *indices;
+	uint16_t *indices;
 	size_t nIndices;
 	mutable std::vector<ModelRenderPass> passes;
 

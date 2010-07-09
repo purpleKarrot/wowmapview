@@ -5,7 +5,7 @@
 #define MAX_PARTICLES 10000
 
 
-Vec4D fromARGB(uint32 color)
+Vec4D fromARGB(uint32_t color)
 {
 	const float a = ((color & 0xFF000000) >> 24) / 255.0f;
 	const float r = ((color & 0x00FF0000) >> 16) / 255.0f;
@@ -14,7 +14,7 @@ Vec4D fromARGB(uint32 color)
     return Vec4D(r,g,b,a);
 }
 
-Vec4D fromBGRA(uint32 color)
+Vec4D fromBGRA(uint32_t color)
 {
 	const float b = ((color & 0xFF000000) >> 24) / 255.0f;
 	const float g = ((color & 0x00FF0000) >> 16) / 255.0f;

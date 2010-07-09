@@ -279,7 +279,7 @@ void Model::initCommon(MPQFile &f)
 			colors[i].init(f, colorDefs[i], globalSequences);
 	}
 	// init transparency
-	int16 *transLookup = (int16*)(f.getBuffer() + header.ofsTransparencyLookup);
+	int16_t *transLookup = (int16_t*)(f.getBuffer() + header.ofsTransparencyLookup);
 	if (header.nTransparency) {
 		transparency = new ModelTransparency[header.nTransparency];
 		ModelTransDef *trDefs = (ModelTransDef*)(f.getBuffer() + header.ofsTransparency);
@@ -316,7 +316,7 @@ void Model::initCommon(MPQFile &f)
 		ModelRenderFlags *renderFlags = (ModelRenderFlags*)(f.getBuffer() + header.ofsTexFlags);
 		uint16 *texlookup = (uint16*)(f.getBuffer() + header.ofsTexLookup);
 		uint16 *texanimlookup = (uint16*)(f.getBuffer() + header.ofsTexAnimLookup);
-		int16 *texunitlookup = (int16*)(f.getBuffer() + header.ofsTexUnitLookup);
+		int16_t *texunitlookup = (int16_t*)(f.getBuffer() + header.ofsTexUnitLookup);
 
 		showGeosets = new bool[view->nSub];
 		for (size_t i=0; i<view->nSub; i++) {
