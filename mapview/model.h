@@ -35,7 +35,7 @@ public:
 
 	bool calc;
 	void calcMatrix(Bone* allbones, int anim, int time);
-	void init(MPQFile &f, ModelBoneDef &b, int *global, MPQFile *animfiles);
+	void init(MPQFile &f, ModelBoneDef &b, uint32_t *global, MPQFile *animfiles);
 
 };
 
@@ -47,7 +47,7 @@ public:
 	Vec3D tval, rval, sval;
 
 	void calc(int anim, int time);
-	void init(MPQFile &f, ModelTexAnimDef &mta, int *global);
+	void init(MPQFile &f, ModelTexAnimDef &mta, uint32_t *global);
 	void setup(int anim);
 };
 
@@ -55,13 +55,13 @@ struct ModelColor {
 	Animated<Vec3D> color;
 	AnimatedShort opacity;
 
-	void init(MPQFile &f, ModelColorDef &mcd, int *global);
+	void init(MPQFile &f, ModelColorDef &mcd, uint32_t *global);
 };
 
 struct ModelTransparency {
 	AnimatedShort trans;
 
-	void init(MPQFile &f, ModelTransDef &mtd, int *global);
+	void init(MPQFile &f, ModelTransDef &mtd, uint32_t *global);
 };
 
 // copied from the .mdl docs? this might be completely wrong
@@ -112,7 +112,7 @@ struct ModelLight {
 	Animated<Vec3D> diffColor, ambColor;
 	Animated<float> diffIntensity, ambIntensity;
 
-	void init(MPQFile &f, ModelLightDef &mld, int *global);
+	void init(MPQFile &f, ModelLightDef &mld, uint32_t *global);
 	void setup(int time, GLuint l);
 };
 
@@ -132,7 +132,7 @@ class Model {
 	ModelHeader header;
 	TextureAnim *texAnims;
 	ModelAnimation *anims;
-	int *globalSequences;
+	uint32_t *globalSequences;
 	ModelColor *colors;
 	ModelTransparency *transparency;
 	ModelLight *lights;

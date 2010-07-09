@@ -96,7 +96,7 @@ public:
 	}
 	~ParticleSystem() { delete emitter; }
 
-	void init(MPQFile &f, ModelParticleEmitterDef &mta, int *globals);
+	void init(MPQFile &f, ModelParticleEmitterDef &mta, uint32_t* globals);
 	void update(float dt);
 
 	void setup(int anim, int time);
@@ -137,7 +137,7 @@ class RibbonEmitter {
 public:
 	Model *model;
 
-	void init(MPQFile &f, ModelRibbonEmitterDef &mta, int *globals);
+	void init(MPQFile &f, ModelRibbonEmitterDef &mta, uint32_t *globals);
 	void setup(int anim, int time);
 	void draw();
 };

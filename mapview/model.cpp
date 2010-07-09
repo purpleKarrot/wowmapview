@@ -65,7 +65,7 @@ Model::Model(std::string name, bool forceAnim) : forceAnim(forceAnim)
 	particleSystems = 0;
 	ribbons = 0;
 	if (header.nGlobalSequences) {
-		globalSequences = new int[header.nGlobalSequences];
+		globalSequences = new uint32_t[header.nGlobalSequences];
 		memcpy(globalSequences, (f.getBuffer() + header.ofsGlobalSequences), header.nGlobalSequences * 4);
 	}
 
@@ -859,18 +859,18 @@ void TextureAnim::setup(int anim)
 	}
 }
 
-void ModelColor::init(MPQFile &f, ModelColorDef &mcd, int *global)
+void ModelColor::init(MPQFile &f, ModelColorDef &mcd, uint32_t* global)
 {
 	color.init(mcd.color, f, global);
 	opacity.init(mcd.opacity, f, global);
 }
 
-void ModelTransparency::init(MPQFile &f, ModelTransDef &mcd, int *global)
+void ModelTransparency::init(MPQFile &f, ModelTransDef &mcd, uint32_t *global)
 {
 	trans.init(mcd.trans, f, global);
 }
 
-void ModelLight::init(MPQFile &f, ModelLightDef &mld, int *global)
+void ModelLight::init(MPQFile &f, ModelLightDef &mld, uint32_t *global)
 {
 	tpos = pos = fixCoordSystem(mld.pos);
 	tdir = dir = Vec3D(0,1,0); // no idea
@@ -904,14 +904,14 @@ void ModelLight::setup(int time, GLuint l)
 	glEnable(l);
 }
 
-void TextureAnim::init(MPQFile &f, ModelTexAnimDef &mta, int *global)
+void TextureAnim::init(MPQFile &f, ModelTexAnimDef &mta, uint32_t *global)
 {
 	trans.init(mta.trans, f, global);
 	rot.init(mta.rot, f, global);
 	scale.init(mta.scale, f, global);
 }
 
-void Bone::init(MPQFile &f, ModelBoneDef &b, int *global, MPQFile *animfiles)
+void Bone::init(MPQFile &f, ModelBoneDef &b, uint32_t *global, MPQFile *animfiles)
 {
 	parent = b.parent;
 	pivot = fixCoordSystem(b.pivot);

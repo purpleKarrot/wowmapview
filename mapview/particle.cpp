@@ -30,7 +30,7 @@ T lifeRamp(float life, float mid, const T &a, const T &b, const T &c)
 	else return interpolate<T>((life-mid) / (1.0f-mid),b,c);
 }
 
-void ParticleSystem::init(MPQFile &f, ModelParticleEmitterDef &mta, int *globals)
+void ParticleSystem::init(MPQFile &f, ModelParticleEmitterDef &mta, uint32_t *globals)
 {
 	speed.init	 (mta.EmissionSpeed, f, globals);
 	variation.init (mta.SpeedVariation, f, globals);
@@ -627,7 +627,7 @@ Particle SphereParticleEmitter::newParticle(int anim, int time, float w, float l
 
 
 
-void RibbonEmitter::init(MPQFile &f, ModelRibbonEmitterDef &mta, int *globals)
+void RibbonEmitter::init(MPQFile &f, ModelRibbonEmitterDef &mta, uint32_t *globals)
 {
 	color.init(mta.color, f, globals);
 	opacity.init(mta.opacity, f, globals);
