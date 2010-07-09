@@ -53,7 +53,6 @@ ModelCanvas::ModelCanvas(wxWindow *parent, VideoCaps *caps)
 	wxLogMessage(_T("Creating OpenGL Canvas..."));
 
     init = false;
-	initShaders = false;
 
 	// Init time related stuff
 	srand(timeGetTime());
@@ -128,8 +127,6 @@ void ModelCanvas::InitShaders()
 	fxBlur = false;
 	fxGlow = false;
 	fxFog = false;
-
-	initShaders = true;
 }
 
 void ModelCanvas::UninitShaders()
@@ -181,7 +178,7 @@ Attachment* ModelCanvas::LoadCharModel(const char *fn)
 void ModelCanvas::LoadADT(const std::string& param)
 {
 	wxString fn(param.c_str(), wxConvUTF8);
-	OldinitShaders();
+	initShaders();
 
 	root->model = NULL;
 	wxDELETE (adt);

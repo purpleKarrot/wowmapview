@@ -7,6 +7,7 @@ class RibbonEmitter;
 #include "model.h"
 #include "animated.h"
 #include "mpq.hpp"
+#include "texture.hpp"
 
 #include <list>
 
@@ -47,7 +48,7 @@ struct TexCoordSet {
 
 class ParticleSystem {
 	Animated<float> speed, variation, spread, lat, gravity, lifespan, rate, areal, areaw, deacceleration;
-	Animated<uint8> enabled;
+	Animated<uint8_t> enabled;
 	Vec4D colors[3];
 	float sizes[3];
 	float mid, slowdown, rotation;
@@ -66,8 +67,8 @@ class ParticleSystem {
 	//bool transform;
 
 	// unknown parameters omitted for now ...
-	int32 flags;
-	int16 pType;
+	int32_t flags;
+	int16_t pType;
 
 	Bone *parent;
 
@@ -87,7 +88,6 @@ public:
 
 		model = 0;
 		parent = 0;
-		texture = 0;
 
 		slowdown = 0;
 		rotation = 0;
@@ -95,7 +95,7 @@ public:
 	}
 	~ParticleSystem() { delete emitter; }
 
-	void init(MPQFile &f, ModelParticleEmitterDef &mta, uint32 *globals);
+	void init(MPQFile &f, ModelParticleEmitterDef &mta, uint32_t* globals);
 	void update(float dt);
 
 	void setup(int anim, int time);
@@ -136,7 +136,7 @@ class RibbonEmitter {
 public:
 	Model *model;
 
-	void init(MPQFile &f, ModelRibbonEmitterDef &mta, uint32 *globals);
+	void init(MPQFile &f, ModelRibbonEmitterDef &mta, uint32_t *globals);
 	void setup(int anim, int time);
 	void draw();
 };

@@ -5,6 +5,7 @@ class Liquid;
 
 #include "mpq.hpp"
 #include "maptile.h"
+#include "texture.hpp"
 
 const float LQ_DEFAULT_TILESIZE = CHUNKSIZE / 8.0f;
 
@@ -32,7 +33,7 @@ class Liquid
 	int shader;
 
 public:
-	std::vector<GLuint> textures;
+	std::vector<wow::texture> textures;
 
 	Liquid(int x, int y, Vec3D base, float tilesize = LQ_DEFAULT_TILESIZE) :
 		xtiles(x), ytiles(y), pos(base), tilesize(tilesize), shader(-1), ydir(
@@ -40,7 +41,9 @@ public:
 	{
 	}
 
-	~Liquid();
+	~Liquid()
+	{
+	}
 
 	void initFromTerrain(MPQFile &f, int flags);
 	void initFromWMO(MPQFile &f, WMOMaterial &mat, bool indoor);

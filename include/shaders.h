@@ -1,14 +1,12 @@
 #ifndef SHADERS_H
 #define SHADERS_H
 
-#include "video.h"
+#include <GL/gl.h>
 
-extern bool supportShaders;
+void initShaders();
 
-void OldinitShaders();
-void OldreloadShaders();
-
-class Shader {
+class Shader
+{
 	GLenum target;
 	GLuint id;
 public:
@@ -21,13 +19,20 @@ public:
 	virtual void unbind();
 };
 
-class ShaderPair {
+class ShaderPair
+{
 	Shader *vertex;
 	Shader *fragment;
 public:
 
-	ShaderPair():vertex(0),fragment(0) {}
-	ShaderPair(Shader *vs, Shader *ps):vertex(vs), fragment(ps) {}
+	ShaderPair() :
+		vertex(0), fragment(0)
+	{
+	}
+	ShaderPair(Shader *vs, Shader *ps) :
+		vertex(vs), fragment(ps)
+	{
+	}
 	ShaderPair(const char *vprog, const char *fprog, bool fromFile = false);
 
 	void bind();
@@ -36,6 +41,6 @@ public:
 
 extern ShaderPair* terrainShaders[4];
 extern ShaderPair* wmoShader;
-extern ShaderPair* waterShaders;
+extern ShaderPair* waterShader;
 
 #endif

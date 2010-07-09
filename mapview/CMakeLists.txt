@@ -18,7 +18,6 @@ add_executable(wowmapview
   maptile.cpp
   model.cpp
   particle.cpp
-  shaders.cpp
   sky.cpp
   wmo.cpp
   world.cpp

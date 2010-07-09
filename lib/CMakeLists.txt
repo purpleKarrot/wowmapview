@@ -2,6 +2,7 @@
 add_library(wowview
   dbcfile.cpp
   mpq.cpp
+  shaders.cpp
   texture.cpp
   )
 

@@ -1,55 +1,42 @@
 #include "shaders.h"
+#include <cstring>
+#include <cstdio>
 
-static bool initedShaders = false;
+ShaderPair* terrainShaders[4] = { 0, 0, 0, 0 };
+ShaderPair* wmoShader = 0;
+ShaderPair* waterShader = 0;
 
-ShaderPair *terrainShaders[4]={0,0,0,0}, *wmoShader=0, *waterShaders=0;
-
-// TODO
-bool isExtensionSupported(char *s)
-{
-	bool ret;
-	ret = glewIsSupported("GL_ARB_vertex_program") == GL_TRUE ? true : false;
-	
-	return ret;
-}
-
-void OldinitShaders()
-{
-	if (initedShaders)
-		return;
-
-	OldreloadShaders();
-
-	initedShaders = true;
-}
-
-void OldreloadShaders()
+void initShaders()
 {
 	for (int i = 0; i < 4; i++)
 		delete terrainShaders[i];
 	delete wmoShader;
-	delete waterShaders;
+	delete waterShader;
 
 	terrainShaders[0] = new ShaderPair(0, "shaders/terrain1.fs", true);
 	terrainShaders[1] = new ShaderPair(0, "shaders/terrain2.fs", true);
 	terrainShaders[2] = new ShaderPair(0, "shaders/terrain3.fs", true);
 	terrainShaders[3] = new ShaderPair(0, "shaders/terrain4.fs", true);
 	wmoShader = new ShaderPair(0, "shaders/wmospecular.fs", true);
-	waterShaders = new ShaderPair(0, "shaders/wateroutdoor.fs", true);
+	waterShader = new ShaderPair(0, "shaders/wateroutdoor.fs", true);
 }
 
-Shader::Shader(GLenum target, const char *program, bool fromFile):id(0),target(target)
+Shader::Shader(GLenum target, const char *program, bool fromFile) :
+	id(0), target(target)
 {
-	if (!program || !strlen(program)) {
+	if (!program || !strlen(program))
+	{
 		ok = true;
 		return;
 	}
 
 	const char *progtext;
 	char *buf;
-	if (fromFile) {
+	if (fromFile)
+	{
 		FILE *f = fopen(program, "rb");
-		if (!f) {
+		if (!f)
+		{
 			ok = false;
 			return;
 		}
@@ -57,30 +44,39 @@ Shader::Shader(GLenum target, const char *program, bool fromFile):id(0),target(t
 		size_t len = ftell(f);
 		fseek(f, 0, SEEK_SET);
 
-		buf = new char[len+1];
+		buf = new char[len + 1];
 		progtext = buf;
 		fread(buf, len, 1, f);
-		buf[len]=0;
+		buf[len] = 0;
 		fclose(f);
 		//gLog("Len: %d\nShader text:\n[%s]\n",len,progtext);
-	} else progtext = program;
+	}
+	else
+		progtext = program;
 
 	glGenProgramsARB(1, &id);
 	glBindProgramARB(target, id);
-	glProgramStringARB(target, GL_PROGRAM_FORMAT_ASCII_ARB, (GLsizei)strlen(progtext), progtext);
-	if (glGetError() != 0) {
+	glProgramStringARB(target, GL_PROGRAM_FORMAT_ASCII_ARB, (GLsizei) strlen(
+		progtext), progtext);
+	if (glGetError() != 0)
+	{
 		int errpos;
 		glGetIntegerv(GL_PROGRAM_ERROR_POSITION_ARB, &errpos);
-		wxLogMessage(_T("Error loading shader: %s\nError position: %d\n"), glGetString(GL_PROGRAM_ERROR_STRING_ARB), errpos);
+		printf("Error loading shader: %s\nError position: %d\n", glGetString(
+			GL_PROGRAM_ERROR_STRING_ARB), errpos);
 		ok = false;
-	} else ok = true;
+	}
+	else
+		ok = true;
 
-	if (fromFile) delete[] buf;
+	if (fromFile)
+		delete[] buf;
 }
 
 Shader::~Shader()
 {
-	if (ok && id) glDeleteProgramsARB(1, &id);
+	if (ok && id)
+		glDeleteProgramsARB(1, &id);
 }
 
 void Shader::bind()
@@ -96,38 +92,54 @@ void Shader::unbind()
 
 ShaderPair::ShaderPair(const char *vprog, const char *fprog, bool fromFile)
 {
-	if (vprog && strlen(vprog)) {
+	if (vprog && strlen(vprog))
+	{
 		vertex = new Shader(GL_VERTEX_PROGRAM_ARB, vprog, fromFile);
-		if (!vertex->ok) {
+		if (!vertex->ok)
+		{
 			delete vertex;
 			vertex = 0;
 		}
-	} else vertex = 0;
-	if (fprog && strlen(fprog)) {
+	}
+	else
+		vertex = 0;
+	if (fprog && strlen(fprog))
+	{
 		fragment = new Shader(GL_FRAGMENT_PROGRAM_ARB, fprog, fromFile);
-		if (!fragment->ok) {
+		if (!fragment->ok)
+		{
 			delete fragment;
 			fragment = 0;
 		}
-	} else fragment = 0;
+	}
+	else
+		fragment = 0;
 }
 
 void ShaderPair::bind()
 {
-	if (vertex) {
+	if (vertex)
+	{
 		vertex->bind();
-	} else {
+	}
+	else
+	{
 		glDisable(GL_VERTEX_PROGRAM_ARB);
 	}
-	if (fragment) {
+	if (fragment)
+	{
 		fragment->bind();
-	} else {
+	}
+	else
+	{
 		glDisable(GL_FRAGMENT_PROGRAM_ARB);
 	}
 }
 
 void ShaderPair::unbind()
 {
-	if (vertex) vertex->unbind();
-	if (fragment) fragment->unbind();
+	if (vertex)
+		vertex->unbind();
+	if (fragment)
+		fragment->unbind();
 }

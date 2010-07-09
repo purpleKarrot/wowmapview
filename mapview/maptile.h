@@ -21,11 +21,12 @@ class MapChunk;
 
 class World;
 
-typedef unsigned char      uint8;
-typedef unsigned short     uint16;
-typedef unsigned int       uint32;
+typedef unsigned char uint8;
+typedef unsigned short uint16;
+typedef unsigned int uint32;
 
-struct MapChunkHeader {
+struct MapChunkHeader
+{
 	uint32 flags;
 	uint32 ix;
 	uint32 iy;
@@ -53,9 +54,9 @@ struct MapChunkHeader {
 	uint32 nSndEmitters; // will be set to 0 in the client if ofsSndEmitters doesn't point to MCSE!
 	uint32 ofsLiquid; // MCLQ
 	uint32 sizeLiquid; // 8 when not used; only read if >8.
-	float  zpos;
-	float  xpos;
-	float  ypos;
+	float zpos;
+	float xpos;
+	float ypos;
 	uint32 textureId; // MCCV, only with flags&0x40, had UINT32 textureId; in ObscuR's structure.
 	uint32 props;
 	uint32 effectId;
@@ -66,11 +67,11 @@ struct SWaterLayer
 	uint16 flags;
 	uint16 type;
 	float levels[2];
-	uint8 x; 
-	uint8 y; 
-	uint8 w; 
-	uint8 h; 
-	
+	uint8 x;
+	uint8 y;
+	uint8 w;
+	uint8 h;
+
 	bool hasmask;
 	unsigned char mask[8]; // not used
 
@@ -81,18 +82,20 @@ struct SWaterLayer
 
 struct SWaterTile
 {
-	std::vector< SWaterLayer > layers;
-	uint8 quadmask[16];  // not used
+	std::vector<SWaterLayer> layers;
+	uint8 quadmask[16]; // not used
 };
 
-const int mapbufsize = 9*9 + 8*8;
+const int mapbufsize = 9 * 9 + 8 * 8;
 
-class MapNode {
+class MapNode
+{
 public:
 
-	MapNode(int x, int y, int s):px(x),py(y),size(s),mt(0), vmin(0), vmax(0), vcenter(0) 
+	MapNode(int x, int y, int s) :
+		px(x), py(y), size(s), mt(0), vmin(0), vmax(0), vcenter(0)
 	{
-		for(int i=0; i<4; i++)
+		for (int i = 0; i < 4; i++)
 			children[i] = 0;
 	}
 
@@ -109,7 +112,8 @@ public:
 
 };
 
-class MapChunk : public MapNode {
+class MapChunk: public MapNode
+{
 public:
 	int nTextures;
 
@@ -121,10 +125,10 @@ public:
 	unsigned int areaID;
 
 	std::vector<wow::texture> wTextures;
-	void initTextures(const char *basename, int first, int last);
+	void initTextures(const char* basename, int first, int last);
 
 	bool haswater;
-	std::vector< SWaterLayer > waterLayer;
+	std::vector<SWaterLayer> waterLayer;
 	bool visible;
 	bool hasholes;
 	float waterlevel[2];
@@ -142,16 +146,20 @@ public:
 
 	Liquid *lq;
 
-	MapChunk():MapNode(0,0,0),nTextures(0),xbase(0),ybase(0),zbase(0),r(0),areaID(-1),
-		haswater(false),visible(false),hasholes(false),shadow(0),blend(0),
-		vertices(0),normals(0),strip(0),striplen(0),lq(0)
+	MapChunk() :
+		MapNode(0, 0, 0), nTextures(0), xbase(0), ybase(0), zbase(0), r(0),
+			areaID(-1), haswater(false), visible(false), hasholes(false),
+			shadow(0), blend(0), vertices(0), normals(0), strip(0),
+			striplen(0), lq(0)
 	{
 		waterlevel[0] = 0;
 		waterlevel[1] = 0;
-		for(int i=0; i<4; i++) {
+		for (int i = 0; i < 4; i++)
+		{
 			textures[i] = wow::texture();
 		}
-		for(int i=0; i<3; i++) {
+		for (int i = 0; i < 3; i++)
+		{
 			alphamaps[i] = 0;
 		}
 	}
@@ -167,7 +175,10 @@ public:
 
 };
 
-class MapTile {
+const int stripsize2 = 16 * 18 + 7 * 2 + 8 * 2;
+
+class MapTile
+{
 public:
 
 	void resetAnim();
@@ -210,37 +221,43 @@ public:
 
 int indexMapBuf(int x, int y);
 
-
 // 8x8x2 version with triangle strips, size = 8*18 + 7*2
-const int stripsize = 8*18 + 7*2;
-template <class V>
+const int stripsize = 8 * 18 + 7 * 2;
+template<class V>
 void stripify(V *in, V *out)
 {
-	for (int row=0; row<8; row++) {
-		V *thisrow = &in[indexMapBuf(0,row*2)];
-		V *nextrow = &in[indexMapBuf(0,(row+1)*2)];
+	for (int row = 0; row < 8; row++)
+	{
+		V *thisrow = &in[indexMapBuf(0, row * 2)];
+		V *nextrow = &in[indexMapBuf(0, (row + 1) * 2)];
 
-		if (row>0) *out++ = thisrow[0];
-		for (int col=0; col<9; col++) {
+		if (row > 0)
+			*out++ = thisrow[0];
+		for (int col = 0; col < 9; col++)
+		{
 			*out++ = thisrow[col];
 			*out++ = nextrow[col];
 		}
-		if (row<7) *out++ = nextrow[8];
+		if (row < 7)
+			*out++ = nextrow[8];
 	}
 }
 
 // high res version, size = 16*18 + 7*2 + 8*2
-const int stripsize2 = 16*18 + 7*2 + 8*2;
-template <class V>
+
+template<class V>
 void stripify2(V *in, V *out)
 {
-	for (int row=0; row<8; row++) { 
-		V *thisrow = &in[indexMapBuf(0,row*2)];
-		V *nextrow = &in[indexMapBuf(0,row*2+1)];
-		V *overrow = &in[indexMapBuf(0,(row+1)*2)];
+	for (int row = 0; row < 8; row++)
+	{
+		V *thisrow = &in[indexMapBuf(0, row * 2)];
+		V *nextrow = &in[indexMapBuf(0, row * 2 + 1)];
+		V *overrow = &in[indexMapBuf(0, (row + 1) * 2)];
 
-		if (row>0) *out++ = thisrow[0];// jump end
-		for (int col=0; col<8; col++) {
+		if (row > 0)
+			*out++ = thisrow[0];// jump end
+		for (int col = 0; col < 8; col++)
+		{
 			*out++ = thisrow[col];
 			*out++ = nextrow[col];
 		}
@@ -249,14 +266,16 @@ void stripify2(V *in, V *out)
 		*out++ = overrow[8];// jump start
 		*out++ = thisrow[0];// jump end
 		*out++ = thisrow[0];
-		for (int col=0; col<8; col++) {
+		for (int col = 0; col < 8; col++)
+		{
 			*out++ = overrow[col];
 			*out++ = nextrow[col];
 		}
-		if (row<8) *out++ = overrow[8];
-		if (row<7) *out++ = overrow[8];// jump start
+		if (row < 8)
+			*out++ = overrow[8];
+		if (row < 7)
+			*out++ = overrow[8];// jump start
 	}
 }
-
 
 #endif

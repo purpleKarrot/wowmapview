@@ -6,7 +6,7 @@
 
 #include "../wowmapview.h"
 #include "../menu.h"
-#include "../shaders.h"
+#include "shaders.h"
 #include "../areadb.h"
 
 #define XSENS 4.0f

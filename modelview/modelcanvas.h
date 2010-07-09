@@ -136,7 +136,6 @@ public:
 	
 	// Various toggles
 	bool init;
-	bool initShaders;
 	bool useCamera;
 
 	// Models / Attachments

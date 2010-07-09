@@ -5,6 +5,7 @@ class Liquid;
 
 #include "mpq.hpp"
 #include "maptile.h"
+#include "texture.hpp"
 
 const float LQ_DEFAULT_TILESIZE = CHUNKSIZE / 8.0f;
 
